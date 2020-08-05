@@ -2,10 +2,16 @@ library(Rsamtools)
 library(tidyverse)
 library(GenomicAlignments)
 
+args = commandArgs(trailingOnly=TRUE)
 
-bam_location <- "C:/Users/Priit/Dropbox/Informaatika/Helsingi Ülikool/Käsikiri 2/CNV/bams/60569250_S11.bam"
-bed_location <- "coordinates/chr15.bed"
-out_location <- "test/"
+# Check that at least three arguments are supplied.
+if (length(args) != 3) {
+  stop("Please provide .bam, .bed and output locations.", call.=FALSE)
+  }
+
+bam_location <- args[1]
+bed_location <- args[2]
+out_location <- args[3]
 
 bam_name <- basename(bam_location)
 
@@ -17,5 +23,5 @@ reads <- bed %>%
   mutate(normalized_by_sample = reads/sum(reads)) %>% 
   mutate(sample = bam_name)
 
-write_tsv(path = paste0(out_location, "count.",basename(bam_name),".tsv"), x = reads)
+write_tsv(path = paste0(out_location, "count.", basename(bam_name), ".tsv"), x = reads)
 
