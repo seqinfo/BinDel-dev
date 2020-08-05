@@ -27,7 +27,18 @@ counts <- locations %>%
   mutate(reads = assay(summarizeOverlaps(makeGRangesFromDataFrame(.), sample, mode="IntersectionStrict"))) %>% 
   mutate(normalized_by_sample = reads/sum(reads)) %>% 
   mutate(sample = bam_name) %>% 
-  mutate(type = "analysis")
+  mutate(type = "analysis") %>% 
+  group_by(chromosome, start, end) %>% # Calculate GC%
+  mutate(gc = letterFrequency(getSeq(BSgenome.Hsapiens.UCSC.hg38, 
+                                     GRanges(chromosome, 
+                                             IRanges(start=start, end=end), strand="+", as.character=T)),
+                              "GC", 
+                              as.prob = T)) %>% 
+  ungroup() %>% # LOESS GC correct PMC3130771
+  mutate(P = predict(loess(gc ~ reads, .))) %>% 
+  mutate(M = median(reads)) %>% 
+  mutate(factor = M/P) %>% 
+  mutate(gc_corrected = reads * factor)
   
 
 reference <- read_tsv(reference_location) 
@@ -50,15 +61,20 @@ df <- df + 1
 results <- reference %>% 
   bind_rows(counts) %>% 
   group_by(chromosome, start, end) %>% 
-  mutate(z_score_over_ref = (normalized_by_sample - mean(normalized_by_sample)) / sd(normalized_by_sample)) %>% 
-  ungroup() %>% # Chi squared: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5431782/
-  group_by(chromosome, start, end) %>%  # the observed read counts are first normalized by multiplying them with a normalization factor. 
-  mutate(factor = sum(reads) / (ref_size * total_bins)) %>% # Factor numerator (sum of specific bin divided by ...)
+  mutate(z_score_over_ref = (normalized_by_sample - mean(normalized_by_sample)) / sd(normalized_by_sample)) %>%
+  mutate(z_score_over_gc = (gc_corrected - mean(gc_corrected)) / sd(gc_corrected)) %>% 
+  ungroup() %>% 
+  # Chi squared: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5431782/
+  group_by(chromosome, start, end) %>%  
+  # the observed read counts are first normalized by multiplying them with a normalization factor. 
+  # Factor numerator (sum of specific bin divided by ...)
+  mutate(factor = sum(gc_corrected) / (ref_size * total_bins)) %>% 
   ungroup() %>% 
   group_by(sample) %>% 
-  mutate(factor = factor / (sum(reads) / total_bins)) %>% # Numerator / (the denominator: sum of sample reads divided by...)
+  # Numerator / (the denominator: sum of sample reads divided by...)
+  mutate(factor = factor / (sum(gc_corrected) / total_bins)) %>% 
   ungroup() %>% 
-  mutate(on = factor * reads) %>% # Normalized counts
+  mutate(on = factor * gc_corrected) %>% # Normalized counts
   select(-factor) %>%  # Factor is not needed
   group_by(chromosome, start, end) %>% 
   mutate(expected_on = mean(on)) %>% # Expected value is the average of each bin
