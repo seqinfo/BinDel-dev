@@ -1,1 +1,1 @@
-# SyndromDetector
+# SyndromeDetector
