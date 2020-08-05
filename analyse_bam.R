@@ -69,3 +69,4 @@ results <- reference %>%
   select(-type) %>% 
   mutate(z_score_sample_within = (normalized_by_sample - mean(normalized_by_sample)) / sd(normalized_by_sample)) %>% 
   write_tsv(paste0("results.", bam_name,".tsv"))
+
