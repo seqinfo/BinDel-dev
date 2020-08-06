@@ -1,7 +1,6 @@
 library(Rsamtools)
 library(tidyverse)
-library(GenomicAlignments)
-require(BSgenome.Hsapiens.UCSC.hg38)
+source("util.R")
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -9,6 +8,11 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args) != 3) {
   stop("Please provide .bam, .bed and output locations.", call.=FALSE)
   }
+
+# TODO: rm
+# bam_location <- "C:/Users/Priit/Dropbox/Informaatika/Helsingi Ülikool/Käsikiri 2/CNV/bams/A749N.bam"# args[1]
+# bed_location <- "coordinates/chr15.bed" #args[2]
+# out_location <- "test/" #args[3]
 
 bam_location <- args[1]
 bed_location <- args[2]
@@ -18,25 +22,6 @@ bam_name <- basename(bam_location)
 
 sample <- readGAlignments(bam_location)
 bed <- read_tsv(bed_location)
-
-
-# LOESS: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3130771/
-
-reads <- bed %>% 
-  mutate(reads = assay(summarizeOverlaps(makeGRangesFromDataFrame(.), sample, mode="IntersectionStrict"))) %>% 
-  mutate(normalized_by_sample = reads/sum(reads)) %>% 
-  mutate(sample = bam_name) %>% 
-  group_by(chromosome, start, end) %>% # Calculate GC%
-  mutate(gc = letterFrequency(getSeq(BSgenome.Hsapiens.UCSC.hg38, 
-                                     GRanges(chromosome, 
-                                             IRanges(start=start, end=end), strand="+", as.character=T)),
-                              "GC", 
-                              as.prob = T)) %>% 
-  ungroup() %>% # LOESS GC correct PMC3130771
-  mutate(P = predict(loess(gc ~ reads, .))) %>% 
-  mutate(M = median(reads)) %>% 
-  mutate(factor = M/P) %>% 
-  mutate(gc_corrected = reads * factor)
-  
+reads <- count(bed, sample, bam_name)
 
 write_tsv(path = paste0(out_location, "count.", basename(bam_name), ".tsv"), x = reads)
