@@ -32,7 +32,7 @@ task count {
   runtime {
     time: 10
     cpu: 1
-    memory: 10
+    mem: 10
   }
 
   output {
