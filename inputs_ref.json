@@ -1,6 +1,6 @@
-{ "Main.count_reads": "count_reads.R",
-  "Main.util": "util.R",
-  "Main.all_regions": "coordinates/chr15.bed",
+{ "Main.count.count_reads": "count_reads.R",
+  "Main.count.util": "util.R",
+  "Main.count.all_regions": "coordinates/chr15.bed",
   "Main.bam_locations": [
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A282N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A232N.bam",
