@@ -1,0 +1,6 @@
+{
+  "final_workflow_outputs_dir": "ref_outputs",
+  "use_relative_output_paths": true,
+  "final_workflow_log_dir": "ref.workflow",
+  "final_call_logs_dir": "ref.logs"
+}
