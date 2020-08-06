@@ -14,8 +14,6 @@ set -e
 
 module load python-3.6.3
 source activate detector
-export PATH=$PATH:$(pwd)
-
 
 cromwell -Dconfig.file=cromwell.conf -Xmx12g run -i inputs_ref.json -o options_ref.json \
   reference.wdl

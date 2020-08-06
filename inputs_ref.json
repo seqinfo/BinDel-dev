@@ -1,5 +1,6 @@
 {
   "Main.count.all_regions": "/gpfs/hpc/samba/CCHT/service_lab/science/CNV/SyndromeDetector/coordinates/chr15.bed",
+  "Main.count.util": "/gpfs/hpc/samba/CCHT/service_lab/science/CNV/SyndromeDetector/util.R",
   "Main.bam_locations": [
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A282N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A232N.bam",
