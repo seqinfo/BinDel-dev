@@ -20,9 +20,9 @@ workflow Main {
 task count {
   input {
     String bamPath
-    File all_regions
-    File count_reads
-    File util
+    String all_regions
+    String count_reads
+    String util
   }
 
   command {
