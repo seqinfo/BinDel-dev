@@ -26,7 +26,7 @@ task count {
   }
 
   command {
-    Rscript ~${count_reads.R} ~${bamPath} ~${all_regions} ""
+    Rscript ~${count_reads} ~${bamPath} ~${all_regions} ""
   }
 
   runtime {
