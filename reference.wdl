@@ -21,7 +21,6 @@ task count {
   input {
     String bamPath
     String all_regions
-    String count_reads
     String util
   }
 
