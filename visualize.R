@@ -1,11 +1,19 @@
 library(tidyverse)
 library(grid)
 
+if (length(args) != 4) {
+  stop("Please provide 'results.tsv', 'sample name', 'syndrome regions' and their 'name'", call.=FALSE)
+}
 
-results <- read_tsv(args[1])
+results <- read_tsv(read_tsv(args[1])) 
 sample_name = args[2]
 syndrome_regions = args[3]
 syndrome_region_name = args[4]
+
+# results <- read_tsv("results.A749N.bam.tsv")# read_tsv(args[1])
+# sample_name = "A749" #args[2]
+# syndrome_regions = "coordinates/as_pws.bed"#args[3]
+# syndrome_region_name = "AS/PWS"#args[4]
 
 coords_syndrome <- read_tsv(syndrome_regions) %>% 
   mutate(region = syndrome_region_name)
@@ -60,11 +68,11 @@ z.score.local.plot <- ggplot(results, aes(x=region, y=local_z_score)) +
   scale_y_continuous(limits = c(-10, 10, 1))
   
 
-chi.z.score.plot <- ggplot(results, aes(x=region, y=chi_z_score)) + 
-  geom_boxplot(aes(color = region)) +
-  ggtitle("Z-score chi") +
-  theme +
-  scale_y_continuous(limits = c(-10, 10, 1))
+#chi.z.score.plot <- ggplot(results, aes(x=region, y=chi_z_score)) + 
+#  geom_boxplot(aes(color = region)) +
+#  ggtitle("Z-score chi") +
+#  theme +
+#  scale_y_continuous(limits = c(-10, 10, 1))
 
 # Scatter plots
 ###############
@@ -109,23 +117,23 @@ z.score.local.scatter <- ggplot(results, aes(x=start, y=local_z_score)) +
   scale_y_continuous(limits = c(-10, 10, 1))
 
 # Z-score chi scatter
-z.score.chi.na_mean <- results %>% 
-  filter(is.na(region)) %>% 
-  select(chi_z_score) %>% 
-  summarise(mean(chi_z_score))
+#z.score.chi.na_mean <- results %>% 
+#  filter(is.na(region)) %>% 
+#  select(chi_z_score) %>% 
+#  summarise(mean(chi_z_score))
 
-z.score.chi.syndrome_mean <- results %>% 
-  filter(!is.na(region)) %>% 
-  select(chi_z_score) %>% 
-  summarise(mean(chi_z_score))
+#z.score.chi.syndrome_mean <- results %>% 
+#  filter(!is.na(region)) %>% 
+#  select(chi_z_score) %>% 
+#  summarise(mean(chi_z_score))
 
-chi.z.score.scatter <- ggplot(results, aes(x=start, y=chi_z_score)) + 
-  geom_point(aes(color = region), size = 0.5) +
-  geom_hline(yintercept = z.score.chi.na_mean$`mean(chi_z_score)`, color="blue") +
-  geom_hline(yintercept = z.score.chi.syndrome_mean$`mean(chi_z_score)`, color="red") +
-  ggtitle("Z-score chi") +
-  theme +
-  scale_y_continuous(limits = c(-10, 10, 1))
+#chi.z.score.scatter <- ggplot(results, aes(x=start, y=chi_z_score)) + 
+#  geom_point(aes(color = region), size = 0.5) +
+#  geom_hline(yintercept = z.score.chi.na_mean$`mean(chi_z_score)`, color="blue") +
+#  geom_hline(yintercept = z.score.chi.syndrome_mean$`mean(chi_z_score)`, color="red") +
+#  ggtitle("Z-score chi") +
+#  theme +
+#  scale_y_continuous(limits = c(-10, 10, 1))
 
 pdf(file = paste0(sample_name, ".pdf"), title = sample_name)
 multiplot(z.score.local.plot, 
@@ -134,7 +142,8 @@ multiplot(z.score.local.plot,
           z.score.ref.plot,
           z.score.ref.scatter, 
           
-          chi.z.score.plot, 
-          chi.z.score.scatter, cols = 3)
+          #chi.z.score.plot, 
+          #chi.z.score.scatter, 
+          cols = 2)
 dev.off()
 
