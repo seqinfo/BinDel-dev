@@ -12,10 +12,10 @@ sample_name = args[2]
 syndrome_regions = args[3]
 syndrome_region_name = args[4]
 
-# results <- read_tsv("results.A749N.bam.tsv")# read_tsv(args[1])
-# sample_name = "A749" #args[2]
-# syndrome_regions = "coordinates/as_pws.bed"#args[3]
-# syndrome_region_name = "AS/PWS"#args[4]
+# results <- read_tsv("results.A749N2.bam.tsv")
+# sample_name = "A749N2" 
+# syndrome_regions = "coordinates/as_pws.bed"
+# syndrome_region_name = "AS/PWS"
 
 coords_syndrome <- read_tsv(syndrome_regions) %>% 
   mutate(region = syndrome_region_name)

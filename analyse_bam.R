@@ -10,7 +10,7 @@ if (length(args) != 3) {
 }
 
 # TODO: rm, used only for local testing.
-# bam_location <- "C:/Users/Priit/Dropbox/Informaatika/Helsingi Ülikool/Käsikiri 2/CNV/bams/60569250_S11.bam"# args[1]
+# bam_location <- "C:/Users/Priit/Dropbox/Informaatika/Helsingi Ülikool/Käsikiri 2/CNV/bams/A749N2.bam"# args[1]
 # analyze_locations_bed <- "coordinates/chr15.bed" #args[2]
 # reference_location <- "reference.tsv" #args[3]
 
