@@ -1,11 +1,13 @@
 library(tidyverse)
 library(grid)
 
+args = commandArgs(trailingOnly=TRUE)
+
 if (length(args) != 4) {
   stop("Please provide 'results.tsv', 'sample name', 'syndrome regions' and their 'name'", call.=FALSE)
 }
 
-results <- read_tsv(read_tsv(args[1])) 
+results <- read_tsv(args[1])
 sample_name = args[2]
 syndrome_regions = args[3]
 syndrome_region_name = args[4]

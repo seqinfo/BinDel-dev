@@ -21,7 +21,7 @@ analyze_locations_bed="coordinates/chr15.bed"
 reference_location="reference.tsv"
 
 
-Rscript analyze_bam.R $bam_location $analyze_locations_bed $reference_location
+Rscript analyse_bam.R $bam_location $analyze_locations_bed $reference_location
 
 Rscript visualize.R results.$sample_name.tsv $sample_name "coordinates/as_pws.bed" "AS/PWS"
 

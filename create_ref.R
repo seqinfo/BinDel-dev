@@ -1,6 +1,8 @@
 library(tidyverse)
 library(fs)
 
+args = commandArgs(trailingOnly=TRUE)
+
 if (length(args) != 2) {
   stop("Please provide (only) the location of the folder where reference counts are stored.", call.=FALSE)
 }
