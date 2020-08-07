@@ -19,7 +19,7 @@ count <- function(bed, sample, bam_name){
     mutate(avg_gc_bin = mean(reads)) %>% 
     ungroup() %>% 
     mutate(factor = avg_gc_bin / mean(reads)) %>% 
-    mutate(gc_corrected = round(reads * factor, 0)) %>% 
+    mutate(gc_corrected = reads / factor) %>% 
     mutate(normalized_by_sample = gc_corrected / sum(gc_corrected)) %>% 
     select(-avg_gc_bin, -factor)
   return(reads)
