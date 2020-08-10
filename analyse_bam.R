@@ -1,69 +1,75 @@
-library(Rsamtools)
-library(tidyverse)
 source("util.R")
 
-args = commandArgs(trailingOnly=TRUE)
+args = commandArgs(trailingOnly = TRUE)
 
-# Check that at least three arguments are supplied.
+
 if (length(args) != 3) {
-  stop("Please provide .bam, .bed and reference locations.", call.=FALSE)
+  stop(
+    "Please provide (1) analyzable BAM (.bam), (2) analyzable regions (.bed) and (3) reference file (.tsv).",
+    call. = FALSE
+  )
 }
 
-# TODO: rm, used only for local testing.
-# bam_location <- "C:/Users/Priit/Dropbox/Informaatika/Helsingi Ülikool/Käsikiri 2/CNV/bams/A749N2.bam"# args[1]
-# analyze_locations_bed <- "coordinates/chr15.bed" #args[2]
-# reference_location <- "reference.tsv" #args[3]
 
 bam_location <-  args[1]
-analyze_locations_bed <- args[2]
+bed_location <- args[2]
 reference_location <- args[3]
 
-bam_name <- basename(bam_location)
 
-# BAM file
-sample <- readGAlignments(bam_location)
-
-# Bins to analyze
-bed <- read_tsv(analyze_locations_bed) 
-
-# Analyzable sample read counts for bins
-reads <- count(bed, sample, bam_name)
-
-# Reference sample to be used to calculate z-scores
-reference <- read_tsv(reference_location) 
+binned_reads <- bin_counts(bam_location, bed_location) # Bin BAM
+queried_gc <- find_gc(bed_location) # Find GC for the locations
+reference <-
+  read_tsv(reference_location) # Reference samples to be used to calculate z-scores
 
 
-results <- reference %>% 
-  # Add sample under analysis
-  bind_rows(reads) %>% 
-  
-  # GC correct (sample wise) (PMID: 28500333 and PMID: 20454671)
-  group_by(sample, gc) %>% 
-  mutate(avg_reads_gc_interval = mean(reads)) %>% 
-  ungroup() %>% 
-  group_by(sample) %>% 
-  mutate(weights = mean(reads) / avg_reads_gc_interval) %>% 
-  mutate(gc_corrected = reads * weights) %>% 
-  
-  # Normalize by sample (important to make samples comparable)
-  mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>% 
-  ungroup() %>% 
-  
-  # Z-score calculation with reference (bin wise)
-  group_by(chromosome, start, end) %>% 
+# Merge: BAM + reference + GC
+merged <- reference %>%
+  bind_rows(binned_reads) %>%
+  left_join(queried_gc)
+
+
+# GC-correct (sample wise) (PMID: 28500333 and PMID: 20454671)
+gc_corrected <- merged %>%
+  group_by(sample, gc) %>%
+  mutate(avg_reads_gc_interval = mean(reads)) %>%
+  ungroup() %>%
+  group_by(sample) %>%
+  mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
+  mutate(gc_corrected = reads * weights) %>%
+  ungroup()
+
+
+# Normalize by sample (important to make samples comparable)
+gc_corrected <- gc_corrected %>%
+  group_by(sample) %>%
+  mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
+  ungroup()
+
+# Z-score calculation with reference (bin wise)
+results <- gc_corrected %>%
+  group_by(chromosome, start, end) %>%
   mutate(z_score_ref = (gc_corrected - mean(gc_corrected)) / sd(gc_corrected)) %>%
-  ungroup() %>% 
-  
-  # Calculate local Z-score (sample wise)
-  group_by(sample) %>% 
-  mutate(local_z_score = (gc_corrected - mean(gc_corrected)) / sd(gc_corrected)) %>% 
-  ungroup() %>% 
-  
-  # Keep in the output only the analyzable sample
-  filter(sample == bam_name) %>% 
-  
-  # Filter columns
-  select(chromosome, start, end, reads, gc, sample, z_score_ref, local_z_score)
+  ungroup()
 
-write_tsv(results, paste0("results.", bam_name, ".tsv"))
 
+# Calculate local Z-score (sample wise)
+results <- results %>%
+  group_by(sample) %>%
+  mutate(local_z_score = (gc_corrected - mean(gc_corrected)) / sd(gc_corrected)) %>%
+  ungroup()
+
+
+# Clean the output
+results <- results %>%
+  filter(sample == basename(bam_location)) %>%  # Keep in the output only the analyzable sample
+  select(chromosome,
+         start,
+         end,
+         reads,
+         gc,
+         sample,
+         z_score_ref,
+         local_z_score)
+
+
+write_tsv(results, paste0("results.", basename(bam_location), ".tsv"))
