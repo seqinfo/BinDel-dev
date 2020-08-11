@@ -32,7 +32,7 @@ task bin {
 
   command {
     set -e
-    Rscript /gpfs/hpc/samba/CCHT/service_lab/science/CNV/SyndromeDetector/R/count_reads.R ${bamPath} ${regions} ""
+    Rscript $count_reads ${bamPath} ${regions} ""
   }
 
   runtime {
