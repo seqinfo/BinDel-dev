@@ -45,8 +45,13 @@ gc_corrected <- gc_corrected %>%
   mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
   ungroup()
 
+# Normalize by bin length
+bin_length_normalized <- gc_corrected %>%
+  mutate(gc_corrected = gc_corrected / (end - start))
+
+
 # Z-score calculation with reference (bin wise)
-results <- gc_corrected %>%
+results <- bin_length_normalized %>%
   group_by(chromosome, start, end) %>%
   mutate(z_score_ref = (gc_corrected - mean(gc_corrected)) / sd(gc_corrected)) %>%
   ungroup()
@@ -56,6 +61,13 @@ results <- gc_corrected %>%
 results <- results %>%
   group_by(sample) %>%
   mutate(local_z_score = (gc_corrected - mean(gc_corrected)) / sd(gc_corrected)) %>%
+  ungroup()
+
+
+# Calculate local ZZ-score (sample wise)
+results <- results %>%
+  group_by(sample) %>%
+  mutate(zz_score = (z_score_ref - mean(z_score_ref)) / sd(z_score_ref)) %>%
   ungroup()
 
 
@@ -69,7 +81,8 @@ results <- results %>%
          gc,
          sample,
          z_score_ref,
-         local_z_score)
+         local_z_score,
+         zz_score)
 
 
 write_tsv(results, paste0("results.", basename(bam_location), ".tsv"))

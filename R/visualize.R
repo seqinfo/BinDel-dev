@@ -79,6 +79,14 @@ z.score.local.plot <-
   scale_y_continuous(limits = c(-10, 10, 1))
 
 
+zz.score.plot <-
+  ggplot(results, aes(x = region, y = zz_score)) +
+  geom_boxplot(aes(color = region)) +
+  ggtitle("ZZ-score") +
+  theme +
+  scale_y_continuous(limits = c(-10, 10, 1))
+
+
 # Scatter plots
 ###############
 
@@ -127,6 +135,28 @@ z.score.local.scatter <-
   theme +
   scale_y_continuous(limits = c(-10, 10, 1))
 
+# ZZ-score  scatter
+zz.score.na_mean <- results %>%
+  filter(is.na(region)) %>%
+  select(zz_score) %>%
+  summarise(mean(zz_score))
+
+zz.score.syndrome_mean <- results %>%
+  filter(!is.na(region)) %>%
+  select(zz_score) %>%
+  summarise(mean(zz_score))
+
+zz.score.scatter <-
+  ggplot(results, aes(x = start, y = zz_score)) +
+  geom_point(aes(color = region), size = 0.5) +
+  geom_hline(yintercept = zz.score.na_mean$`mean(zz_score)`,
+             color = "blue") +
+  geom_hline(yintercept = zz.score.syndrome_mean$`mean(zz_score)`,
+             color = "red") +
+  ggtitle("ZZ score") +
+  theme +
+  scale_y_continuous(limits = c(-10, 10, 1))
+
 
 pdf(file = paste0(sample_name, ".pdf"), title = sample_name)
 multiplot(
@@ -135,6 +165,9 @@ multiplot(
   
   z.score.ref.plot,
   z.score.ref.scatter,
+  
+  zz.score.plot,
+  zz.score.scatter,
   
   cols = 2
 )
