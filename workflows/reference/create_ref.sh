@@ -18,4 +18,3 @@ source activate detector
 cromwell -Dconfig.file=cromwell.conf -Xmx12g run -i inputs_ref.json -o options_ref.json \
   reference.wdl
 
-Rscript ../../R/create_ref.R "ref_outputs" "reference.tsv"
