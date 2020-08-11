@@ -48,11 +48,12 @@ task bin {
 task merge {
 
   input {
-    File counts
+    Array[File] counts
+    File file1 = counts[0]
     }
 
   command {
-    Rscript ../R/create_ref.R ${counts} "reference.tsv"
+    head -1 ${file1} > reference.tsv; tail -n+2 -q ${counts} >> reference.tsv
   }
 
   runtime {
