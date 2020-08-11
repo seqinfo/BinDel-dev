@@ -6,27 +6,32 @@ workflow Main {
   }
 
   scatter (bamPath in bam_locations) {
-    call count {
+    call bin {
       input:
         bamPath = bamPath
     }
   }
 
+  call merge {
+    input:
+      counts = bin.counts
+  }
+
   output {
-    Array[File] counts = count.counts 
+    File reference = merge.reference 
   }
 }
 
-task count {
+
+task bin {
+
   input {
     File bamPath
-    File all_regions
-    File util
-    File count_reads
-  }
+    File regions
+    }
 
   command {
-    Rscript ${count_reads} ${bamPath} ${all_regions} ""
+    Rscript ../R/count_reads.R ${bamPath} ${regions} ""
   }
 
   runtime {
@@ -34,8 +39,29 @@ task count {
     cpu: 1
     mem: 10
   }
+    output {
+     File counts = glob("*.tsv")[0]
+  }
+}
+
+
+task merge {
+
+  input {
+    File counts
+    }
+
+  command {
+    Rscript ../R/create_ref.R ${counts} "reference.tsv"
+  }
+
+  runtime {
+    time: 20
+    cpu: 1
+    mem: 10
+  }
 
   output {
-     File counts = glob("*.tsv")[0]
+     File reference = "reference.tsv"
   }
 }
