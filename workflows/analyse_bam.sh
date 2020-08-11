@@ -19,7 +19,7 @@ bam_location=$1
 sample_name=$2
 
 
-Rscript ../R/analyse_bam.R $bam_location "coordinates/chr15.bed" "reference.tsv"
+Rscript ../R/analyse_bam.R $bam_location ../coordinates/chr15.bed ../reference.tsv
 
-Rscript ../R/visualize.R results.$sample_name.tsv "coordinates/as_pws.bed"
+Rscript ../R/visualize.R results.$sample_name.tsv ../coordinates/as_pws.bed
 
