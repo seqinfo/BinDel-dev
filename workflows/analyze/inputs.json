@@ -1,0 +1,11 @@
+{
+  "Main.coordinates": "../coordinates/chr15.bed",
+  "Main.coordinates_of_interest": "../coordinates/as_pws.bed",
+  "Main.analyze.reference": "../reference.tsv",
+  "Main.bam_locations": [
+    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A282N.bam",
+    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A232N.bam",
+    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A328N.bam",
+    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A789N.bam"
+  ]
+}

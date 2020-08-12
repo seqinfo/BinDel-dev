@@ -1,6 +1,7 @@
 version 1.0
 
 workflow Main {
+  
   input {
     Array[String] bam_locations
   }
