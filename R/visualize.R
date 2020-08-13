@@ -171,6 +171,6 @@ multiplot(
   zz.score.plot,
   zz.score.scatter,
   
-  cols = 2
+  cols = 3
 )
 dev.off()
