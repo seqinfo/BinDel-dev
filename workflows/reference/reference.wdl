@@ -33,7 +33,7 @@ task bin {
 
   command {
     set -e
-    Rscript $count_reads ${bamPath} ${regions} ""
+    Rscript $count_reads ${bamPath} ${regions}
   }
 
   runtime {
