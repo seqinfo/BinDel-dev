@@ -15,8 +15,8 @@ set -e
 module load python-3.6.3
 source activate detector
 
-analyser=../../R/analyse_bam.R
-visualizer=../../R/visualize.R
+export analyser=../../R/analyse_bam.R
+export visualizer=../../R/visualize.R
 
 cromwell -Dconfig.file=cromwell.conf -Xmx12g run -i inputs.json -o options.json \
   analyze.wdl
