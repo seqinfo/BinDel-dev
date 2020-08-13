@@ -64,7 +64,8 @@ theme <- theme_bw() +
 
 # Box plots
 ###############
-z.score.ref.plot <- ggplot(results, aes(x = region, y = z_score_ref)) +
+z.score.ref.plot <-
+  ggplot(results, aes(x = region, y = z_score_ref)) +
   geom_boxplot(aes(color = region)) +
   ggtitle("Z-score ref") +
   theme +
@@ -157,6 +158,7 @@ zz.score.scatter <-
   theme +
   scale_y_continuous(limits = c(-10, 10, 1))
 
+sample_name <- basename(results_location)
 
 pdf(file = paste0(sample_name, ".pdf"), title = sample_name)
 multiplot(
