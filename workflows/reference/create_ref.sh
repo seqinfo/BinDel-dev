@@ -15,7 +15,7 @@ set -e
 module load python-3.6.3
 source activate detector
 
-count_reads=../../R/count_reads.R
+export count_reads=../../R/count_reads.R
 
 cromwell -Dconfig.file=cromwell.conf -Xmx12g run -i inputs_ref.json -o options_ref.json \
   reference.wdl
