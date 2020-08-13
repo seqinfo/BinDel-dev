@@ -1,7 +1,7 @@
 {
   "Main.coordinates": "../coordinates/chr15.bed",
   "Main.coordinates_of_interest": "../coordinates/as_pws.bed",
-  "Main.analyze.reference": "../reference.tsv",
+  "Main.analyze.reference": "ref_outputs/reference.tsv",
   "Main.bam_locations": [
     "/gpfs/hpc/samba/CCHT/service_lab/science/niptify_control_set/outputs_cnv/C075N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/niptify_control_set/outputs_cnv/E121N.bam",
