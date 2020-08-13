@@ -23,8 +23,8 @@ workflow Main {
   }
 
   output {
-    File scores = analyze.results 
-    File plots = visualize.plots 
+    Array[File] scores = analyze.results 
+    Array[File] plots = visualize.plots 
   }
 }
 
@@ -59,7 +59,7 @@ task visualize {
     }
 
   command {
-    Rscript $visualizer ${tsv} {coordinates_of_interest}
+    Rscript $visualizer ${tsv} ${coordinates_of_interest}
   }
 
   runtime {
