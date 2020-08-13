@@ -24,6 +24,7 @@ reference <-
 
 # Merge: BAM + reference + GC
 merged <- reference %>%
+  mutate(sample = paste0("ref.set.", sample)) %>% # reference samples names must not overlap with the analyzable sample.
   bind_rows(binned_reads) %>%
   left_join(queried_gc)
 
