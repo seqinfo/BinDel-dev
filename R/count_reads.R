@@ -3,7 +3,7 @@ source(here::here("R/util.R"))
 args = commandArgs(trailingOnly = TRUE)
 
 
-if (length(args) != 3) {
+if (length(args) != 2) {
   stop(
     "Please provide (1) binnable BAM file (.bam) and (2) regions to bin (.bed)",
     call. = FALSE
