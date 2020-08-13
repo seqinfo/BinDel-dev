@@ -51,12 +51,11 @@ task merge {
 
   input {
     Array[File] counts
-    File file1 = counts[0]
     }
 
   command {
-    head -1 ${file1} > reference.tsv; tail -n+2 -q ${counts} >> reference.tsv
-  }
+    head -1 ${counts[0]} > reference.tsv; tail -n+2 -q ${sep = " " counts} >> reference.tsv
+    }
 
   runtime {
     time: 20
