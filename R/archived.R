@@ -1,3 +1,6 @@
+# Stouffer's_Z-score_method
+# sum((results$z_score_ref))/sqrt(nrow(results))
+
 # ref_size <- reference %>%
 #   select(sample) %>%
 #   distinct() %>%
