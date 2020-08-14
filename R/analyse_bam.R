@@ -55,14 +55,16 @@ bin_length_normalized <- gc_corrected %>%
 sample_only <- bin_length_normalized %>%
   filter(sample == basename(bam_location))
 
-# Remove extreme values from the reference group.
+
+# Remove bin with extreme values from the reference group.
 cut_off <- 3
 without_sample <- bin_length_normalized %>%
   filter(sample != basename(bam_location)) %>%
   group_by(chromosome, start, end) %>%
   mutate(mean = mean(gc_corrected)) %>%
   mutate(sd = sd(gc_corrected)) %>%
-  filter((mean - cut_off * sd < gc_corrected) & (gc_corrected < mean + cut_off * sd)) %>% 
+  filter((mean - cut_off * sd < gc_corrected) &
+           (gc_corrected < mean + cut_off * sd)) %>%
   ungroup()
 
 bin_length_normalized <- without_sample %>%
@@ -106,4 +108,3 @@ results <- results %>%
 
 write_tsv(results, paste0("results.", basename(bam_location), ".tsv"))
 
-write_tsv(results, paste0("results.", basename(bam_location), ".tsv"))
