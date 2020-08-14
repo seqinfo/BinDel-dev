@@ -51,6 +51,24 @@ bin_length_normalized <- gc_corrected %>%
   mutate(gc_corrected = gc_corrected / (end - start))
 
 
+# Remove extreme reference bins compared to other bins
+sample_only <- bin_length_normalized %>%
+  filter(sample == basename(bam_location))
+
+# Remove extreme values from the reference group.
+cut_off <- 3
+without_sample <- bin_length_normalized %>%
+  filter(sample != basename(bam_location)) %>%
+  group_by(chromosome, start, end) %>%
+  mutate(mean = mean(gc_corrected)) %>%
+  mutate(sd = sd(gc_corrected)) %>%
+  filter((mean - cut_off * sd < gc_corrected) & (gc_corrected < mean + cut_off * sd)) %>% 
+  ungroup()
+
+bin_length_normalized <- without_sample %>%
+  bind_rows(sample_only)
+
+
 # Z-score calculation with reference (bin wise)
 results <- bin_length_normalized %>%
   group_by(chromosome, start, end) %>%
@@ -85,5 +103,7 @@ results <- results %>%
          local_z_score,
          zz_score)
 
+
+write_tsv(results, paste0("results.", basename(bam_location), ".tsv"))
 
 write_tsv(results, paste0("results.", basename(bam_location), ".tsv"))
