@@ -11,6 +11,7 @@
 4. [here](https://anaconda.org/conda-forge/r-here)
 5. [Rsamtools](https://anaconda.org/bioconda/bioconductor-rsamtools)
 6. [Tidyverse](https://anaconda.org/r/r-tidyverse)
+7. [Gridextra](https://anaconda.org/r/r-gridextra)
 
 ```./create_env.sh```under the workflows can be used to install required dependencies (requires [Anaconda](https://anaconda.org/)).
 
