@@ -1,6 +1,5 @@
 library(tidyverse)
-library(grid)
-
+library(gridExtra)
 
 start_x <- -15
 end_x <- 15
@@ -23,34 +22,8 @@ regions_of_interest_location = args[2]
 
 
 results <- read_tsv(results_location) %>%
-  left_join((
-    read_tsv(regions_of_interest_location))
-  , by =  c("chromosome", "start", "end"))
-
-
-# Multiple plot function
-# http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
-multiplot <- function(..., cols = 1) {
-  plots <- c(list(...))
-  
-  numPlots = length(plots)
-  
-  layout <- matrix(seq(1, cols * ceiling(numPlots / cols)),
-                   ncol = cols,
-                   nrow = ceiling(numPlots / cols))
-  
-  grid.newpage()
-  pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-  
-  for (i in 1:numPlots) {
-    matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-    print(plots[[i]],
-          vp = viewport(
-            layout.pos.row = matchidx$row,
-            layout.pos.col = matchidx$col
-          ))
-  }
-}
+  left_join((read_tsv(regions_of_interest_location))
+            , by =  c("chromosome", "start", "end"))
 
 
 theme <- theme_bw() +
@@ -123,9 +96,12 @@ zz.score.dens <-
 
 sample_name <- basename(results_location)
 
-
-pdf(file = paste0(sample_name, ".pdf"), title = sample_name)
-multiplot(
+pdf(
+  file = paste0(sample_name, ".pdf"),
+  title = sample_name,
+  width = 10
+)
+grid.arrange(
   z.score.local.plot,
   z.score.local.dens,
   
@@ -134,7 +110,7 @@ multiplot(
   
   zz.score.plot,
   zz.score.dens,
-  
-  cols = 3
+  nrow = 3
 )
+
 dev.off()
