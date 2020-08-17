@@ -45,15 +45,28 @@ zero_line <-
 
 z.score.ref.plot <-
   ggplot(results, aes(x = focus, y = z_score_ref)) +
-  geom_boxplot(aes(color = focus)) +
+  geom_jitter(
+    shape = 16,
+    position = position_jitter(0.2),
+    aes(color = focus),
+    alpha = 0.3
+  ) +
+  geom_boxplot(aes(color = focus), alpha = 0.5) +
   ggtitle("Z-score ref") +
   theme +
   zero_line
 
 
+
 z.score.local.plot <-
   ggplot(results, aes(x = focus, y = local_z_score)) +
-  geom_boxplot(aes(color = focus)) +
+  geom_jitter(
+    shape = 16,
+    position = position_jitter(0.2),
+    aes(color = focus),
+    alpha = 0.3
+  ) +
+  geom_boxplot(aes(color = focus), alpha = 0.5) +
   ggtitle("Z-score local") +
   theme +
   zero_line
@@ -61,7 +74,13 @@ z.score.local.plot <-
 
 zz.score.plot <-
   ggplot(results, aes(x = focus, y = zz_score)) +
-  geom_boxplot(aes(color = focus)) +
+  geom_jitter(
+    shape = 16,
+    position = position_jitter(0.2),
+    aes(color = focus),
+    alpha = 0.3
+  ) +
+  geom_boxplot(aes(color = focus), alpha = 0.5) +
   ggtitle("ZZ-score") +
   theme +
   zero_line
