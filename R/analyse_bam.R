@@ -68,7 +68,7 @@ without_sample <- bin_length_normalized %>%
   ungroup()
 
 
-# Calculate ref set (each) bin mean sd and mean
+# Calculate ref set (each) bin SD and mean
 reference_bin_info <- without_sample %>%
   group_by(chromosome, start, end) %>%
   mutate(mean_ref_bin = mean(gc_corrected)) %>%
