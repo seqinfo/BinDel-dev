@@ -67,15 +67,25 @@ without_sample <- bin_length_normalized %>%
            (gc_corrected < mean + cut_off * sd)) %>%
   ungroup()
 
+
+# Calculate ref set (each) bin mean sd and mean
+reference_bin_info <- without_sample %>%
+  group_by(chromosome, start, end) %>%
+  mutate(mean_ref_bin = mean(gc_corrected)) %>%
+  mutate(mean_ref_sd = sd(gc_corrected)) %>%
+  ungroup() %>%
+  select(chromosome, start, end, mean_ref_bin, mean_ref_sd) %>%
+  distinct()
+
+
 bin_length_normalized <- without_sample %>%
-  bind_rows(sample_only)
+  bind_rows(sample_only) %>%
+  left_join(reference_bin_info)
 
 
 # Z-score calculation with reference (bin wise)
 results <- bin_length_normalized %>%
-  group_by(chromosome, start, end) %>%
-  mutate(z_score_ref = (gc_corrected - mean(gc_corrected)) / sd(gc_corrected)) %>%
-  ungroup()
+  mutate(z_score_ref = (gc_corrected - mean_ref_bin) / mean_ref_sd) #%>%
 
 
 # Calculate local Z-score (sample wise)
@@ -107,4 +117,3 @@ results <- results %>%
 
 
 write_tsv(results, paste0("results.", basename(bam_location), ".tsv"))
-
