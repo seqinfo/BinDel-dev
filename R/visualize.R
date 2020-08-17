@@ -1,12 +1,6 @@
 library(tidyverse)
 library(gridExtra)
 
-start_x <- -15
-end_x <- 15
-
-start_y <- -15
-end_y <- 15
-
 
 args = commandArgs(trailingOnly = TRUE)
 
@@ -37,18 +31,24 @@ theme <- theme_bw() +
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
     plot.title = element_text(size = 10)
   )
 
 
 # Box plots
 ###############
+zero_line <-
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+
 z.score.ref.plot <-
   ggplot(results, aes(x = focus, y = z_score_ref)) +
   geom_boxplot(aes(color = focus)) +
   ggtitle("Z-score ref") +
   theme +
-  scale_y_continuous(limits = c(start_y, end_y, 1))
+  zero_line
 
 
 z.score.local.plot <-
@@ -56,7 +56,7 @@ z.score.local.plot <-
   geom_boxplot(aes(color = focus)) +
   ggtitle("Z-score local") +
   theme +
-  scale_y_continuous(limits = c(start_y, end_y, 1))
+  zero_line
 
 
 zz.score.plot <-
@@ -64,7 +64,7 @@ zz.score.plot <-
   geom_boxplot(aes(color = focus)) +
   ggtitle("ZZ-score") +
   theme +
-  scale_y_continuous(limits = c(start_y, end_y, 1))
+  zero_line
 
 
 # Density plots
@@ -75,24 +75,21 @@ z.score.ref.dens <-
   ggplot(results, aes(x = z_score_ref)) +
   geom_density(aes(color = focus), size = 0.5) +
   ggtitle("Z-score ref") +
-  theme +
-  scale_x_continuous(limits = c(start_x, end_x, 1))
+  theme
 
 # Z-score local scatter
 z.score.local.dens <-
   ggplot(results, aes(x = local_z_score)) +
   geom_density(aes(color = focus), size = 0.5) +
   ggtitle("Z-score local") +
-  theme +
-  scale_x_continuous(limits = c(start_x, end_x, 1))
+  theme
 
 # ZZ-score
 zz.score.dens <-
   ggplot(results, aes(x = zz_score)) +
   geom_density(aes(color = focus), size = 0.5) +
   ggtitle("ZZ score") +
-  theme +
-  scale_x_continuous(limits = c(start_x, end_x, 1))
+  theme
 
 sample_name <- basename(results_location)
 
