@@ -36,79 +36,97 @@ theme <- theme_bw() +
   )
 
 
-# Box plots
-###############
 zero_line <-
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
 
-z.score.ref.plot <-
-  ggplot(results, aes(x = focus, y = z_score_ref)) +
-  geom_jitter(
-    shape = 16,
-    position = position_jitter(0.2),
-    aes(color = focus),
-    alpha = 0.3
-  ) +
-  geom_boxplot(aes(color = focus), alpha = 0.5) +
-  ggtitle("Z-score ref") +
-  theme +
-  zero_line
+
+create_box_plot <- function(data, x, y, title) {
+  p <- ggplot(data, aes(x = x, y = y)) +
+    geom_jitter(
+      shape = 16,
+      position = position_jitter(0.2),
+      aes(color = x),
+      alpha = 0.3
+    ) +
+    geom_boxplot(aes(color = x), alpha = 0.5) +
+    ggtitle(title) +
+    theme +
+    zero_line
+  return(p)
+}
 
 
-
-z.score.local.plot <-
-  ggplot(results, aes(x = focus, y = local_z_score)) +
-  geom_jitter(
-    shape = 16,
-    position = position_jitter(0.2),
-    aes(color = focus),
-    alpha = 0.3
-  ) +
-  geom_boxplot(aes(color = focus), alpha = 0.5) +
-  ggtitle("Z-score local") +
-  theme +
-  zero_line
+create_density <- function(data, x, title) {
+  p <- ggplot(results, aes(x = x)) +
+    geom_density(aes(color = focus), size = 0.5) +
+    ggtitle(title) +
+    theme
+  
+  return(p)
+}
 
 
-zz.score.plot <-
-  ggplot(results, aes(x = focus, y = zz_score)) +
-  geom_jitter(
-    shape = 16,
-    position = position_jitter(0.2),
-    aes(color = focus),
-    alpha = 0.3
-  ) +
-  geom_boxplot(aes(color = focus), alpha = 0.5) +
-  ggtitle("ZZ-score") +
-  theme +
-  zero_line
+create_scatter_plot <- function(data, x, y, title) {
+  p <- ggplot(data, aes(x = x, y = y)) +
+    geom_point(aes(color = focus), alpha = 0.5) +
+    facet_grid(cols = vars(focus), scales = "free") +
+    ggtitle(title) +
+    theme +
+    zero_line
+  return(p)
+}
+
+
+# Box plots
+box.local <-
+  create_box_plot(results, results$focus, results$local_z_score, "Z-score local")
+box.ref <-
+  create_box_plot(results, results$focus, results$z_score_ref, "Z-score ref")
+box.zz <-
+  create_box_plot(results, results$focus, results$zz_score, "ZZ-score")
 
 
 # Density plots
-###############
+dens.local <-
+  create_density(results, results$local_z_score, "Z-score local")
+dens.ref <-
+  create_density(results, results$z_score_ref, "Z-score ref")
+dens.zz <-
+  create_density(results, results$zz_score, "ZZ score")
 
-# Z-score
-z.score.ref.dens <-
-  ggplot(results, aes(x = z_score_ref)) +
-  geom_density(aes(color = focus), size = 0.5) +
-  ggtitle("Z-score ref") +
-  theme
 
-# Z-score local scatter
-z.score.local.dens <-
-  ggplot(results, aes(x = local_z_score)) +
-  geom_density(aes(color = focus), size = 0.5) +
-  ggtitle("Z-score local") +
-  theme
+# Scatter plots
+scatter.local <-
+  create_scatter_plot(results, results$start, results$local_z_score, "Z-score local")
+scatter.ref <-
+  create_scatter_plot(results,
+                      results$start,
+                      results$z_score_ref,
+                      "Z-score reference")
+scatter.zz <-
+  create_scatter_plot(results, results$start, results$zz_score, "ZZ-score reference")
 
-# ZZ-score
-zz.score.dens <-
-  ggplot(results, aes(x = zz_score)) +
-  geom_density(aes(color = focus), size = 0.5) +
-  ggtitle("ZZ score") +
-  theme
+
+# Scatter plots |abs|
+scatter.local.abs <-
+  create_scatter_plot(results,
+                      results$start,
+                      abs(results$local_z_score),
+                      "|Z|-score local")
+scatter.ref.abs <-
+  create_scatter_plot(results,
+                      results$start,
+                      abs(results$z_score_ref),
+                      "|Z|-score reference")
+scatter.zz.abs <-
+  create_scatter_plot(results,
+                      results$start,
+                      abs(results$zz_score),
+                      "|ZZ|-score reference")
+
+
 
 sample_name <- basename(results_location)
 
@@ -117,16 +135,24 @@ pdf(
   title = sample_name,
   width = 10
 )
-grid.arrange(
-  z.score.local.plot,
-  z.score.local.dens,
-  
-  z.score.ref.plot,
-  z.score.ref.dens,
-  
-  zz.score.plot,
-  zz.score.dens,
-  nrow = 3
-)
+grid.arrange(box.local,
+             dens.local,
+             
+             box.ref,
+             dens.ref,
+             
+             box.zz,
+             dens.zz,
+             nrow = 3)
+
+grid.arrange(scatter.local,
+             scatter.ref,
+             scatter.zz,
+             nrow = 3)
+
+grid.arrange(scatter.local.abs,
+             scatter.ref.abs,
+             scatter.zz.abs,
+             nrow = 3)
 
 dev.off()
