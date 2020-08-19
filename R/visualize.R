@@ -15,18 +15,31 @@ results_location <- args[1]
 regions_of_interest_location = args[2]
 
 
+# https://stackoverflow.com/questions/11610377/how-do-i-change-the-formatting-of-numbers-on-an-axis-with-ggplot
+fancy_scientific <- function(l) {
+  l <- format(l, scientific = TRUE)
+  l <- gsub("^(.*)e", "'\\1'e", l)
+  l <- gsub("e", "%*%10^", l)
+  parse(text = l)
+}
+
+
 results <- read_tsv(results_location) %>%
   left_join((read_tsv(regions_of_interest_location))
-            , by =  c("chromosome", "start", "end"))
+            , by =  c("chromosome", "start", "end")) %>%
+  separate(
+    chromosome,
+    remove = F,
+    sep = "chr",
+    into = c("temp", "chr_number"),
+    convert = T
+  ) %>%
+  select(-temp) %>%
+  arrange(chr_number)
 
 
 theme <- theme_bw() +
   theme(
-    axis.text.x = element_text(
-      angle = 45,
-      hjust = 0.5,
-      vjust = 0.5
-    ),
     legend.position = "none",
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
@@ -37,122 +50,107 @@ theme <- theme_bw() +
 
 
 zero_line <-
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red")
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "red",
+    size = 1
+  )
 
 
-create_box_plot <- function(data, x, y, title) {
-  p <- ggplot(data, aes(x = x, y = y)) +
-    geom_jitter(
-      shape = 16,
-      position = position_jitter(0.2),
-      aes(color = x),
-      alpha = 0.3
-    ) +
-    geom_boxplot(aes(color = x), alpha = 0.5) +
-    ggtitle(title) +
-    theme +
-    zero_line
-  return(p)
-}
+
+box.plot.chr <-
+  ggplot(results %>% filter(chromosome == focus),
+         aes(fct_reorder(focus, chr_number), z_score_ref)) +
+  geom_jitter(
+    shape = 16,
+    position = position_jitter(0.2),
+    aes(color = chromosome),
+    alpha = 0.3
+  ) +
+  geom_boxplot(aes(fill = chromosome), alpha = 0.5) +
+  ggtitle("Z-score ref chromosomes") +
+  theme +
+  theme(axis.text.x = element_text(
+    angle = 45,
+    hjust = 0.5,
+    vjust = 0.5,
+  )) +
+  zero_line
 
 
-create_density <- function(data, x, title) {
-  p <- ggplot(results, aes(x = x)) +
-    geom_density(aes(color = focus), size = 0.5) +
-    ggtitle(title) +
-    theme
-  
-  return(p)
-}
+box.plot.target <-
+  ggplot(results %>% filter(chromosome != focus),
+         aes(fct_reorder(focus, chr_number), z_score_ref)) +
+  geom_jitter(
+    shape = 16,
+    position = position_jitter(0.2),
+    aes(color = chromosome),
+    alpha = 0.3
+  ) +
+  geom_boxplot(aes(fill = chromosome), alpha = 0.5) +
+  ggtitle("Z-score ref targets") +
+  theme +
+  theme(axis.text.x = element_text(
+    angle = 45,
+    hjust = 0.5,
+    vjust = 0.5,
+  )) +
+  zero_line
 
 
-create_scatter_plot <- function(data, x, y, title) {
-  p <- ggplot(data, aes(x = x, y = y)) +
-    geom_point(aes(color = focus), alpha = 0.5) +
-    facet_grid(cols = vars(focus), scales = "free") +
-    ggtitle(title) +
-    theme +
-    zero_line
-  return(p)
-}
+overall <- ggplot(results, aes(x = start, y = z_score_ref)) +
+  geom_point(aes(color = chromosome), size = 0.001, alpha = 0.5) +
+  geom_line(aes(color = chromosome), size = 0.001, alpha = 0.5) +
+  geom_boxplot(
+    aes(color = chromosome),
+    alpha = 0.5,
+    outlier.shape = NA,
+    position = "identity"
+  ) +
+  scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
+  facet_wrap(facets = vars(chr_number),
+             scales = "free_x",
+             ncol = 2) +
+  ggtitle("Combined") +
+  theme +
+  theme(axis.text.x = element_text(size = 6)) +
+  zero_line
 
 
-# Box plots
-box.local <-
-  create_box_plot(results, results$focus, results$local_z_score, "Z-score local")
-box.ref <-
-  create_box_plot(results, results$focus, results$z_score_ref, "Z-score ref")
-box.zz <-
-  create_box_plot(results, results$focus, results$zz_score, "ZZ-score")
-
-
-# Density plots
-dens.local <-
-  create_density(results, results$local_z_score, "Z-score local")
-dens.ref <-
-  create_density(results, results$z_score_ref, "Z-score ref")
-dens.zz <-
-  create_density(results, results$zz_score, "ZZ score")
-
-
-# Scatter plots
-scatter.local <-
-  create_scatter_plot(results, results$start, results$local_z_score, "Z-score local")
-scatter.ref <-
-  create_scatter_plot(results,
-                      results$start,
-                      results$z_score_ref,
-                      "Z-score reference")
-scatter.zz <-
-  create_scatter_plot(results, results$start, results$zz_score, "ZZ-score reference")
-
-
-# Scatter plots |abs|
-scatter.local.abs <-
-  create_scatter_plot(results,
-                      results$start,
-                      abs(results$local_z_score),
-                      "|Z|-score local")
-scatter.ref.abs <-
-  create_scatter_plot(results,
-                      results$start,
-                      abs(results$z_score_ref),
-                      "|Z|-score reference")
-scatter.zz.abs <-
-  create_scatter_plot(results,
-                      results$start,
-                      abs(results$zz_score),
-                      "|ZZ|-score reference")
-
+targets <-
+  ggplot(results %>% filter(chromosome != focus),
+         aes(x = start, y = z_score_ref)) +
+  geom_point(aes(color = chromosome), size = 0.001, alpha = 0.5) +
+  geom_line(aes(color = chromosome), size = 0.001, alpha = 0.5) +
+  geom_boxplot(
+    aes(color = chromosome),
+    alpha = 0.5,
+    outlier.shape = NA,
+    position = "identity"
+  ) +
+  scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
+  facet_wrap(facets = vars(focus),
+             scales = "free_x",
+             ncol = 2) +
+  ggtitle("Targets") +
+  theme +
+  theme(axis.text.x = element_text(size = 6)) +
+  zero_line
 
 
 sample_name <- basename(results_location)
+
 
 pdf(
   file = paste0(sample_name, ".pdf"),
   title = sample_name,
   width = 10
 )
-grid.arrange(box.local,
-             dens.local,
-             
-             box.ref,
-             dens.ref,
-             
-             box.zz,
-             dens.zz,
-             nrow = 3)
 
-grid.arrange(scatter.local,
-             scatter.ref,
-             scatter.zz,
-             nrow = 3)
 
-grid.arrange(scatter.local.abs,
-             scatter.ref.abs,
-             scatter.zz.abs,
-             nrow = 3)
+grid.arrange(box.plot.chr, box.plot.target, ncol = 1)
+overall
+targets
 
 dev.off()
