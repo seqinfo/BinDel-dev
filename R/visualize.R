@@ -76,8 +76,7 @@ box.plot.chr <-
     hjust = 0.5,
     vjust = 0.5,
   )) +
-  zero_line +
-  scale_y_continuous(n.breaks = 8, limits = c(-5, 5))
+  zero_line
 
 
 box.plot.target <-
@@ -157,4 +156,3 @@ overall
 targets
 
 dev.off()
-
