@@ -58,6 +58,7 @@ zero_line <-
   )
 
 
+
 box.plot.chr <-
   ggplot(results %>% filter(chromosome == focus),
          aes(fct_reorder(focus, chr_number), z_score_ref)) +
@@ -75,7 +76,8 @@ box.plot.chr <-
     hjust = 0.5,
     vjust = 0.5,
   )) +
-  zero_line
+  zero_line +
+  scale_y_continuous(n.breaks = 8, limits = c(-5, 5))
 
 
 box.plot.target <-
@@ -99,22 +101,23 @@ box.plot.target <-
 
 
 overall <- ggplot(results, aes(x = start, y = z_score_ref)) +
-  geom_point(aes(color = chromosome), size = 0.001, alpha = 0.5) +
-  geom_line(aes(color = chromosome), size = 0.001, alpha = 0.5) +
+  geom_point(aes(color = focus), size = 0.001, alpha = 0.5) +
+  geom_line(aes(color = focus), size = 0.001, alpha = 0.5) +
   geom_boxplot(
-    aes(color = chromosome),
+    aes(color = focus),
     alpha = 0.5,
     outlier.shape = NA,
     position = "identity"
   ) +
   scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
   facet_wrap(facets = vars(chr_number),
-             scales = "free_x",
+             scales = "free",
              ncol = 2) +
   ggtitle("Combined") +
   theme +
   theme(axis.text.x = element_text(size = 6)) +
-  zero_line
+  zero_line 
+
 
 
 targets <-
@@ -130,12 +133,13 @@ targets <-
   ) +
   scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
   facet_wrap(facets = vars(focus),
-             scales = "free_x",
+             scales = "free",
              ncol = 2) +
   ggtitle("Targets") +
   theme +
   theme(axis.text.x = element_text(size = 6)) +
   zero_line
+
 
 
 sample_name <- basename(results_location)
@@ -153,3 +157,4 @@ overall
 targets
 
 dev.off()
+
