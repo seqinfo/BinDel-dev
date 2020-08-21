@@ -42,7 +42,7 @@ gc_corrected <- merged %>%
 
 # Normalize by sample (important to make samples comparable)
 gc_corrected <- gc_corrected %>%
-  group_by(sample, chromosome) %>%
+  group_by(sample, chromosome, focus) %>%
   mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
   ungroup()
 
