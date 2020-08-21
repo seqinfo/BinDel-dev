@@ -62,7 +62,7 @@ without_sample <- bin_length_normalized %>%
   filter(sample != basename(bam_location)) %>%
   group_by(focus, start, end) %>%
   mutate(mean = mean(gc_corrected)) %>%
-  mutate(sd = sd(gc_corrected)) #%>%
+  mutate(sd = sd(gc_corrected)) %>%
   #filter((mean - cut_off * sd < gc_corrected) &
            #(gc_corrected < mean + cut_off * sd)) %>%
   ungroup()
