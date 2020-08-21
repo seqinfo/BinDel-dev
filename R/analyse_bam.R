@@ -60,21 +60,21 @@ sample_only <- bin_length_normalized %>%
 cut_off <- 3
 without_sample <- bin_length_normalized %>%
   filter(sample != basename(bam_location)) %>%
-  group_by(chromosome, start, end) %>%
+  group_by(focus, start, end) %>%
   mutate(mean = mean(gc_corrected)) %>%
-  mutate(sd = sd(gc_corrected)) %>%
-  filter((mean - cut_off * sd < gc_corrected) &
-           (gc_corrected < mean + cut_off * sd)) %>%
+  mutate(sd = sd(gc_corrected)) #%>%
+  #filter((mean - cut_off * sd < gc_corrected) &
+           #(gc_corrected < mean + cut_off * sd)) %>%
   ungroup()
 
 
 # Calculate ref set (each) bin SD and mean
 reference_bin_info <- without_sample %>%
-  group_by(chromosome, start, end) %>%
+  group_by(focus, start, end) %>%
   mutate(mean_ref_bin = mean(gc_corrected)) %>%
   mutate(mean_ref_sd = sd(gc_corrected)) %>%
   ungroup() %>%
-  select(chromosome, start, end, mean_ref_bin, mean_ref_sd) %>%
+  select(focus, start, end, mean_ref_bin, mean_ref_sd) %>%
   distinct()
 
 
