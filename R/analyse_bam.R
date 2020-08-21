@@ -56,19 +56,11 @@ sample_only <- bin_length_normalized %>%
   filter(sample == basename(bam_location))
 
 
-# Remove bin with extreme values from the reference group.
-cut_off <- 3
+# Calculate ref set (each) bin SD and mean
 without_sample <- bin_length_normalized %>%
   filter(sample != basename(bam_location)) %>%
-  group_by(focus, start, end) %>%
-  mutate(mean = mean(gc_corrected)) %>%
-  mutate(sd = sd(gc_corrected)) %>%
-  #filter((mean - cut_off * sd < gc_corrected) &
-           #(gc_corrected < mean + cut_off * sd)) %>%
   ungroup()
 
-
-# Calculate ref set (each) bin SD and mean
 reference_bin_info <- without_sample %>%
   group_by(focus, start, end) %>%
   mutate(mean_ref_bin = mean(gc_corrected)) %>%
@@ -76,7 +68,6 @@ reference_bin_info <- without_sample %>%
   ungroup() %>%
   select(focus, start, end, mean_ref_bin, mean_ref_sd) %>%
   distinct()
-
 
 bin_length_normalized <- without_sample %>%
   bind_rows(sample_only) %>%
