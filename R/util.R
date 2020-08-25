@@ -63,6 +63,7 @@ windowed_sum <- function(...) {
   return(if_else(p == 0, 0, s, missing = 0))
 }
 
+
 #' Check if a region is eligible to count as an region.
 #' 
 #' For example, region with length 4 with bin Z-scores of "-5, -5, -9, -10" 
@@ -80,3 +81,137 @@ windowed_count <- function(...) {
   return(if_else(p == 0, 0, 1, missing = 0))
 }
 
+
+#' Calculate consecutive negative Z-score bin stats (sum and number of occurrences of length 1...9)
+#'  using windowed_sum and windowed_count up to bin length of 9
+calculate_neg_bin_stat <- function(data){
+  group_z_aggerated <- data %>%
+    group_by(sample, focus, start) %>%
+    mutate(score = abs(min(z_score_ref, 0, na.rm = T))) %>%
+    ungroup() %>%
+    group_by(sample, focus) %>%
+    arrange(start, .by_group = TRUE) %>%
+    mutate(
+      n1 = lead(x = score, n = 1, default = 0),
+      n2 = lead(x = score, n = 2, default = 0),
+      n3 = lead(x = score, n = 3, default = 0),
+      n4 = lead(x = score, n = 4, default = 0),
+      n5 = lead(x = score, n = 5, default = 0),
+      n6 = lead(x = score, n = 6, default = 0),
+      n7 = lead(x = score, n = 7, default = 0),
+      n8 = lead(x = score, n = 8, default = 0),
+      n9 = lead(x = score, n = 9, default = 0)
+    ) %>%
+    ungroup() %>% 
+    group_by(sample, focus) %>%
+    summarise(
+      sum1 = sum(windowed_sum(n1)),
+      count1 = sum(windowed_count(n1)),
+      
+      sum2 = sum(
+        windowed_sum(n1, n2),
+        windowed_sum(n2, n3),
+        windowed_sum(n3, n4),
+        windowed_sum(n4, n5),
+        windowed_sum(n5, n6),
+        windowed_sum(n6, n7),
+        windowed_sum(n7, n8),
+        windowed_sum(n8, n9)
+      ),
+      count2 = sum(
+        windowed_count(n1, n2),
+        windowed_count(n2, n3),
+        windowed_count(n3, n4),
+        windowed_count(n4, n5),
+        windowed_count(n5, n6),
+        windowed_count(n6, n7),
+        windowed_count(n7, n8),
+        windowed_count(n8, n9)
+      ),
+      
+      sum3 = sum(
+        windowed_sum(n1, n2, n3),
+        windowed_sum(n2, n3, n4),
+        windowed_sum(n3, n4, n5),
+        windowed_sum(n4, n5, n6),
+        windowed_sum(n5, n6, n7),
+        windowed_sum(n6, n7, n8),
+        windowed_sum(n7, n8, n9)
+      ),
+      count3 = sum(
+        windowed_count(n1, n2, n3),
+        windowed_count(n2, n3, n4),
+        windowed_count(n3, n4, n5),
+        windowed_count(n4, n5, n6),
+        windowed_count(n5, n6, n7),
+        windowed_count(n6, n7, n8),
+        windowed_count(n7, n8, n9)
+      ),
+      
+      sum4 = sum(
+        windowed_sum(n1, n2, n3, n4),
+        windowed_sum(n2, n3, n4, n5),
+        windowed_sum(n3, n4, n5, n6),
+        windowed_sum(n4, n5, n6, n7),
+        windowed_sum(n5, n6, n7, n8),
+        windowed_sum(n6, n7, n8, n9)
+      ),
+      count4 = sum(
+        windowed_count(n1, n2, n3, n4),
+        windowed_count(n2, n3, n4, n5),
+        windowed_count(n3, n4, n5, n6),
+        windowed_count(n4, n5, n6, n7),
+        windowed_count(n5, n6, n7, n8),
+        windowed_count(n6, n7, n8, n9)
+      ),
+      sum5 = sum(
+        windowed_sum(n1, n2, n3, n4, n5),
+        windowed_sum(n2, n3, n4, n5, n6),
+        windowed_sum(n3, n4, n5, n6, n7),
+        windowed_sum(n4, n5, n6, n7, n8),
+        windowed_sum(n5, n6, n7, n8, n9)
+      ),
+      count5 = sum(
+        windowed_count(n1, n2, n3, n4, n5),
+        windowed_count(n2, n3, n4, n5, n6),
+        windowed_count(n3, n4, n5, n6, n7),
+        windowed_count(n4, n5, n6, n7, n8),
+        windowed_count(n5, n6, n7, n8, n9)
+      ),
+      sum6 = sum(
+        windowed_sum(n1, n2, n3, n4, n5, n6),
+        windowed_sum(n2, n3, n4, n5, n6, n7),
+        windowed_sum(n3, n4, n5, n6, n7, n8),
+        windowed_sum(n4, n5, n6, n7, n8, n9)
+      ),
+      count6 = sum(
+        windowed_count(n1, n2, n3, n4, n5, n6),
+        windowed_count(n2, n3, n4, n5, n6, n7),
+        windowed_count(n3, n4, n5, n6, n7, n8),
+        windowed_count(n4, n5, n6, n7, n8, n9)
+      ),
+      sum7 = sum(
+        windowed_sum(n1, n2, n3, n4, n5, n6, n7),
+        windowed_sum(n2, n3, n4, n5, n6, n7, n8),
+        windowed_sum(n3, n4, n5, n6, n7, n8, n9)
+      ),
+      count7 = sum(
+        windowed_count(n1, n2, n3, n4, n5, n6, n7),
+        windowed_count(n2, n3, n4, n5, n6, n7, n8),
+        windowed_count(n3, n4, n5, n6, n7, n8, n9)
+      ),
+      sum8 = sum(
+        windowed_sum(n1, n2, n3, n4, n5, n6, n7, n8),
+        windowed_sum(n2, n3, n4, n5, n6, n7, n8, n9)
+      ),
+      count8 = sum(
+        windowed_count(n1, n2, n3, n4, n5, n6, n7, n8),
+        windowed_count(n2, n3, n4, n5, n6, n7, n8, n9)
+      ),
+      sum9 = sum(windowed_sum(n1, n2, n3, n4, n5, n6, n7, n8, n9)),
+      count9 = sum(windowed_count(n1, n2, n3, n4, n5, n6, n7, n8, n9))
+    ) %>%
+    ungroup()
+  
+  return(group_z_aggerated)
+}
