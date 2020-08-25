@@ -42,3 +42,41 @@ read_bam_counts <- function(bam_location) {
   return(readGAlignments(bam_location, param = param))
 }
 
+
+#' Sum of Z-scores of a n^th long window. 
+#' 
+#' For example, region with length 4 with bin Z-scores of "-5, -5, -9, -10" 
+#' would yield Z-score of -29.
+#' 
+#' With Z-scores of "-5, -5, 0, -10" it would be 0 as 0 denotes that region is not 
+#' sequential or has other issues/limitations/filters.
+#' 
+#' Takes an n number of dplyr columns as a parameters.
+#'
+windowed_sum <- function(...) {
+  p <- 1
+  s <- 0
+  for (i in list(...)) {
+    p <- i * p
+    s <- i + s
+  }
+  return(if_else(p == 0, 0, s, missing = 0))
+}
+
+#' Check if a region is eligible to count as an region.
+#' 
+#' For example, region with length 4 with bin Z-scores of "-5, -5, -9, -10" 
+#' would yield 1.
+#' 
+#' With Z-scores of "-5, -5, 0, -10" it would yield 0 as 0 denotes that region is not 
+#' eligible to be considered as an region.
+#' 
+#' #' Takes an n number of dplyr columns as a parameters.
+windowed_count <- function(...) {
+  p <- 1
+  for (i in list(...)) {
+    p <- i * p
+  }
+  return(if_else(p == 0, 0, 1, missing = 0))
+}
+
