@@ -16,6 +16,11 @@ bed_location <- args[2]
 reference_location <- args[3]
 
 
+bam_location <- "C:/Users/Priit/Desktop/C075N.bam"
+bed_location <- "coordinates/all_regions.bed"
+reference_location <- "reference.tsv"
+
+
 binned_reads <- bin_counts(bam_location, bed_location) # Bin BAM
 queried_gc <- find_gc(bed_location) # Find GC for the locations
 reference <-
@@ -46,12 +51,13 @@ gc_corrected <- gc_corrected %>%
   mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
   ungroup()
 
+
 # Normalize by bin length
 bin_length_normalized <- gc_corrected %>%
   mutate(gc_corrected = gc_corrected / (end - start))
 
 
-# Remove extreme reference bins compared to other bins
+# Calculate reference group statistics
 sample_only <- bin_length_normalized %>%
   filter(sample == basename(bam_location))
 
@@ -61,6 +67,13 @@ without_sample <- bin_length_normalized %>%
   filter(sample != basename(bam_location)) %>%
   ungroup()
 
+# Calculate each reference bin i mean
+ref_bins <- without_sample %>%
+  group_by(chromosome, start) %>%
+  summarise(expected = mean(gc_corrected)) %>%
+  ungroup()
+
+
 reference_bin_info <- without_sample %>%
   group_by(focus, start, end) %>%
   mutate(mean_ref_bin = mean(gc_corrected)) %>%
@@ -69,6 +82,7 @@ reference_bin_info <- without_sample %>%
   select(focus, start, end, mean_ref_bin, mean_ref_sd) %>%
   distinct()
 
+
 bin_length_normalized <- without_sample %>%
   bind_rows(sample_only) %>%
   left_join(reference_bin_info)
@@ -76,21 +90,13 @@ bin_length_normalized <- without_sample %>%
 
 # Z-score calculation with reference (bin wise)
 results <- bin_length_normalized %>%
-  mutate(z_score_ref = (gc_corrected - mean_ref_bin) / mean_ref_sd) #%>%
+  mutate(z_score_ref = (gc_corrected - mean_ref_bin) / mean_ref_sd)
 
 
-# Calculate local Z-score (sample wise)
-results <- results %>%
-  group_by(sample) %>%
-  mutate(local_z_score = (gc_corrected - mean(gc_corrected)) / sd(gc_corrected)) %>%
-  ungroup()
-
-
-# Calculate local ZZ-score (sample wise)
-results <- results %>%
-  group_by(sample) %>%
-  mutate(zz_score = (z_score_ref - mean(z_score_ref)) / sd(z_score_ref)) %>%
-  ungroup()
+# Calculate expected value and actual value ratio
+results <- ref_bins %>%
+  right_join(results, by = c("chromosome", "start")) %>%
+  mutate(ratio = log(gc_corrected / expected, base = 2))
 
 
 # Clean the output
@@ -103,8 +109,29 @@ results <- results %>%
          gc,
          sample,
          z_score_ref,
-         local_z_score,
-         zz_score)
+         ratio)
 
 
-write_tsv(results, paste0("results.", basename(bam_location), ".tsv"))
+# Calculate aberrations with circular binary segmentation
+# PMID: 15475419
+CNA.object <- CNA(
+  genomdat = results$ratio,
+  chrom = results$chromosome,
+  maploc = results$start,
+  data.type = "logratio",
+  sampleid = basename(bam_location)
+)
+
+smoothed <- smooth.CNA(
+  CNA.object,
+  smooth.region = 10,
+  outlier.SD.scale = 4,
+  smooth.SD.scale = 2,
+  trim = 0.025
+)
+
+segments <- segment(smoothed, verbose = 3, nperm = 1000)
+
+
+write_tsv(results, paste0(basename(bam_location), ".results.tsv"))
+write_tsv(segments$output, paste0(basename(bam_location), ".segments.tsv"))

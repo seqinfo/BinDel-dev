@@ -1,4 +1,5 @@
 library(BSgenome.Hsapiens.UCSC.hg38)
+library(DNAcopy)
 library(dplyr)
 library(GenomicAlignments)
 library(purrr)

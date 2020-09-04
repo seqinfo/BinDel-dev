@@ -77,3 +77,79 @@
 #  ggtitle("Z-score chi") +
 #  theme +
 #  scale_y_continuous(limits = c(-10, 10, 1))
+
+
+# lags <- seq(9)
+# lead_names <- paste("lead", formatC(lags, width = nchar(max(lags)), flag = "0"), sep = "")
+# lead_functions <- purrr::map(lags, ~ function(x)
+# dplyr::lead(x, .x)) %>%
+#  setNames(lead_names)
+
+
+# test <- results %>%
+#  filter(focus == "AS/PWS") %>%  #TODO: rm filter
+#  select(sample, start, focus, z_score_ref) %>%
+#  group_by(sample, focus) %>%
+#  arrange(start, .by_group = TRUE) %>%
+#  mutate_at(vars(z_score_ref), lead_functions) %>%
+#  ungroup() %>%
+#  pivot_longer(cols = all_of(lead_names), names_to = "lead_name", values_to = "lead_value")
+
+
+# test3 <- test %>%
+#  group_by(sample, start, focus) %>%
+#  filter(!is.na(lead_value)) %>%
+#  filter(lead_value < 0) %>%
+#  summarise(bins_sum = sum(lead_value))
+
+# temp <- test3 %>%
+#  filter(sample != basename(bam_location))
+
+# mean_bin = mean(temp$bins_sum)
+# sd_bin = sd(temp$bins_sum)
+
+
+# Z-score calculation with reference (bin wise)
+# test4 <- test3 %>%
+# mutate(z_score = (bins_sum - mean_bin) / sd_bin)
+
+
+# library(ggplot2)
+# to.plot <- k %>%
+  # filter(sample != basename(bam_location)) %>%
+  # filter(focus == "AS/PWS") %>%
+  # select(start, ratio, sample)
+
+
+# theme <- theme_bw() +
+#  theme(
+#    legend.position = "none",
+#    panel.grid.major = element_blank(),
+#    panel.grid.minor = element_blank(),
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    plot.title = element_text(size = 10)
+#  )
+
+# line3 <-
+#  geom_hline(
+#    yintercept = 2,
+#    linetype = "dashed",
+#    color = "red",
+#    size = 2
+#  )
+
+# line33 <-
+#  geom_hline(
+#    yintercept = -2,
+#    linetype = "dashed",
+#    color = "red",
+#    size = 2
+#  )
+
+# ggplot(to.plot, aes(x = start, y = ratio)) +
+#  geom_line() +
+#  #line3 +
+#  #line33 +
+#  theme
+

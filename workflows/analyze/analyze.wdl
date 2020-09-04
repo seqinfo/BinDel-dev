@@ -17,13 +17,15 @@ workflow Main {
 
     call visualize {
       input:
-        tsv = analyze.results,
+        tsv_results = analyze.results,
+        tsv_segments = analyze.segments,
         coordinates_of_interest = coordinates_of_interest
     }
   }
 
   output {
     Array[File] scores = analyze.results 
+    Array[File] segments = analyze.segments
     Array[File] plots = visualize.plots 
   }
 }
@@ -47,19 +49,21 @@ task analyze {
     mem: 10
   }
     output {
-     File results = glob("*.tsv")[0]
+     File results = glob("*results.tsv")[0]
+     File segments = glob("*segments.tsv")[0]
   }
 }
 
 task visualize {
 
   input {
-    File tsv
+    File tsv_results
+    File tsv_segments
     File coordinates_of_interest
     }
 
   command {
-    Rscript $visualizer ${tsv} ${coordinates_of_interest}
+    Rscript $visualizer ${tsv_results} ${tsv_segments} ${coordinates_of_interest}
   }
 
   runtime {
