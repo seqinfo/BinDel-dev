@@ -16,11 +16,6 @@ bed_location <- args[2]
 reference_location <- args[3]
 
 
-bam_location <- "C:/Users/Priit/Desktop/C075N.bam"
-bed_location <- "coordinates/all_regions.bed"
-reference_location <- "reference.tsv"
-
-
 binned_reads <- bin_counts(bam_location, bed_location) # Bin BAM
 queried_gc <- find_gc(bed_location) # Find GC for the locations
 reference <-
