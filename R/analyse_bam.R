@@ -1,4 +1,4 @@
-source(util.R)
+source(here::here("R/util.R"))
 
 args = commandArgs(trailingOnly = TRUE)
 
