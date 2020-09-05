@@ -12,6 +12,7 @@
 5. [Rsamtools](https://anaconda.org/bioconda/bioconductor-rsamtools)
 6. [Tidyverse](https://anaconda.org/r/r-tidyverse)
 7. [Gridextra](https://anaconda.org/r/r-gridextra)
+8. [DNAcopy](https://anaconda.org/bioconda/bioconductor-dnacopy)
 
 ```./create_env.sh```under the workflows can be used to install required dependencies (requires [Anaconda](https://anaconda.org/)).
 

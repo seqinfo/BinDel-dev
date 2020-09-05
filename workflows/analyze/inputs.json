@@ -1,6 +1,5 @@
 {
   "Main.coordinates": "/gpfs/hpc/samba/CCHT/service_lab/science/CNV/SyndromeDetector/coordinates/all_regions.bed",
-  "Main.coordinates_of_interest": "/gpfs/hpc/samba/CCHT/service_lab/science/CNV/SyndromeDetector/coordinates/all_regions.bed",
   "Main.analyze.reference": "/gpfs/hpc/samba/CCHT/service_lab/science/CNV/SyndromeDetector/workflows/reference/ref_outputs/reference.tsv",
   "Main.bam_locations": [
     "/gpfs/hpc/samba/CCHT/service_lab/science/niptify_control_set/outputs_cnv/C075N.bam",

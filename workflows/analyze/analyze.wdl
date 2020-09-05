@@ -4,8 +4,7 @@ workflow Main {
 
   input {
     Array[String] bam_locations
-    File coordinates
-    File coordinates_of_interest
+    File coordinates   
   }
 
   scatter (bamPath in bam_locations) {
@@ -19,7 +18,7 @@ workflow Main {
       input:
         tsv_results = analyze.results,
         tsv_segments = analyze.segments,
-        coordinates_of_interest = coordinates_of_interest
+        coordinates_of_interest = coordinates
     }
   }
 
