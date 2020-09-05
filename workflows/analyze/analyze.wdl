@@ -49,8 +49,8 @@ task analyze {
     mem: 10
   }
     output {
-     File results = glob("*results.tsv")[0]
-     File segments = glob("*segments.tsv")[0]
+     File results = glob("*.results.tsv")[0]
+     File segments = glob("*.segments.tsv")[0]
   }
 }
 
