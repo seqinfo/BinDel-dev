@@ -71,7 +71,6 @@ theme <- theme_bw() +
   )
 
 
-
 zero_line <-
   geom_hline(
     yintercept = 0,
