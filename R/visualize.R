@@ -172,7 +172,7 @@ overall <- ggplot(results, aes(x = start, y = ratio)) +
   minus_line +
   one_line
 
-
+seg.req.mean <- 0.1
 targets <-
   ggplot(results %>% filter(chromosome != focus), aes(x = start, y = ratio)) +
   geom_point(aes(color = ifelse(ratio < -0.5, 'red', "grey")), size = 1, alpha = 1) +
@@ -185,7 +185,7 @@ targets <-
   geom_segment(
     data = segments %>%
       filter(chromosome != focus) %>%
-      filter(abs(seg.mean) > 0.1),
+      filter(abs(seg.mean) > seg.req.mean),
     aes(
       x = loc.start,
       y = seg.mean,
@@ -194,11 +194,21 @@ targets <-
     ),
     size = 1
   ) +
+  geom_label(
+    data = segments %>%
+      filter(chromosome != focus) %>%
+      filter(abs(seg.mean) > seg.req.mean),
+    aes(
+      x = loc.start + ((loc.end - loc.start) / 2),
+      y = 0.05,
+      label = paste0(num.mark,"/", seg.mean)
+    )
+  ) +
   theme +
   zero_line +
   minus_line +
   one_line
-
+#targets
 
 sample_name <- basename(results_location)
 
