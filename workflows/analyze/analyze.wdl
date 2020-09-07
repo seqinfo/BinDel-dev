@@ -26,6 +26,7 @@ workflow Main {
     Array[File] scores = analyze.results 
     Array[File] segments = analyze.segments
     Array[File] plots = visualize.plots 
+    Array[File] genes = visualize.genes 
   }
 }
 
@@ -73,5 +74,6 @@ task visualize {
 
   output {
      File plots = glob("*.pdf")[0]
+     File genes = glob("*.genes.tsv")[0]
   }
 }

@@ -7,12 +7,14 @@
 ## Dependencies
 1. [BSgenome.Hsapiens.UCSC.hg38](https://anaconda.org/bioconda/bioconductor-bsgenome.hsapiens.ucsc.hg38)
 2. [Cromwell](https://anaconda.org/bioconda/cromwell)
-3. [GenomicAlignments](https://anaconda.org/bioconda/bioconductor-genomicalignments)
-4. [here](https://anaconda.org/conda-forge/r-here)
-5. [Rsamtools](https://anaconda.org/bioconda/bioconductor-rsamtools)
-6. [Tidyverse](https://anaconda.org/r/r-tidyverse)
-7. [Gridextra](https://anaconda.org/r/r-gridextra)
-8. [DNAcopy](https://anaconda.org/bioconda/bioconductor-dnacopy)
+3. [Fuzzyjoin](https://anaconda.org/conda-forge/r-fuzzyjoin)
+4. [GenomicAlignments](https://anaconda.org/bioconda/bioconductor-genomicalignments)
+5. [here](https://anaconda.org/conda-forge/r-here)
+6. [Rsamtools](https://anaconda.org/bioconda/bioconductor-rsamtools)
+7. [Tidyverse](https://anaconda.org/r/r-tidyverse)
+8  [Txdb.Hsapiens.UCSC.hg38.Knowngene](https://anaconda.org/bioconda/bioconductor-txdb.hsapiens.ucsc.hg38.knowngene)
+9. [Gridextra](https://anaconda.org/r/r-gridextra)
+10. [DNAcopy](https://anaconda.org/bioconda/bioconductor-dnacopy)
 
 ```./create_env.sh```under the workflows can be used to install required dependencies (requires [Anaconda](https://anaconda.org/)).
 

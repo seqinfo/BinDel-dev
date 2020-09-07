@@ -1,6 +1,7 @@
 library(tidyverse)
 library(gridExtra)
-
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+library(fuzzyjoin)
 
 args = commandArgs(trailingOnly = TRUE)
 
@@ -26,8 +27,8 @@ fancy_scientific <- function(l) {
 
 
 results <- read_tsv(results_location) %>%
-  left_join((read_tsv(regions_of_interest_location))
-            , by =  c("chromosome", "start", "end")) %>%
+  dplyr::left_join((read_tsv(regions_of_interest_location))
+                   , by =  c("chromosome", "start", "end")) %>%
   separate(
     chromosome,
     remove = F,
@@ -35,18 +36,19 @@ results <- read_tsv(results_location) %>%
     into = c("temp", "chr_number"),
     convert = T
   ) %>%
-  select(-temp) %>%
-  arrange(chr_number) %>%
-  filter(!is.na(z_score_ref))
+  dplyr::select(-temp) %>%
+  dplyr::arrange(chr_number) %>%
+  dplyr::filter(!is.na(z_score_ref))
 
 
 focuses <- results %>%
-  select(chromosome, start, focus)
+  dplyr::select(chromosome, start, focus)
+
 
 segments <- read_tsv(segments_location) %>%
-  mutate(chromosome = chrom) %>%
-  mutate(start = loc.start) %>%
-  left_join(focuses) %>%
+  dplyr::mutate(chromosome = chrom) %>%
+  dplyr::mutate(start = loc.start) %>%
+  dplyr::left_join(focuses) %>%
   separate(
     chromosome,
     remove = F,
@@ -54,8 +56,8 @@ segments <- read_tsv(segments_location) %>%
     into = c("temp", "chr_number"),
     convert = T
   ) %>%
-  select(-temp) %>%
-  arrange(chr_number)
+  dplyr::select(-temp) %>%
+  dplyr::arrange(chr_number)
 
 
 theme <- theme_bw() +
@@ -96,6 +98,7 @@ minus_line <-
     size = 1
   )
 
+
 box.plot.chr <-
   ggplot(results %>% filter(chromosome == focus),
          aes(fct_reorder(focus, chr_number), ratio)) +
@@ -110,7 +113,6 @@ box.plot.chr <-
   zero_line +
   minus_line +
   one_line
-
 
 
 box.plot.target <-
@@ -147,6 +149,7 @@ theme <- theme_bw() +
     )
   )
 
+
 overall <- ggplot(results, aes(x = start, y = ratio)) +
   geom_point(aes(color = ifelse(
     focus != chromosome, ifelse(ratio < -0.5, 'red', "grey"), 'grey'
@@ -172,12 +175,58 @@ overall <- ggplot(results, aes(x = start, y = ratio)) +
   minus_line +
   one_line
 
+
+target_results <- results %>%
+  dplyr::filter(chromosome != focus)
+
+temp <- target_results %>%
+  dplyr::select(chromosome) %>%
+  dplyr::distinct()
+
+genes <-
+  as.data.frame(transcripts(TxDb.Hsapiens.UCSC.hg38.knownGene)) %>%
+  dplyr::mutate(chromosome = seqnames) %>%
+  dplyr::right_join(temp, by = "chromosome") %>%
+  fuzzy_left_join(
+    target_results,
+    .,
+    by = c(
+      "start" = "start",
+      "end" = "end",
+      "chromosome" = "chromosome"
+    ),
+    match_fun = list(`>`, `<`, `==`)
+  )
+
+
+
+filtered_genes <- genes %>%
+  dplyr::select(chromosome.y, start.y, end.y, tx_name, focus) %>%
+  dplyr::filter(!is.na(tx_name)) %>%
+  mutate(chromosome = chromosome.y,
+         start = start.y,
+         end = end.y) %>%
+  dplyr::select(chromosome, start, end, tx_name, focus) %>%
+  distinct()
+
+
 seg.req.mean <- 0.1
 targets <-
-  ggplot(results %>% filter(chromosome != focus), aes(x = start, y = ratio)) +
+  ggplot(target_results, aes(x = start, y = ratio)) +
   geom_point(aes(color = ifelse(ratio < -0.5, 'red', "grey")), size = 1, alpha = 1) +
   geom_line(aes(color = "grey"), size = 0.001, alpha = 0.5) +
   scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
+  geom_segment(
+    data = filtered_genes,
+    aes(
+      x = start,
+      y = -1,
+      xend = end,
+      yend = -1,
+      color = "blue"
+    ),
+    size = 1
+  ) +
   facet_wrap(facets = vars(focus),
              scales = "free",
              ncol = 2) +
@@ -201,17 +250,18 @@ targets <-
     aes(
       x = loc.start + ((loc.end - loc.start) / 2),
       y = 0.05,
-      label = paste0(num.mark,"/", seg.mean)
+      label = paste0(num.mark, "/", seg.mean)
     )
   ) +
   theme +
   zero_line +
   minus_line +
   one_line
-#targets
+
 
 sample_name <- basename(results_location)
 
+write_tsv(genes, paste0(sample_name, ".genes.tsv"))
 
 pdf(
   file = paste0(sample_name, ".pdf"),
