@@ -212,6 +212,9 @@ filtered_genes <- genes %>%
 seg.req.mean <- 0.1
 targets <-
   ggplot(target_results, aes(x = start, y = ratio)) +
+  zero_line +
+  minus_line +
+  one_line +
   geom_point(aes(color = ifelse(ratio < -0.5, 'red', "grey")), size = 1, alpha = 1) +
   geom_line(aes(color = "grey"), size = 0.001, alpha = 0.5) +
   scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
@@ -252,10 +255,7 @@ targets <-
       label = paste0(num.mark, "/", seg.mean)
     )
   ) +
-  theme +
-  zero_line +
-  minus_line +
-  one_line
+  theme
 
 
 sample_name <- basename(results_location)
