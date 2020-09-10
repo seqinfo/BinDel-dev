@@ -209,7 +209,6 @@ filtered_genes <- genes %>%
   distinct()
 
 
-seg.req.mean <- 0.1
 targets <-
   ggplot(target_results, aes(x = start, y = ratio)) +
   zero_line +
@@ -235,8 +234,7 @@ targets <-
   scale_color_identity() +
   geom_segment(
     data = segments %>%
-      filter(chromosome != focus) %>%
-      filter(abs(seg.mean) > seg.req.mean),
+      filter(chromosome != focus),
     aes(
       x = loc.start,
       y = seg.mean,
@@ -246,9 +244,8 @@ targets <-
     size = 1
   ) +
   geom_label(
-    data = segments %>%
-      filter(chromosome != focus) %>%
-      filter(abs(seg.mean) > seg.req.mean),
+    data = segments %>% 
+      filter(chromosome != focus),
     aes(
       x = loc.start + ((loc.end - loc.start) / 2),
       y = 0.05,
