@@ -158,17 +158,17 @@ overall <- ggplot(results, aes(x = start, y = ratio)) +
              scales = "free",
              ncol = 2) +
   scale_color_identity() +
-  geom_segment(
-    data = segments %>%
-      filter(abs(seg.mean) > 0.1),
-    aes(
-      x = loc.start,
-      y = seg.mean,
-      xend = loc.end,
-      yend = seg.mean
-    ),
-    size = 1
-  ) +
+  #geom_segment(
+  #  data = segments %>%
+  #    filter(abs(seg.mean) > 0.1),
+  #  aes(
+  #    x = loc.start,
+  #    y = seg.mean,
+  #    xend = loc.end,
+  #    yend = seg.mean
+  #  ),
+  #  size = 1
+  #) +
   theme +
   zero_line +
   minus_line +
@@ -199,14 +199,14 @@ genes <-
 
 
 
-filtered_genes <- genes %>%
-  dplyr::select(chromosome.y, start.y, end.y, tx_name, focus) %>%
-  dplyr::filter(!is.na(tx_name)) %>%
-  mutate(chromosome = chromosome.y,
-         start = start.y,
-         end = end.y) %>%
-  dplyr::select(chromosome, start, end, tx_name, focus) %>%
-  distinct()
+#filtered_genes <- genes %>%
+#  dplyr::select(chromosome.y, start.y, end.y, tx_name, focus) %>%
+#  dplyr::filter(!is.na(tx_name)) %>%
+#  mutate(chromosome = chromosome.y,
+#         start = start.y,
+#         end = end.y) %>%
+#  dplyr::select(chromosome, start, end, tx_name, focus) %>%
+#  distinct()
 
 
 targets <-
@@ -217,41 +217,41 @@ targets <-
   geom_point(aes(color = ifelse(ratio < -0.5, 'red', "grey")), size = 1, alpha = 1) +
   geom_line(aes(color = "grey"), size = 0.001, alpha = 0.5) +
   scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
-  geom_segment(
-    data = filtered_genes,
-    aes(
-      x = start,
-      y = -1,
-      xend = end,
-      yend = -1,
-      color = "blue"
-    ),
-    size = 1
-  ) +
+  #geom_segment(
+  #  data = filtered_genes,
+  #  aes(
+  #    x = start,
+  #    y = -1,
+  #    xend = end,
+  #    yend = -1,
+  #    color = "blue"
+  #  ),
+  #  size = 1
+  #) +
   facet_wrap(facets = vars(focus),
              scales = "free",
              ncol = 2) +
   scale_color_identity() +
-  geom_segment(
-    data = segments %>%
-      filter(chromosome != focus),
-    aes(
-      x = loc.start,
-      y = seg.mean,
-      xend = loc.end,
-      yend = seg.mean
-    ),
-    size = 1
-  ) +
-  geom_label(
-    data = segments %>% 
-      filter(chromosome != focus),
-    aes(
-      x = loc.start + ((loc.end - loc.start) / 2),
-      y = 0.05,
-      label = paste0(num.mark, "/", seg.mean)
-    )
-  ) +
+  #geom_segment(
+  #  data = segments %>%
+  #    filter(chromosome != focus),
+  #  aes(
+  #    x = loc.start,
+  #    y = seg.mean,
+  #    xend = loc.end,
+  #    yend = seg.mean
+  #  ),
+  #  size = 1
+  #) +
+  #geom_label(
+  #  data = segments %>% 
+  #    filter(chromosome != focus),
+  #  aes(
+  #    x = loc.start + ((loc.end - loc.start) / 2),
+  #    y = 0.05,
+  #    label = paste0(num.mark, "/", seg.mean)
+  #  )
+  #) +
   theme
 
 
