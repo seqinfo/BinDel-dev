@@ -54,13 +54,16 @@ bin_length_normalized <- gc_corrected %>%
 
 # Calculate reference group statistics
 sample_only <- bin_length_normalized %>%
-  filter(sample == basename(bam_location))
+  filter(sample == basename(bam_location)) %>% 
+  mutate(reference = FALSE)
 
 
 # Calculate ref set (each) bin SD and mean
 without_sample <- bin_length_normalized %>%
   filter(sample != basename(bam_location)) %>%
-  ungroup()
+  ungroup() %>% 
+  mutate(reference = TRUE)
+
 
 # Calculate each reference bin i mean
 ref_bins <- without_sample %>%
@@ -94,6 +97,13 @@ results <- ref_bins %>%
   mutate(ratio = log(gc_corrected / expected, base = 2))
 
 
+# Mann–Whitney U test 
+results <- results %>% 
+  group_by(chromosome, start) %>% 
+  mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>% 
+  ungroup()
+
+
 # Clean the output
 results <- results %>%
   filter(sample == basename(bam_location)) %>%  # Keep in the output only the analyzable sample
@@ -104,7 +114,8 @@ results <- results %>%
          gc,
          sample,
          z_score_ref,
-         ratio)
+         ratio,
+         Mann_Whitney)
 
 
 # Calculate aberrations with circular binary segmentation
