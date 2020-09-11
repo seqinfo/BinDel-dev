@@ -18,6 +18,7 @@ regions_of_interest_location <- args[3]
 
 
 # https://stackoverflow.com/questions/11610377/how-do-i-change-the-formatting-of-numbers-on-an-axis-with-ggplot
+# https://stackoverflow.com/questions/11610377/how-do-i-change-the-formatting-of-numbers-on-an-axis-with-ggplot
 fancy_scientific <- function(l) {
   l <- format(l, scientific = TRUE)
   l <- gsub("^(.*)e", "'\\1'e", l)
@@ -98,6 +99,23 @@ minus_line <-
   )
 
 
+p_line <-
+  geom_hline(
+    yintercept = -log10(0.05),
+    linetype = "dashed",
+    color = "red",
+    size = 1
+  )
+
+p_line_zero <-
+  geom_hline(
+    yintercept = -log10(0),
+    linetype = "dashed",
+    color = "grey",
+    size = 1
+  )
+
+
 box.plot.chr <-
   ggplot(results %>% filter(chromosome == focus),
          aes(fct_reorder(focus, chr_number), ratio)) +
@@ -169,7 +187,7 @@ overall <- ggplot(results, aes(x = start, y = ratio)) +
   #  ),
   #  size = 1
   #) +
-  theme +
+theme +
   zero_line +
   minus_line +
   one_line
@@ -228,9 +246,9 @@ targets <-
   #  ),
   #  size = 1
   #) +
-  facet_wrap(facets = vars(focus),
-             scales = "free",
-             ncol = 2) +
+facet_wrap(facets = vars(focus),
+           scales = "free",
+           ncol = 2) +
   scale_color_identity() +
   #geom_segment(
   #  data = segments %>%
@@ -243,15 +261,29 @@ targets <-
   #  ),
   #  size = 1
   #) +
-  #geom_label(
-  #  data = segments %>% 
-  #    filter(chromosome != focus),
-  #  aes(
-  #    x = loc.start + ((loc.end - loc.start) / 2),
-  #    y = 0.05,
-  #    label = paste0(num.mark, "/", seg.mean)
-  #  )
-  #) +
+#geom_label(
+#  data = segments %>%
+#    filter(chromosome != focus),
+#  aes(
+#    x = loc.start + ((loc.end - loc.start) / 2),
+#    y = 0.05,
+#    label = paste0(num.mark, "/", seg.mean)
+#  )
+#) +
+theme
+
+
+pvalues <-
+  ggplot(target_results, aes(x = start, y = -log10(Mann_Whitney))) +
+  p_line_zero +
+  p_line +
+  geom_point(aes(color = ifelse(Mann_Whitney < 0.05, 'red', "grey")), size = 1, alpha = 1) +
+  geom_line(aes(color = "grey"), size = 0.001, alpha = 0.5) +
+  scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
+  facet_wrap(facets = vars(focus),
+             scales = "free",
+             ncol = 2) +
+  scale_color_identity() +
   theme
 
 
@@ -269,5 +301,6 @@ pdf(
 grid.arrange(box.plot.chr, box.plot.target, ncol = 1)
 overall
 targets
+pvalues
 
 dev.off()
