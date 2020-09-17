@@ -106,7 +106,7 @@ results <- results %>%
 # Two-sample Kolmogorov-Smirnov test
 results <- results %>% 
   group_by(chromosome, start) %>% 
-  mutate(Kolmogorov_Smirnov = ks.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>% 
+  mutate(Kolmogorov_Smirnov = ks.test(gc_corrected, reference, exact = FALSE)$p.value) %>% 
   ungroup()
 
 # Clean the output
