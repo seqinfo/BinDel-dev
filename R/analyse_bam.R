@@ -54,14 +54,14 @@ bin_length_normalized <- gc_corrected %>%
 
 # Calculate reference group statistics
 sample_only <- bin_length_normalized %>%
-  filter(sample == basename(bam_location)) %>% 
+  filter(sample == basename(bam_location)) %>%
   mutate(reference = FALSE)
 
 
 # Calculate ref set (each) bin SD and mean
 without_sample <- bin_length_normalized %>%
   filter(sample != basename(bam_location)) %>%
-  ungroup() %>% 
+  ungroup() %>%
   mutate(reference = TRUE)
 
 
@@ -97,31 +97,33 @@ results <- ref_bins %>%
   mutate(ratio = log(gc_corrected / expected, base = 2))
 
 
-# Mann–Whitney U test 
-results <- results %>% 
-  group_by(chromosome, start) %>% 
-  mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>% 
+# Mann–Whitney U test
+results <- results %>%
+  group_by(chromosome, start) %>%
+  mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>%
   ungroup()
 
 # Two-sample Kolmogorov-Smirnov test
-results <- results %>% 
-  group_by(chromosome, start) %>% 
-  mutate(Kolmogorov_Smirnov = ks.test(gc_corrected, reference, exact = FALSE)$p.value) %>% 
+results <- results %>%
+  group_by(chromosome, start) %>%
+  mutate(Kolmogorov_Smirnov = ks.test(x = gc_corrected[reference], y = gc_corrected[!reference], exact = FALSE)$p.value) %>%
   ungroup()
 
 # Clean the output
 results <- results %>%
   filter(sample == basename(bam_location)) %>%  # Keep in the output only the analyzable sample
-  select(chromosome,
-         start,
-         end,
-         reads,
-         gc,
-         sample,
-         z_score_ref,
-         ratio,
-         Mann_Whitney,
-         Kolmogorov_Smirnov)
+  select(
+    chromosome,
+    start,
+    end,
+    reads,
+    gc,
+    sample,
+    z_score_ref,
+    ratio,
+    Mann_Whitney,
+    Kolmogorov_Smirnov
+  )
 
 
 # Calculate aberrations with circular binary segmentation
