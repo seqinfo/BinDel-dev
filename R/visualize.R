@@ -287,6 +287,20 @@ pvalues <-
   theme
 
 
+pvalues2 <-
+  ggplot(target_results, aes(x = start, y = -log10(Kolmogorov_Smirnov))) +
+  p_line_zero +
+  p_line +
+  geom_point(aes(color = ifelse(Kolmogorov_Smirnov < 0.05, 'red', "grey")), size = 1, alpha = 1) +
+  geom_line(aes(color = "grey"), size = 0.001, alpha = 0.5) +
+  scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
+  facet_wrap(facets = vars(focus),
+             scales = "free",
+             ncol = 2) +
+  scale_color_identity() +
+  theme
+
+
 sample_name <- basename(results_location)
 
 write_tsv(genes, paste0(sample_name, ".genes.tsv"))
@@ -302,5 +316,6 @@ grid.arrange(box.plot.chr, box.plot.target, ncol = 1)
 overall
 targets
 pvalues
+pvalues2
 
 dev.off()

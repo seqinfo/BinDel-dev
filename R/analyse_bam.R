@@ -103,6 +103,11 @@ results <- results %>%
   mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>% 
   ungroup()
 
+# Two-sample Kolmogorov-Smirnov test
+results <- results %>% 
+  group_by(chromosome, start) %>% 
+  mutate(Kolmogorov_Smirnov = ks.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>% 
+  ungroup()
 
 # Clean the output
 results <- results %>%
@@ -115,7 +120,8 @@ results <- results %>%
          sample,
          z_score_ref,
          ratio,
-         Mann_Whitney)
+         Mann_Whitney,
+         Kolmogorov_Smirnov)
 
 
 # Calculate aberrations with circular binary segmentation
