@@ -250,17 +250,17 @@ facet_wrap(facets = vars(focus),
            scales = "free",
            ncol = 2) +
   scale_color_identity() +
-  geom_segment(
-    data = segments %>%
-      filter(chromosome != focus),
-    aes(
-      x = loc.start,
-      y = seg.mean,
-      xend = loc.end,
-      yend = seg.mean
-    ),
-    size = 1
-  ) +
+  #geom_segment(
+  #  data = segments %>%
+  #    filter(chromosome != focus),
+  #  aes(
+  #    x = loc.start,
+  #    y = seg.mean,
+  #    xend = loc.end,
+  #    yend = seg.mean
+  #  ),
+  #  size = 1
+  #) +
 #geom_label(
 #  data = segments %>%
 #    filter(chromosome != focus),
@@ -280,6 +280,16 @@ pvalues <-
   geom_point(aes(color = ifelse(Mann_Whitney < 0.05, 'red', "grey")), size = 1, alpha = 1) +
   geom_line(aes(color = "grey"), size = 0.001, alpha = 0.5) +
   scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
+  geom_segment(
+    data = segments,
+    aes(
+      x = loc.start,
+      y = seg.mean,
+      xend = min(loc.end, target_results$end),
+      yend = seg.mean
+    ),
+    size = 1
+  ) +
   facet_wrap(facets = vars(focus),
              scales = "free",
              ncol = 2) +
