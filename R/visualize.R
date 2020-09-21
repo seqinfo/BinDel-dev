@@ -130,16 +130,6 @@ genes <-
   dplyr::right_join(temp, by = "chromosome")
 
 
-filtered_genes <- genes %>%
-  dplyr::select(chromosome.y, start.y, end.y, tx_name, focus) %>%
-  dplyr::filter(!is.na(tx_name)) %>%
-  mutate(chromosome = chromosome.y,
-         start = start.y,
-         end = end.y) %>%
-  dplyr::select(chromosome, start, end, tx_name, focus) %>%
-  distinct()
-
-
 targets <-
   ggplot(target_results, aes(x = start, y = ratio)) +
   geom_point(size = 1, alpha = 1) +
@@ -168,9 +158,9 @@ pvalues <-
       filter(focus != chromosome),
     aes(
       x = loc.start,
-      y = seg.mean,
+      y = -log10(seg.mean),
       xend = loc.end,
-      yend = seg.mean,
+      yend = -log10(seg.mean),
       
     )
   ) +
