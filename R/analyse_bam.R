@@ -37,7 +37,7 @@ gc_corrected <- merged %>%
   group_by(sample) %>%
   mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
   mutate(gc_corrected = reads * weights) %>%
-  filter(!is.na(gc_corrected)) %>% 
+  filter(!is.na(gc_corrected)) %>%
   ungroup()
 
 
@@ -108,17 +108,15 @@ results <- results %>%
 # Clean the output
 results <- results %>%
   filter(sample == basename(bam_location)) %>%  # Keep in the output only the analyzable sample
-  select(
-    chromosome,
-    start,
-    end,
-    reads,
-    gc,
-    sample,
-    z_score_ref,
-    ratio,
-    Mann_Whitney
-  )
+  select(chromosome,
+         start,
+         end,
+         reads,
+         gc,
+         sample,
+         z_score_ref,
+         ratio,
+         Mann_Whitney)
 
 
 # Calculate aberrations with circular binary segmentation
