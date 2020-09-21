@@ -154,8 +154,7 @@ pvalues <-
   )) +
   geom_point(size = 1, alpha = 1) +
   geom_segment(
-    data = segments %>%
-      filter(focus != chromosome),
+    data = segments,
     aes(
       x = loc.start,
       y = -log10(seg.mean),
