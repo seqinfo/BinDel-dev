@@ -37,6 +37,7 @@ gc_corrected <- merged %>%
   group_by(sample) %>%
   mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
   mutate(gc_corrected = reads * weights) %>%
+  filter(!is.na(gc_corrected)) %>% 
   ungroup()
 
 
@@ -103,11 +104,6 @@ results <- results %>%
   mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>%
   ungroup()
 
-# Two-sample Kolmogorov-Smirnov test
-results <- results %>%
-  group_by(chromosome, start) %>%
-  mutate(Kolmogorov_Smirnov = ks.test(x = gc_corrected[reference], y = gc_corrected[!reference], exact = FALSE)$p.value) %>%
-  ungroup()
 
 # Clean the output
 results <- results %>%
@@ -121,8 +117,7 @@ results <- results %>%
     sample,
     z_score_ref,
     ratio,
-    Mann_Whitney,
-    Kolmogorov_Smirnov
+    Mann_Whitney
   )
 
 
