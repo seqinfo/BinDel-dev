@@ -11,10 +11,11 @@
 4. [GenomicAlignments](https://anaconda.org/bioconda/bioconductor-genomicalignments)
 5. [here](https://anaconda.org/conda-forge/r-here)
 6. [Rsamtools](https://anaconda.org/bioconda/bioconductor-rsamtools)
-7. [Tidyverse](https://anaconda.org/r/r-tidyverse)
-8  [Txdb.Hsapiens.UCSC.hg38.Knowngene](https://anaconda.org/bioconda/bioconductor-txdb.hsapiens.ucsc.hg38.knowngene)
-9. [Gridextra](https://anaconda.org/r/r-gridextra)
-10. [DNAcopy](https://anaconda.org/bioconda/bioconductor-dnacopy)
+8. [Scales](https://anaconda.org/r/r-scales)
+9. [Tidyverse](https://anaconda.org/r/r-tidyverse)
+10. [Txdb.Hsapiens.UCSC.hg38.Knowngene](https://anaconda.org/bioconda/bioconductor-txdb.hsapiens.ucsc.hg38.knowngene)
+11. [Gridextra](https://anaconda.org/r/r-gridextra)
+12. [DNAcopy](https://anaconda.org/bioconda/bioconductor-dnacopy)
 
 ```./create_env.sh```under the workflows can be used to install required dependencies (requires [Anaconda](https://anaconda.org/)).
 

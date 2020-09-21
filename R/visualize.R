@@ -1,7 +1,6 @@
 library(tidyverse)
-library(gridExtra)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-library(fuzzyjoin)
+library(scales)
 
 args = commandArgs(trailingOnly = TRUE)
 
@@ -15,16 +14,6 @@ if (length(args) != 3) {
 results_location <- args[1]
 segments_location <- args[2]
 regions_of_interest_location <- args[3]
-
-
-# https://stackoverflow.com/questions/11610377/how-do-i-change-the-formatting-of-numbers-on-an-axis-with-ggplot
-# https://stackoverflow.com/questions/11610377/how-do-i-change-the-formatting-of-numbers-on-an-axis-with-ggplot
-fancy_scientific <- function(l) {
-  l <- format(l, scientific = TRUE)
-  l <- gsub("^(.*)e", "'\\1'e", l)
-  l <- gsub("e", "%*%10^", l)
-  parse(text = l)
-}
 
 
 results <- read_tsv(results_location) %>%
@@ -61,91 +50,16 @@ segments <- read_tsv(segments_location) %>%
   dplyr::arrange(chr_number)
 
 
-theme <- theme_bw() +
-  theme(
-    legend.position = "none",
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.title.x = element_blank(),
-    axis.title.y = element_blank(),
-    plot.title = element_text(size = 10)
-  )
 
 
-zero_line <-
-  geom_hline(
-    yintercept = 0,
+get_line <- function(y) {
+  return(geom_hline(
+    yintercept = y,
     linetype = "dashed",
     color = "grey",
     size = 1
-  )
-
-
-one_line <-
-  geom_hline(
-    yintercept = 1,
-    linetype = "dashed",
-    color = "grey",
-    size = 1
-  )
-
-
-minus_line <-
-  geom_hline(
-    yintercept = -1,
-    linetype = "dashed",
-    color = "grey",
-    size = 1
-  )
-
-
-p_line <-
-  geom_hline(
-    yintercept = -log10(0.05),
-    linetype = "dashed",
-    color = "red",
-    size = 1
-  )
-
-p_line_zero <-
-  geom_hline(
-    yintercept = -log10(0),
-    linetype = "dashed",
-    color = "grey",
-    size = 1
-  )
-
-
-box.plot.chr <-
-  ggplot(results %>% filter(chromosome == focus),
-         aes(fct_reorder(focus, chr_number), ratio)) +
-  geom_jitter(
-    shape = 16,
-    position = position_jitter(0.2),
-    aes(color = chromosome),
-    alpha = 0.3
-  ) +
-  geom_boxplot(aes(fill = chromosome), alpha = 0.5) +
-  theme +
-  zero_line +
-  minus_line +
-  one_line
-
-
-box.plot.target <-
-  ggplot(results %>% filter(chromosome != focus),
-         aes(fct_reorder(focus, chr_number), ratio)) +
-  geom_jitter(
-    shape = 16,
-    position = position_jitter(0.2),
-    aes(color = chromosome),
-    alpha = 0.3
-  ) +
-  geom_boxplot(aes(fill = chromosome), alpha = 0.5) +
-  theme +
-  zero_line +
-  minus_line +
-  one_line
+  ))
+}
 
 
 theme <- theme_bw() +
@@ -167,30 +81,40 @@ theme <- theme_bw() +
   )
 
 
-overall <- ggplot(results, aes(x = start, y = ratio)) +
-  geom_point(aes(color = ifelse(
-    focus != chromosome, ifelse(ratio < -0.5, 'red', "grey"), 'grey'
-  )), size = 1, alpha = 1) +
-  scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
+
+box.plot.chr <-
+  ggplot(results %>% filter(chromosome == focus),
+         aes(fct_reorder(focus, chr_number), ratio)) +
+  geom_jitter(
+    shape = 16,
+    position = position_jitter(0.2),
+    aes(color = chromosome),
+    alpha = 0.3
+  ) +
+  geom_boxplot(aes(fill = chromosome), alpha = 0.5) +
+  theme +
+  get_line(1) +
+  get_line(0) +
+  get_line(-1)
+
+
+overall <-
+  ggplot(results, aes(
+    x = start,
+    y = ratio,
+    color = focus != chromosome
+  )) +
+  geom_point(size = 1, alpha = 1) +
+  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
   facet_wrap(facets = vars(chr_number),
              scales = "free",
              ncol = 2) +
-  scale_color_identity() +
-  #geom_segment(
-  #  data = segments %>%
-  #    filter(abs(seg.mean) > 0.1),
-  #  aes(
-  #    x = loc.start,
-  #    y = seg.mean,
-  #    xend = loc.end,
-  #    yend = seg.mean
-  #  ),
-  #  size = 1
-  #) +
-theme +
-  zero_line +
-  minus_line +
-  one_line
+  scale_color_brewer(palette = "Paired") +
+  theme +
+  get_line(1) +
+  get_line(0) +
+  get_line(-1)
+
 
 
 target_results <- results %>%
@@ -203,98 +127,71 @@ temp <- target_results %>%
 genes <-
   as.data.frame(transcripts(TxDb.Hsapiens.UCSC.hg38.knownGene)) %>%
   dplyr::mutate(chromosome = seqnames) %>%
-  dplyr::right_join(temp, by = "chromosome") %>%
-  fuzzy_left_join(
-    target_results,
-    .,
-    by = c(
-      "start" = "start",
-      "end" = "end",
-      "chromosome" = "chromosome"
-    ),
-    match_fun = list(`>`, `<`, `==`)
-  )
+  dplyr::right_join(temp, by = "chromosome")
 
 
-
-#filtered_genes <- genes %>%
-#  dplyr::select(chromosome.y, start.y, end.y, tx_name, focus) %>%
-#  dplyr::filter(!is.na(tx_name)) %>%
-#  mutate(chromosome = chromosome.y,
-#         start = start.y,
-#         end = end.y) %>%
-#  dplyr::select(chromosome, start, end, tx_name, focus) %>%
-#  distinct()
+filtered_genes <- genes %>%
+  dplyr::select(chromosome.y, start.y, end.y, tx_name, focus) %>%
+  dplyr::filter(!is.na(tx_name)) %>%
+  mutate(chromosome = chromosome.y,
+         start = start.y,
+         end = end.y) %>%
+  dplyr::select(chromosome, start, end, tx_name, focus) %>%
+  distinct()
 
 
 targets <-
   ggplot(target_results, aes(x = start, y = ratio)) +
-  zero_line +
-  minus_line +
-  one_line +
-  geom_point(aes(color = ifelse(ratio < -0.5, 'red', "grey")), size = 1, alpha = 1) +
-  geom_line(aes(color = "grey"), size = 0.001, alpha = 0.5) +
-  scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
-  #geom_segment(
-  #  data = filtered_genes,
-  #  aes(
-  #    x = start,
-  #    y = -1,
-  #    xend = end,
-  #    yend = -1,
-  #    color = "blue"
-  #  ),
-  #  size = 1
-  #) +
-facet_wrap(facets = vars(focus),
-           scales = "free",
-           ncol = 2) +
-  scale_color_identity() +
-  #geom_segment(
-  #  data = segments %>%
-  #    filter(chromosome != focus),
-  #  aes(
-  #    x = loc.start,
-  #    y = seg.mean,
-  #    xend = loc.end,
-  #    yend = seg.mean
-  #  ),
-  #  size = 1
-  #) +
-#geom_label(
-#  data = segments %>%
-#    filter(chromosome != focus),
-#  aes(
-#    x = loc.start + ((loc.end - loc.start) / 2),
-#    y = 0.05,
-#    label = paste0(num.mark, "/", seg.mean)
-#  )
-#) +
-theme
-
-
-pvalues <-
-  ggplot(target_results, aes(x = start, y = -log10(Mann_Whitney))) +
-  p_line_zero +
-  p_line +
-  geom_point(aes(color = ifelse(Mann_Whitney < 0.05, 'red', "grey")), size = 1, alpha = 1) +
-  geom_line(aes(color = "grey"), size = 0.001, alpha = 0.5) +
-  scale_x_continuous(n.breaks = 10, labels = fancy_scientific) +
-  geom_segment(
-    data = segments,
-    aes(
-      x = loc.start,
-      y = seg.mean,
-      xend = min(loc.end, target_results$end),
-      yend = seg.mean
-    ),
-    size = 1
-  ) +
+  geom_point(size = 1, alpha = 1) +
+  geom_line(size = 0.001, alpha = 0.5) +
+  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
   facet_wrap(facets = vars(focus),
              scales = "free",
              ncol = 2) +
   scale_color_identity() +
-  theme
+  theme +
+  get_line(1) +
+  get_line(0) +
+  get_line(-1)
+
+
+
+pvalues <-
+  ggplot(results, aes(
+    x = start,
+    y = -log10(Mann_Whitney),
+    color = focus != chromosome
+  )) +
+  geom_point(size = 1, alpha = 1) +
+  geom_segment(
+    data = segments %>%
+      filter(focus != chromosome),
+    aes(
+      x = loc.start,
+      y = seg.mean,
+      xend = loc.end,
+      yend = seg.mean,
+      
+    )
+  ) +
+  geom_segment(
+    data = genes,
+    aes(
+      x = start,
+      y = 0,
+      xend = end,
+      yend = 0,
+      
+    ),
+    color = "red",
+    size = 1
+  ) +
+  facet_wrap(facets = vars(chromosome),
+             scales = "free",
+             ncol = 2) +
+  theme +
+  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+  scale_color_brewer(palette = "Paired")
 
 
 sample_name <- basename(results_location)
@@ -308,7 +205,7 @@ pdf(
 )
 
 
-grid.arrange(box.plot.chr, box.plot.target, ncol = 1)
+box.plot.chr
 overall
 targets
 pvalues

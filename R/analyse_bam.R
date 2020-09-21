@@ -122,7 +122,7 @@ results <- results %>%
 # Calculate aberrations with circular binary segmentation
 # PMID: 15475419
 CNA.object <- CNA(
-  genomdat = -log10(results$Mann_Whitney),
+  genomdat = results$Mann_Whitney,
   chrom = results$chromosome,
   maploc = results$start,
   data.type = "logratio",
