@@ -157,9 +157,9 @@ pvalues <-
     data = segments,
     aes(
       x = loc.start,
-      y = -log10(seg.mean),
+      y = seg.mean,
       xend = loc.end,
-      yend = -log10(seg.mean),
+      yend = seg.mean,
       
     )
   ) +
