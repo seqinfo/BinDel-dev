@@ -250,17 +250,17 @@ facet_wrap(facets = vars(focus),
            scales = "free",
            ncol = 2) +
   scale_color_identity() +
-  #geom_segment(
-  #  data = segments %>%
-  #    filter(chromosome != focus),
-  #  aes(
-  #    x = loc.start,
-  #    y = seg.mean,
-  #    xend = loc.end,
-  #    yend = seg.mean
-  #  ),
-  #  size = 1
-  #) +
+  geom_segment(
+    data = segments %>%
+      filter(chromosome != focus),
+    aes(
+      x = loc.start,
+      y = seg.mean,
+      xend = loc.end,
+      yend = seg.mean
+    ),
+    size = 1
+  ) +
 #geom_label(
 #  data = segments %>%
 #    filter(chromosome != focus),
