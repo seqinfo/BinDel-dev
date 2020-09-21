@@ -1,4 +1,4 @@
-# SyndromeDetector
+# PPDx
 
 ## Prerequisites
 1. System with Slurm Workload Manager
