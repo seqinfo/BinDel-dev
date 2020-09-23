@@ -105,18 +105,48 @@ results <- results %>%
   ungroup()
 
 
+# HMM posteriors
+results <- results %>%
+  drop_na() %>%
+  arrange(desc(sample, focus, start), .by_group = TRUE)
+
+
+results <- results %>%
+  group_by(chromosome) %>%
+  nest() %>%
+  mutate(HMM = map(data, function(df)
+    posterior(fit(
+      depmix(
+        gc_corrected + ratio + Mann_Whitney ~ 1,
+        family = gaussian(),
+        nstates = 3,
+        data = df
+      )
+    )))) %>%
+  unnest(cols = c(data, HMM)) %>%
+  mutate(HMM = state)
+
+
+# Output sample info only
+results <- results %>%
+  filter(sample == basename(bam_location))  # Keep in the output only the analyzable sample
+
+
 # Clean the output
 results <- results %>%
-  filter(sample == basename(bam_location)) %>%  # Keep in the output only the analyzable sample
-  select(chromosome,
-         start,
-         end,
-         reads,
-         gc,
-         sample,
-         z_score_ref,
-         ratio,
-         Mann_Whitney)
+  select(
+    chromosome,
+    start,
+    end,
+    reads,
+    gc_corrected,
+    gc,
+    sample,
+    z_score_ref,
+    ratio,
+    Mann_Whitney,
+    HMM
+  )
 
 
 # Calculate aberrations with circular binary segmentation
@@ -129,6 +159,7 @@ CNA.object <- CNA(
   sampleid = basename(bam_location)
 )
 
+
 smoothed <- smooth.CNA(
   CNA.object,
   smooth.region = 10,
@@ -137,8 +168,11 @@ smoothed <- smooth.CNA(
   trim = 0.025
 )
 
-segments <- segment(smoothed, verbose = 3, nperm = 1000)
+
+segments <-
+  segment(smoothed, verbose = 1, nperm = 10000)$output %>%
+  filter(loc.start != loc.end)
 
 
 write_tsv(results, paste0(basename(bam_location), ".results.tsv"))
-write_tsv(segments$output, paste0(basename(bam_location), ".segments.tsv"))
+write_tsv(segments, paste0(basename(bam_location), ".segments.tsv"))

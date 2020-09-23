@@ -7,7 +7,7 @@
 ## Dependencies
 1. [BSgenome.Hsapiens.UCSC.hg38](https://anaconda.org/bioconda/bioconductor-bsgenome.hsapiens.ucsc.hg38)
 2. [Cromwell](https://anaconda.org/bioconda/cromwell)
-3. [Fuzzyjoin](https://anaconda.org/conda-forge/r-fuzzyjoin)
+3. [Depmixs4](https://anaconda.org/hcc/r-depmixs4)
 4. [GenomicAlignments](https://anaconda.org/bioconda/bioconductor-genomicalignments)
 5. [here](https://anaconda.org/conda-forge/r-here)
 6. [Rsamtools](https://anaconda.org/bioconda/bioconductor-rsamtools)

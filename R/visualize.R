@@ -132,8 +132,8 @@ genes <-
 
 targets <-
   ggplot(target_results, aes(x = start, y = ratio)) +
-  geom_point(size = 1, alpha = 1) +
-  geom_line(size = 0.001, alpha = 0.5) +
+  geom_point(aes(color = HMM), size = 1, alpha = 1) +
+  geom_line(aes(color = HMM), size = 0.001, alpha = 0.5) +
   scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
   facet_wrap(facets = vars(focus),
              scales = "free",
@@ -153,16 +153,14 @@ pvalues <-
     color = focus != chromosome
   )) +
   geom_point(size = 1, alpha = 1) +
-  geom_segment(
-    data = segments,
-    aes(
-      x = loc.start,
-      y = seg.mean,
-      xend = loc.end,
-      yend = seg.mean,
-      
-    )
-  ) +
+  geom_segment(data = segments,
+               aes(
+                 x = loc.start,
+                 y = seg.mean,
+                 xend = loc.end,
+                 yend = seg.mean,
+                 
+               )) +
   geom_segment(
     data = genes,
     aes(

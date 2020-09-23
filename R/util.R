@@ -1,4 +1,5 @@
 library(BSgenome.Hsapiens.UCSC.hg38)
+library(depmixS4)
 library(DNAcopy)
 library(dplyr)
 library(GenomicAlignments)
@@ -6,6 +7,7 @@ library(purrr)
 library(readr)
 library(Rsamtools)
 library(tidyr)
+
 
 bin_counts <- function(bam_location, bed_location) {
   bed <- read_tsv(bed_location)
