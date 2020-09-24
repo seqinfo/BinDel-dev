@@ -126,7 +126,7 @@ results <- results %>%
         depmixS4::depmix(
           list(ratio ~ 1, Mann_Whitney ~ 1),
           family = list(gaussian(), gaussian()),
-          nstates = 2,
+          nstates = 8,
           data = df,
           ntimes = rep(nrow(df) / total_samples, total_samples)
         )

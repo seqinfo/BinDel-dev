@@ -6,7 +6,7 @@
 #SBATCH --partition=main
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=12G
-#SBATCH --time=05:10:00
+#SBATCH --time=22:10:00
 #SBATCH --partition=amd
 
 # Exit when any command fails

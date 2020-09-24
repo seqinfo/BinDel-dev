@@ -44,7 +44,7 @@ task analyze {
   }
 
   runtime {
-    time: 20
+    time: 30
     cpu: 1
     mem: 10
   }
