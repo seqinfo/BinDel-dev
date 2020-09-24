@@ -105,12 +105,13 @@ results <- results %>%
   dplyr::ungroup()
 
 
-# Output sample info only
-results <- results %>%
-  dplyr::filter(sample == basename(bam_location))  # Keep in the output only the analyzable sample
-
-
 # HMM posteriors
+total_samples <- results %>%
+  dplyr::select(sample) %>%
+  dplyr::distinct(sample) %>%
+  nrow(.)
+
+
 results <- results %>%
   tidyr::drop_na() %>%
   dplyr::arrange(desc(sample, focus, start), .by_group = TRUE)
@@ -122,9 +123,12 @@ results <- results %>%
   dplyr::mutate(HMM = purrr::map(data, function(df)
     depmixS4::posterior(
       depmixS4::fit(
-        depmixS4::depmix(Mann_Whitney ~ 1,
-                         nstates = 2,
-                         data = df)
+        depmixS4::depmix(
+          Mann_Whitney ~ 1,
+          nstates = 2,
+          data = df,
+          ntimes = rep(nrow(df) / total_samples, total_samples)
+        )
         ,
         verbose = 1
       )
@@ -132,6 +136,11 @@ results <- results %>%
   tidyr::unnest(cols = c(data, HMM)) %>%
   dplyr::mutate(HMM = state) %>%
   dplyr::ungroup()
+
+
+# Output sample info only
+results <- results %>%
+  dplyr::filter(sample == basename(bam_location))  # Keep in the output only the analyzable sample
 
 
 # Clean the output
