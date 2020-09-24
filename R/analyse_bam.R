@@ -124,8 +124,8 @@ results <- results %>%
     depmixS4::posterior(
       depmixS4::fit(
         depmixS4::depmix(
-          Mann_Whitney ~ 1,
-          nstates = 7,
+          ratio + Mann_Whitney ~ 1,
+          nstates = 2,
           data = df,
           ntimes = rep(nrow(df) / total_samples, total_samples)
         )
