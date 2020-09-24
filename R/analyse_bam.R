@@ -19,122 +19,124 @@ reference_location <- args[3]
 binned_reads <- bin_counts(bam_location, bed_location) # Bin BAM
 queried_gc <- find_gc(bed_location) # Find GC for the locations
 reference <-
-  read_tsv(reference_location) # Reference samples to be used to calculate z-scores
+  readr::read_tsv(reference_location) # Reference samples to be used to calculate z-scores
 
 
 # Merge: BAM + reference + GC
 merged <- reference %>%
-  mutate(sample = paste0("ref.set.", sample)) %>% # reference samples names must not overlap with the analyzable sample.
-  bind_rows(binned_reads) %>%
-  left_join(queried_gc)
+  dplyr::mutate(sample = paste0("ref.set.", sample)) %>% # reference samples names must not overlap with the analyzable sample.
+  dplyr::bind_rows(binned_reads) %>%
+  dplyr::left_join(queried_gc)
 
 
 # GC-correct (sample wise) (PMID: 28500333 and PMID: 20454671)
 gc_corrected <- merged %>%
-  group_by(sample, gc) %>%
-  mutate(avg_reads_gc_interval = mean(reads)) %>%
-  ungroup() %>%
-  group_by(sample) %>%
-  mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
-  mutate(gc_corrected = reads * weights) %>%
-  filter(!is.na(gc_corrected)) %>%
-  ungroup()
+  dplyr::group_by(sample, gc) %>%
+  dplyr::mutate(avg_reads_gc_interval = mean(reads)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(sample) %>%
+  dplyr::mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
+  dplyr::mutate(gc_corrected = reads * weights) %>%
+  dplyr::filter(!is.na(gc_corrected)) %>%
+  dplyr::ungroup()
 
 
 # Normalize by sample (important to make samples comparable)
 gc_corrected <- gc_corrected %>%
-  group_by(sample) %>%
-  mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
-  ungroup()
+  dplyr::group_by(sample) %>%
+  dplyr::mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
+  dplyr::ungroup()
 
 
 # Normalize by bin length
 bin_length_normalized <- gc_corrected %>%
-  mutate(gc_corrected = gc_corrected / (end - start))
+  dplyr::mutate(gc_corrected = gc_corrected / (end - start))
 
 
 # Calculate reference group statistics
 sample_only <- bin_length_normalized %>%
-  filter(sample == basename(bam_location)) %>%
-  mutate(reference = FALSE)
+  dplyr::filter(sample == basename(bam_location)) %>%
+  dplyr::mutate(reference = FALSE)
 
 
 # Calculate ref set (each) bin SD and mean
 without_sample <- bin_length_normalized %>%
-  filter(sample != basename(bam_location)) %>%
-  ungroup() %>%
-  mutate(reference = TRUE)
+  dplyr::filter(sample != basename(bam_location)) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(reference = TRUE)
 
 
 # Calculate each reference bin i mean
 ref_bins <- without_sample %>%
-  group_by(chromosome, start) %>%
-  summarise(expected = mean(gc_corrected)) %>%
-  ungroup()
+  dplyr::group_by(chromosome, start) %>%
+  dplyr::summarise(expected = mean(gc_corrected)) %>%
+  dplyr::ungroup()
 
 
 reference_bin_info <- without_sample %>%
-  group_by(focus, start, end) %>%
-  mutate(mean_ref_bin = mean(gc_corrected)) %>%
-  mutate(mean_ref_sd = sd(gc_corrected)) %>%
-  ungroup() %>%
-  select(focus, start, end, mean_ref_bin, mean_ref_sd) %>%
-  distinct()
+  dplyr::group_by(focus, start, end) %>%
+  dplyr::mutate(mean_ref_bin = mean(gc_corrected)) %>%
+  dplyr::mutate(mean_ref_sd = sd(gc_corrected)) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(focus, start, end, mean_ref_bin, mean_ref_sd) %>%
+  dplyr::distinct()
 
 
 bin_length_normalized <- without_sample %>%
-  bind_rows(sample_only) %>%
-  left_join(reference_bin_info)
+  dplyr::bind_rows(sample_only) %>%
+  dplyr::left_join(reference_bin_info)
 
 
 # Z-score calculation with reference (bin wise)
 results <- bin_length_normalized %>%
-  mutate(z_score_ref = (gc_corrected - mean_ref_bin) / mean_ref_sd)
+  dplyr::mutate(z_score_ref = (gc_corrected - mean_ref_bin) / mean_ref_sd)
 
 
 # Calculate expected value and actual value ratio
 results <- ref_bins %>%
-  right_join(results, by = c("chromosome", "start")) %>%
-  mutate(ratio = log(gc_corrected / expected, base = 2))
+  dplyr::right_join(results, by = c("chromosome", "start")) %>%
+  dplyr::mutate(ratio = log(gc_corrected / expected, base = 2))
 
 
 # Mann–Whitney U test
 results <- results %>%
-  group_by(chromosome, start) %>%
-  mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>%
-  ungroup()
-
-
-# HMM posteriors
-results <- results %>%
-  drop_na() %>%
-  arrange(desc(sample, focus, start), .by_group = TRUE)
-
-
-results <- results %>%
-  group_by(chromosome) %>%
-  nest() %>%
-  mutate(HMM = map(data, function(df)
-    posterior(fit(
-      depmix(
-        gc_corrected + ratio + Mann_Whitney ~ 1,
-        family = gaussian(),
-        nstates = 3,
-        data = df
-      )
-    )))) %>%
-  unnest(cols = c(data, HMM)) %>%
-  mutate(HMM = state)
+  dplyr::group_by(chromosome, start) %>%
+  dplyr::mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>%
+  dplyr::ungroup()
 
 
 # Output sample info only
 results <- results %>%
-  filter(sample == basename(bam_location))  # Keep in the output only the analyzable sample
+  dplyr::filter(sample == basename(bam_location))  # Keep in the output only the analyzable sample
+
+
+# HMM posteriors
+results <- results %>%
+  tidyr::drop_na() %>%
+  dplyr::arrange(desc(sample, focus, start), .by_group = TRUE)
+
+
+results <- results %>%
+  dplyr::group_by(focus) %>%
+  tidyr::nest() %>%
+  dplyr::mutate(HMM = purrr::map(data, function(df)
+    depmixS4::posterior(
+      depmixS4::fit(
+        depmixS4::depmix(Mann_Whitney ~ 1,
+                         nstates = 2,
+                         data = df)
+        ,
+        verbose = 1
+      )
+    ))) %>%
+  tidyr::unnest(cols = c(data, HMM)) %>%
+  dplyr::mutate(HMM = state) %>%
+  dplyr::ungroup()
 
 
 # Clean the output
 results <- results %>%
-  select(
+  dplyr::select(
     chromosome,
     start,
     end,
@@ -151,7 +153,7 @@ results <- results %>%
 
 # Calculate aberrations with circular binary segmentation
 # PMID: 15475419
-CNA.object <- CNA(
+CNA.object <- DNAcopy::CNA(
   genomdat = -log10(results$Mann_Whitney),
   chrom = results$chromosome,
   maploc = results$start,
@@ -160,7 +162,7 @@ CNA.object <- CNA(
 )
 
 
-smoothed <- smooth.CNA(
+smoothed <- DNAcopy::smooth.CNA(
   CNA.object,
   smooth.region = 10,
   outlier.SD.scale = 4,
@@ -170,9 +172,9 @@ smoothed <- smooth.CNA(
 
 
 segments <-
-  segment(smoothed, verbose = 1, nperm = 10000)$output %>%
-  filter(loc.start != loc.end)
+  DNAcopy::segment(smoothed, verbose = 1, nperm = 10000)$output %>%
+  dplyr::filter(loc.start != loc.end)
 
 
-write_tsv(results, paste0(basename(bam_location), ".results.tsv"))
-write_tsv(segments, paste0(basename(bam_location), ".segments.tsv"))
+readr::write_tsv(results, paste0(basename(bam_location), ".results.tsv"))
+readr::write_tsv(segments, paste0(basename(bam_location), ".segments.tsv"))
