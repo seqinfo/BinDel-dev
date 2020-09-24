@@ -125,7 +125,7 @@ results <- results %>%
       depmixS4::fit(
         depmixS4::depmix(
           Mann_Whitney ~ 1,
-          nstates = 2,
+          nstates = 7,
           data = df,
           ntimes = rep(nrow(df) / total_samples, total_samples)
         )
