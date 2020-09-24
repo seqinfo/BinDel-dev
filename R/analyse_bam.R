@@ -124,7 +124,8 @@ results <- results %>%
     depmixS4::posterior(
       depmixS4::fit(
         depmixS4::depmix(
-          ratio + Mann_Whitney ~ 1,
+          list(ratio ~ 1, Mann_Whitney ~ 1),
+          family = list(gaussian(), gaussian()),
           nstates = 2,
           data = df,
           ntimes = rep(nrow(df) / total_samples, total_samples)
