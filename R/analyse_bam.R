@@ -168,8 +168,7 @@ results <- results %>%
     z_score_ref,
     ratio,
     Mann_Whitney,
-    HMM,
-    focus
+    HMM
   )
 
 
