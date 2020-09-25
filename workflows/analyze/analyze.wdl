@@ -25,6 +25,7 @@ workflow Main {
   output {
     Array[File] scores = analyze.results 
     Array[File] segments = analyze.segments
+    Array[File] metrics = analyze.metrics
     Array[File] plots = visualize.plots 
     Array[File] genes = visualize.genes 
   }
@@ -51,6 +52,7 @@ task analyze {
     output {
      File results = glob("*.results.tsv")[0]
      File segments = glob("*.segments.tsv")[0]
+     File metrics = glob("*.metrics.tsv")[0]
   }
 }
 

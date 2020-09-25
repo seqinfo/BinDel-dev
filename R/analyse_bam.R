@@ -126,7 +126,7 @@ results <- results %>%
         depmixS4::depmix(
           list(ratio ~ 1, Mann_Whitney ~ 1),
           family = list(gaussian(), gaussian()),
-          nstates = 8,
+          nstates = 2,
           data = df,
           ntimes = rep(nrow(df) / total_samples, total_samples)
         )
@@ -144,6 +144,17 @@ results <- results %>%
   dplyr::filter(sample == basename(bam_location))  # Keep in the output only the analyzable sample
 
 
+MW_count <- results %>% 
+  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3) * sign(ratio)) %>% 
+  dplyr::group_by(focus, MW) %>% 
+  dplyr::summarise(count = n()) %>% 
+  dplyr::mutate(sign = sign(MW), sum = count * MW) %>% 
+  dplyr::group_by(sign, focus) %>% 
+  dplyr::summarise(res = sum(MW)) %>% 
+  dplyr::ungroup() %>% 
+  dplyr::mutate(sample = basename(bam_location))
+
+
 # Clean the output
 results <- results %>%
   dplyr::select(
@@ -157,7 +168,8 @@ results <- results %>%
     z_score_ref,
     ratio,
     Mann_Whitney,
-    HMM
+    HMM,
+    focus
   )
 
 
@@ -187,4 +199,5 @@ segments <-
 
 
 readr::write_tsv(results, paste0(basename(bam_location), ".results.tsv"))
+readr::write_tsv(MW_count, paste0(basename(bam_location), ".metrics.tsv"))
 readr::write_tsv(segments, paste0(basename(bam_location), ".segments.tsv"))
