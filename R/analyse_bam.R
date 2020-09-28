@@ -132,17 +132,25 @@ results <- results %>%
   dplyr::ungroup()
 
 
+MW_count <- results %>%
+  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
+  dplyr::group_by(sample, reference, focus, sign, HMM) %>%
+  dplyr::summarise(sum = sum(MW) / n()) %>%
+  dplyr::ungroup()
+
+MW_stats <- MW_count %>% 
+  filter(reference) %>% 
+  dplyr::group_by(focus, sign, HMM) %>%
+  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>% 
+  ungroup() %>% 
+  right_join(MW_count) %>% 
+  filter(!reference) %>% 
+  mutate((sum - mean_sum) / sd_sum)
+
+
 # Output sample info only
 results <- results %>%
   dplyr::filter(sample == basename(bam_location))  # Keep in the output only the analyzable sample
-
-
-MW_count <- results %>%
-  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
-  dplyr::group_by(focus, sign, HMM) %>%
-  dplyr::summarise(sum = sum(MW)) %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(sample = basename(bam_location))
 
 
 # Clean the output
@@ -188,5 +196,5 @@ segments <-
 
 
 readr::write_tsv(results, paste0(basename(bam_location), ".results.tsv"))
-readr::write_tsv(MW_count, paste0(basename(bam_location), ".metrics.tsv"))
+readr::write_tsv(MW_stats, paste0(basename(bam_location), ".metrics.tsv"))
 readr::write_tsv(segments, paste0(basename(bam_location), ".segments.tsv"))
