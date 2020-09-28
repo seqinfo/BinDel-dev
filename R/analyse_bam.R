@@ -105,13 +105,7 @@ results <- results %>%
   dplyr::ungroup()
 
 
-# HMM posteriors
-total_samples <- results %>%
-  dplyr::select(sample) %>%
-  dplyr::distinct(sample) %>%
-  nrow(.)
-
-
+# HMM
 results <- results %>%
   tidyr::drop_na() %>%
   dplyr::arrange(desc(sample, focus, start), .by_group = TRUE)
@@ -128,7 +122,6 @@ results <- results %>%
           family = list(gaussian(), gaussian()),
           nstates = 2,
           data = df,
-          ntimes = rep(nrow(df) / total_samples, total_samples)
         )
         ,
         verbose = 1
@@ -144,14 +137,14 @@ results <- results %>%
   dplyr::filter(sample == basename(bam_location))  # Keep in the output only the analyzable sample
 
 
-MW_count <- results %>% 
-  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3) * sign(ratio)) %>% 
-  dplyr::group_by(focus, MW) %>% 
-  dplyr::summarise(count = n()) %>% 
-  dplyr::mutate(sign = sign(MW), sum = count * MW) %>% 
-  dplyr::group_by(sign, focus) %>% 
-  dplyr::summarise(res = sum(MW)) %>% 
-  dplyr::ungroup() %>% 
+MW_count <- results %>%
+  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3) * sign(ratio)) %>%
+  dplyr::group_by(focus, MW) %>%
+  dplyr::summarise(count = n()) %>%
+  dplyr::mutate(sign = sign(MW), sum = count * MW) %>%
+  dplyr::group_by(sign, focus) %>%
+  dplyr::summarise(res = sum(MW)) %>%
+  dplyr::ungroup() %>%
   dplyr::mutate(sample = basename(bam_location))
 
 
