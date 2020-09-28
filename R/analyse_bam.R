@@ -138,12 +138,9 @@ results <- results %>%
 
 
 MW_count <- results %>%
-  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3) * sign(ratio)) %>%
-  dplyr::group_by(focus, MW) %>%
-  dplyr::summarise(count = n()) %>%
-  dplyr::mutate(sign = sign(MW), sum = count * MW) %>%
-  dplyr::group_by(sign, focus) %>%
-  dplyr::summarise(res = sum(MW)) %>%
+  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
+  dplyr::group_by(focus, sign, HMM) %>%
+  dplyr::summarise(sum = sum(MW)) %>%
   dplyr::ungroup() %>%
   dplyr::mutate(sample = basename(bam_location))
 
