@@ -107,6 +107,12 @@ results <- results %>%
 
 
 # HMM
+total_samples <- results %>%
+  dplyr::select(sample) %>%
+  dplyr::distinct(sample) %>%
+  nrow(.)
+
+
 results <- results %>%
   tidyr::drop_na() %>%
   dplyr::arrange(desc(sample, focus, start), .by_group = TRUE)
@@ -123,6 +129,7 @@ results <- results %>%
           family = list(gaussian(), gaussian()),
           nstates = 2,
           data = df,
+          ntimes = rep(nrow(df) / total_samples, total_samples)
         )
         ,
         verbose = 1
