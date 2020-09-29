@@ -16,7 +16,7 @@ bed_location <- args[2]
 reference_location <- args[3]
 
 
-sample_name = basename(bam_location)
+sample_name <- basename(bam_location)
 binned_reads <- bin_counts(bam_location, bed_location) # Bin BAM
 queried_gc <- find_gc(bed_location) # Find GC for the locations
 reference <-
@@ -56,7 +56,7 @@ bin_length_normalized <- gc_corrected %>%
 
 # Calculate reference group statistics
 sample_only <- bin_length_normalized %>%
-  dplyr::filter(sample == sample_name) %>%
+  dplyr::filter(sample_name) %>%
   dplyr::mutate(reference = FALSE)
 
 
@@ -99,22 +99,21 @@ results <- ref_bins %>%
   dplyr::mutate(ratio = log(gc_corrected / expected, base = 2))
 
 
-# HMM
-results <- results %>%
-  filter(chromosome != focus) %>% 
-  dplyr::arrange(desc(reference, sample, focus, start), .by_group = TRUE)
-
-
 # Mann–Whitney U test
 results <- results %>%
   dplyr::group_by(chromosome, start) %>%
   dplyr::mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>%
-  dplyr::ungroup() %>% 
-  tidyr::drop_na()
+  dplyr::ungroup()
+
+
+# HMM
+results <- results %>%
+  tidyr::drop_na() %>%
+  dplyr::arrange(desc(sample, focus, start), .by_group = TRUE)
 
 
 results <- results %>%
-  dplyr::group_by(sample, focus) %>%
+  dplyr::group_by(focus) %>%
   tidyr::nest() %>%
   dplyr::mutate(HMM = purrr::map(data, function(df)
     depmixS4::posterior(
@@ -123,8 +122,9 @@ results <- results %>%
           list(ratio ~ 1, Mann_Whitney ~ 1),
           family = list(gaussian(), gaussian()),
           nstates = 2,
-          data = df
-        )
+          data = df,
+        ),
+        verbose = 1
       )
     ))) %>%
   tidyr::unnest(cols = c(data, HMM)) %>%
@@ -134,18 +134,18 @@ results <- results %>%
 
 MW_count <- results %>%
   dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
-  dplyr::group_by(sample, focus, sign, HMM) %>%
-  dplyr::summarise(sum = sum(MW) / n(), count = n()) %>%
+  dplyr::group_by(sample, reference, focus, sign, HMM) %>%
+  dplyr::summarise(sum = sum(MW) / n()) %>%
   dplyr::ungroup()
 
 
-MW_stats <- MW_count %>%
-  filter(sample != sample_name) %>%
+MW_stats <- MW_count %>% 
+  filter(reference) %>% 
   dplyr::group_by(focus, sign, HMM) %>%
-  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>%
-  ungroup() %>%
-  right_join(MW_count) %>%
-  filter(sample == sample_name) %>%
+  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>% 
+  ungroup() %>% 
+  right_join(MW_count) %>% 
+  filter(!reference) %>% 
   mutate((sum - mean_sum) / sd_sum)
 
 
@@ -178,7 +178,7 @@ CNA.object <- DNAcopy::CNA(
   chrom = results$chromosome,
   maploc = results$start,
   data.type = "logratio",
-  sampleid = sample_name
+  sampleid = basename(bam_location)
 )
 
 
