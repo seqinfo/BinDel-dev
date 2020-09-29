@@ -16,6 +16,7 @@ bed_location <- args[2]
 reference_location <- args[3]
 
 
+sample_name = basename(bam_location)
 binned_reads <- bin_counts(bam_location, bed_location) # Bin BAM
 queried_gc <- find_gc(bed_location) # Find GC for the locations
 reference <-
@@ -55,13 +56,13 @@ bin_length_normalized <- gc_corrected %>%
 
 # Calculate reference group statistics
 sample_only <- bin_length_normalized %>%
-  dplyr::filter(sample == basename(bam_location)) %>%
+  dplyr::filter(sample == sample_name) %>%
   dplyr::mutate(reference = FALSE)
 
 
 # Calculate ref set (each) bin SD and mean
 without_sample <- bin_length_normalized %>%
-  dplyr::filter(sample != basename(bam_location)) %>%
+  dplyr::filter(sample != sample_name) %>%
   dplyr::ungroup() %>%
   dplyr::mutate(reference = TRUE)
 
@@ -140,18 +141,18 @@ MW_count <- results %>%
 
 
 MW_stats <- MW_count %>% 
-  filter(sample != basename(bam_location)) %>% 
-  dplyr::group_by(focus, sign) %>%
+  filter(sample != sample_name) %>% 
+  dplyr::group_by(focus, sign, HMM) %>%
   summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>% 
   ungroup() %>% 
   right_join(MW_count) %>% 
-  filter(sample == basename(bam_location)) %>% 
+  filter(sample == sample_name) %>% 
   mutate((sum - mean_sum) / sd_sum)
 
 
 # Output sample info only
 results <- results %>%
-  dplyr::filter(sample == basename(bam_location))  # Keep in the output only the analyzable sample
+  dplyr::filter(sample == sample_name)  # Keep in the output only the analyzable sample
 
 
 # Clean the output
@@ -178,7 +179,7 @@ CNA.object <- DNAcopy::CNA(
   chrom = results$chromosome,
   maploc = results$start,
   data.type = "logratio",
-  sampleid = basename(bam_location)
+  sampleid = sample_name
 )
 
 
@@ -196,6 +197,6 @@ segments <-
   dplyr::filter(loc.start != loc.end)
 
 
-readr::write_tsv(results, paste0(basename(bam_location), ".results.tsv"))
-readr::write_tsv(MW_stats, paste0(basename(bam_location), ".metrics.tsv"))
-readr::write_tsv(segments, paste0(basename(bam_location), ".segments.tsv"))
+readr::write_tsv(results, paste0(sample_name, ".results.tsv"))
+readr::write_tsv(MW_stats, paste0(sample_name, ".metrics.tsv"))
+readr::write_tsv(segments, paste0(sample_name, ".segments.tsv"))
