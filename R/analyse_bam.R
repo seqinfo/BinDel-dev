@@ -135,7 +135,7 @@ results <- results %>%
 MW_count <- results %>%
   dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
   dplyr::group_by(sample, reference, focus, sign, HMM) %>%
-  dplyr::summarise(sum = sum(MW) / n()) %>%
+  dplyr::summarise(sum = sum(MW) / n(), count = n()) %>%
   dplyr::ungroup()
 
 
