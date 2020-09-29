@@ -110,7 +110,7 @@ results <- results %>%
   dplyr::group_by(chromosome, start) %>%
   dplyr::mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>%
   dplyr::ungroup() %>% 
-  tidyr::drop_na() %>%
+  tidyr::drop_na()
 
 
 results <- results %>%
