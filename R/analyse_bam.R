@@ -114,7 +114,7 @@ results <- results %>%
 
 
 results <- results %>%
-  dplyr::group_by(focus) %>%
+  dplyr::group_by(sample, focus) %>%
   tidyr::nest() %>%
   dplyr::mutate(HMM = purrr::map(data, function(df)
     depmixS4::posterior(
@@ -125,8 +125,6 @@ results <- results %>%
           nstates = 2,
           data = df
         )
-        ,
-        verbose = 1
       )
     ))) %>%
   tidyr::unnest(cols = c(data, HMM)) %>%
