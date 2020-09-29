@@ -140,12 +140,12 @@ MW_count <- results %>%
 
 
 MW_stats <- MW_count %>% 
-  filter(reference) %>% 
+  filter(sample != basename(bam_location)) %>% 
   dplyr::group_by(focus, sign) %>%
   summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>% 
   ungroup() %>% 
   right_join(MW_count) %>% 
-  filter(!reference) %>% 
+  filter(sample == basename(bam_location)) %>% 
   mutate((sum - mean_sum) / sd_sum)
 
 
