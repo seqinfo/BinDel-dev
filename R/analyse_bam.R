@@ -134,14 +134,14 @@ results <- results %>%
 
 MW_count <- results %>%
   dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
-  dplyr::group_by(sample, reference, focus, sign) %>%
+  dplyr::group_by(sample, reference, focus, sign, HMM) %>%
   dplyr::summarise(sum = sum(MW) / n()) %>%
   dplyr::ungroup()
 
 
 MW_stats <- MW_count %>% 
   filter(reference) %>% 
-  dplyr::group_by(focus, sign) %>%
+  dplyr::group_by(focus, sign, HMM) %>%
   summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>% 
   ungroup() %>% 
   right_join(MW_count) %>% 
