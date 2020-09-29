@@ -109,7 +109,7 @@ results <- results %>%
 # HMM
 results <- results %>%
   tidyr::drop_na() %>%
-  dplyr::arrange(desc(sample, focus, start), .by_group = TRUE)
+  dplyr::arrange(desc(reference, sample, focus, start), .by_group = TRUE)
 
 
 results <- results %>%
