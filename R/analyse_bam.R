@@ -103,7 +103,9 @@ results <- ref_bins %>%
 results <- results %>%
   dplyr::group_by(chromosome, start) %>%
   dplyr::mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>%
-  dplyr::ungroup()
+  dplyr::ungroup() %>% 
+  tidyr::drop_na() %>%
+  dplyr::arrange(desc(focus, start), .by_group = TRUE)
 
 
 MW_count <- results %>%
@@ -127,12 +129,8 @@ MW_stats <- MW_count %>%
 results <- results %>%
   dplyr::filter(sample == sample_name)  # Keep in the output only the analyzable sample
 
+
 # HMM
-results <- results %>%
-  tidyr::drop_na() %>%
-  dplyr::arrange(desc(focus, start), .by_group = TRUE)
-
-
 results <- results %>%
   dplyr::group_by(focus) %>%
   tidyr::nest() %>%
