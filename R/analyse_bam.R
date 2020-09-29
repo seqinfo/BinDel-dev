@@ -102,7 +102,6 @@ results <- ref_bins %>%
 # HMM
 results <- results %>%
   filter(chromosome != focus) %>% 
-  tidyr::drop_na() %>%
   dplyr::arrange(desc(reference, sample, focus, start), .by_group = TRUE)
 
 
@@ -110,7 +109,8 @@ results <- results %>%
 results <- results %>%
   dplyr::group_by(chromosome, start) %>%
   dplyr::mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>%
-  dplyr::ungroup()
+  dplyr::ungroup() %>% 
+  tidyr::drop_na() %>%
 
 
 results <- results %>%
