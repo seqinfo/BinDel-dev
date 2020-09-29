@@ -56,7 +56,7 @@ bin_length_normalized <- gc_corrected %>%
 
 # Calculate reference group statistics
 sample_only <- bin_length_normalized %>%
-  dplyr::filter(sample_name) %>%
+  dplyr::filter(sample == sample_name) %>%
   dplyr::mutate(reference = FALSE)
 
 
@@ -106,10 +106,31 @@ results <- results %>%
   dplyr::ungroup()
 
 
+MW_count <- results %>%
+  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
+  dplyr::group_by(sample, reference, focus, sign) %>%
+  dplyr::summarise(sum = sum(MW) / n()) %>%
+  dplyr::ungroup()
+
+
+MW_stats <- MW_count %>% 
+  filter(reference) %>% 
+  dplyr::group_by(focus, sign) %>%
+  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>% 
+  ungroup() %>% 
+  right_join(MW_count) %>% 
+  filter(!reference) %>% 
+  mutate((sum - mean_sum) / sd_sum)
+
+
+# Output sample info only
+results <- results %>%
+  dplyr::filter(sample == sample_name)  # Keep in the output only the analyzable sample
+
 # HMM
 results <- results %>%
   tidyr::drop_na() %>%
-  dplyr::arrange(desc(reference, sample, focus, start), .by_group = TRUE)
+  dplyr::arrange(desc(focus, start), .by_group = TRUE)
 
 
 results <- results %>%
@@ -123,35 +144,12 @@ results <- results %>%
           family = list(gaussian(), gaussian()),
           nstates = 2,
           data = df,
-        ),
-        verbose = 1
+        )
       )
     ))) %>%
   tidyr::unnest(cols = c(data, HMM)) %>%
   dplyr::mutate(HMM = state) %>%
   dplyr::ungroup()
-
-
-MW_count <- results %>%
-  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
-  dplyr::group_by(sample, reference, focus, sign, HMM) %>%
-  dplyr::summarise(sum = sum(MW) / n()) %>%
-  dplyr::ungroup()
-
-
-MW_stats <- MW_count %>% 
-  filter(reference) %>% 
-  dplyr::group_by(focus, sign, HMM) %>%
-  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>% 
-  ungroup() %>% 
-  right_join(MW_count) %>% 
-  filter(!reference) %>% 
-  mutate((sum - mean_sum) / sd_sum)
-
-
-# Output sample info only
-results <- results %>%
-  dplyr::filter(sample == sample_name)  # Keep in the output only the analyzable sample
 
 
 # Clean the output
