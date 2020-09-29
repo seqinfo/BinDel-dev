@@ -107,49 +107,42 @@ results <- results %>%
 
 
 # HMM
-total_samples <- results %>%
-  dplyr::select(sample) %>%
-  dplyr::distinct(sample) %>%
-  nrow(.)
-
-
 results <- results %>%
   tidyr::drop_na() %>%
   dplyr::arrange(desc(sample, focus, start), .by_group = TRUE)
 
 
-results <- results %>%
-  dplyr::group_by(focus) %>%
-  tidyr::nest() %>%
-  dplyr::mutate(HMM = purrr::map(data, function(df)
-    depmixS4::posterior(
-      depmixS4::fit(
-        depmixS4::depmix(
-          list(ratio ~ 1, Mann_Whitney ~ 1),
-          family = list(gaussian(), gaussian()),
-          nstates = 2,
-          data = df,
-          ntimes = rep(nrow(df) / total_samples, total_samples)
-        )
-        ,
-        verbose = 1
-      )
-    ))) %>%
-  tidyr::unnest(cols = c(data, HMM)) %>%
-  dplyr::mutate(HMM = state) %>%
-  dplyr::ungroup()
+#results <- results %>%
+#  dplyr::group_by(focus) %>%
+#  tidyr::nest() %>%
+#  dplyr::mutate(HMM = purrr::map(data, function(df)
+#    depmixS4::posterior(
+#      depmixS4::fit(
+#        depmixS4::depmix(
+#          list(ratio ~ 1, Mann_Whitney ~ 1),
+#          family = list(gaussian(), gaussian()),
+#          nstates = 2,
+#          data = df
+#        )
+#        ,
+#        verbose = 1
+#      )
+#    ))) %>%
+#  tidyr::unnest(cols = c(data, HMM)) %>%
+#  dplyr::mutate(HMM = state) %>%
+#  dplyr::ungroup()
 
 
 MW_count <- results %>%
   dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
-  dplyr::group_by(sample, focus, sign, HMM) %>%
+  dplyr::group_by(sample, focus, sign) %>%
   dplyr::summarise(sum = sum(MW) / n(), count = n()) %>%
   dplyr::ungroup()
 
 
 MW_stats <- MW_count %>% 
   filter(sample != sample_name) %>% 
-  dplyr::group_by(focus, sign, HMM) %>%
+  dplyr::group_by(focus, sign) %>%
   summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>% 
   ungroup() %>% 
   right_join(MW_count) %>% 
@@ -160,6 +153,27 @@ MW_stats <- MW_count %>%
 # Output sample info only
 results <- results %>%
   dplyr::filter(sample == sample_name)  # Keep in the output only the analyzable sample
+
+
+results <- results %>%
+  dplyr::group_by(sample, focus) %>%
+  tidyr::nest() %>%
+  dplyr::mutate(HMM = purrr::map(data, function(df)
+    depmixS4::posterior(
+      depmixS4::fit(
+        depmixS4::depmix(
+          list(ratio ~ 1, Mann_Whitney ~ 1),
+          family = list(gaussian(), gaussian()),
+          nstates = 2,
+          data = df
+        )
+        ,
+        verbose = 1
+      )
+    ))) %>%
+  tidyr::unnest(cols = c(data, HMM)) %>%
+  dplyr::mutate(HMM = state) %>%
+  dplyr::ungroup()
 
 
 # Clean the output
