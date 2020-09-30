@@ -130,7 +130,7 @@ if (system(command) == 0) {
 MW_count <- results %>%
   dplyr::mutate(MW = Mann_Whitney, sign = sign(ratio)) %>%
   dplyr::group_by(sample, reference, focus, sign, HMM) %>%
-  dplyr::summarise(sum = sum(MW) / n()) %>%
+  dplyr::summarise(sum = sum(MW)) %>%
   dplyr::ungroup()
 
 
