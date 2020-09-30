@@ -2,7 +2,7 @@ library(tidyverse)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 library(scales)
 
-args = commandArgs(trailingOnly = TRUE)
+args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) != 3) {
   stop(
@@ -18,7 +18,7 @@ regions_of_interest_location <- args[3]
 
 results <- read_tsv(results_location) %>%
   dplyr::left_join((read_tsv(regions_of_interest_location))
-                   , by =  c("chromosome", "start", "end")) %>%
+    , by = c("chromosome", "start", "end")) %>%
   separate(
     chromosome,
     remove = F,
@@ -51,8 +51,6 @@ segments <- read_tsv(segments_location) %>%
   dplyr::arrange(chr_number)
 
 
-
-
 get_line <- function(y) {
   return(geom_hline(
     yintercept = y,
@@ -82,21 +80,20 @@ theme <- theme_bw() +
   )
 
 
-
 box.plot.chr <-
   ggplot(results %>% filter(chromosome == focus),
          aes(fct_reorder(focus, chr_number), ratio)) +
-  geom_jitter(
-    shape = 16,
-    position = position_jitter(0.2),
-    aes(color = chromosome),
-    alpha = 0.3
-  ) +
-  geom_boxplot(aes(fill = chromosome), alpha = 0.5) +
-  theme +
-  get_line(1) +
-  get_line(0) +
-  get_line(-1)
+    geom_jitter(
+      shape = 16,
+      position = position_jitter(0.2),
+      aes(color = chromosome),
+      alpha = 0.3
+    ) +
+    geom_boxplot(aes(fill = chromosome), alpha = 0.5) +
+    theme +
+    get_line(1) +
+    get_line(0) +
+    get_line(-1)
 
 
 overall <-
@@ -105,17 +102,16 @@ overall <-
     y = ratio,
     color = focus != chromosome
   )) +
-  geom_point(size = 1, alpha = 1) +
-  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
-  facet_wrap(facets = vars(chr_number),
-             scales = "free",
-             ncol = 2) +
-  scale_color_brewer(palette = "Paired") +
-  theme +
-  get_line(1) +
-  get_line(0) +
-  get_line(-1)
-
+    geom_point(size = 1, alpha = 1) +
+    scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+    facet_wrap(facets = vars(chr_number),
+               scales = "free",
+               ncol = 2) +
+    scale_color_brewer(palette = "Paired") +
+    theme +
+    get_line(1) +
+    get_line(0) +
+    get_line(-1)
 
 
 target_results <- results %>%
@@ -127,28 +123,27 @@ temp <- target_results %>%
 
 genes <-
   as.data.frame(transcripts(TxDb.Hsapiens.UCSC.hg38.knownGene)) %>%
-  dplyr::mutate(chromosome = seqnames) %>%
-  dplyr::right_join(temp, by = "chromosome")
+    dplyr::mutate(chromosome = seqnames) %>%
+    dplyr::right_join(temp, by = "chromosome")
 
 
 targets <-
   ggplot(target_results, aes(x = start, y = ratio)) +
-  geom_line(size = 0.001,
-            alpha = 0.5,
-            color = "grey") +
-  geom_point(aes(x = start, y = ratio, color = HMM),
-             size = 1,
-             alpha = 1) +
-  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
-  facet_wrap(facets = vars(focus),
-             scales = "free",
-             ncol = 2) +
-  scale_color_manual(values = c("S0" = "red", "S1" = "black", "S2" = "purple")) +
-  theme +
-  get_line(1) +
-  get_line(0) +
-  get_line(-1)
-
+    geom_line(size = 0.001,
+              alpha = 0.5,
+              color = "grey") +
+    geom_point(aes(x = start, y = ratio, color = HMM),
+               size = 1,
+               alpha = 1) +
+    scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+    facet_wrap(facets = vars(focus),
+               scales = "free",
+               ncol = 2) +
+    scale_color_manual(values = c("S0" = "red", "S1" = "black", "S2" = "purple")) +
+    theme +
+    get_line(1) +
+    get_line(0) +
+    get_line(-1)
 
 
 pvalues <-
@@ -158,33 +153,33 @@ pvalues <-
            y = Mann_Whitney,
            color = focus != chromosome
          )) +
-  geom_point(size = 1, alpha = 1) +
-  geom_segment(data = segments,
-               aes(
-                 x = loc.start,
-                 y = seg.mean,
-                 xend = loc.end,
-                 yend = seg.mean,
-                 
-               )) +
-  geom_segment(
-    data = genes,
-    aes(
-      x = start,
-      y = 0,
-      xend = end,
-      yend = 0,
-      
-    ),
-    color = "red",
-    size = 1
-  ) +
-  facet_wrap(facets = vars(chromosome),
-             scales = "free",
-             ncol = 2) +
-  theme +
-  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
-  scale_color_brewer(palette = "Paired")
+    geom_point(size = 1, alpha = 1) +
+    geom_segment(data = segments,
+                 aes(
+                   x = loc.start,
+                   y = seg.mean,
+                   xend = loc.end,
+                   yend = seg.mean,
+
+                 )) +
+    geom_segment(
+      data = genes,
+      aes(
+        x = start,
+        y = 0,
+        xend = end,
+        yend = 0,
+
+      ),
+      color = "red",
+      size = 1
+    ) +
+    facet_wrap(facets = vars(chromosome),
+               scales = "free",
+               ncol = 2) +
+    theme +
+    scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+    scale_color_brewer(palette = "Paired")
 
 
 sample_name <- basename(results_location)

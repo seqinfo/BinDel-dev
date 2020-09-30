@@ -1,7 +1,7 @@
 source(here::here("R/util.R"))
 hmm_script_location <- here::here("R/hmm.py")
 
-args = commandArgs(trailingOnly = TRUE)
+args <- commandArgs(trailingOnly = TRUE)
 
 
 if (length(args) != 3) {
@@ -12,7 +12,7 @@ if (length(args) != 3) {
 }
 
 
-bam_location <-  args[1]
+bam_location <- args[1]
 bed_location <- args[2]
 reference_location <- args[3]
 
@@ -103,32 +103,50 @@ results <- ref_bins %>%
 # Mann–Whitney U test
 results <- results %>%
   dplyr::group_by(chromosome, start) %>%
-  dplyr::mutate(Mann_Whitney = wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value) %>%
-  dplyr::ungroup() %>% 
-  tidyr::drop_na() %>%
-  dplyr::arrange(desc(focus, start), .by_group = TRUE)
+  dplyr::mutate(Mann_Whitney = -log10(wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value)) %>%
+  dplyr::ungroup()
 
 
 MW_count <- results %>%
-  dplyr::mutate(MW = round(-log10(Mann_Whitney), 3), sign = sign(ratio)) %>%
-  dplyr::group_by(sample, focus, sign) %>%
+  dplyr::mutate(MW = Mann_Whitney, sign = sign(ratio)) %>%
+  dplyr::group_by(sample, reference, focus, sign) %>%
   dplyr::summarise(sum = sum(MW) / n()) %>%
   dplyr::ungroup()
 
 
-MW_stats <- MW_count %>% 
-  filter(reference) %>% 
+MW_stats <- MW_count %>%
+  filter(reference) %>%
   dplyr::group_by(focus, sign) %>%
-  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>% 
-  ungroup() %>% 
-  right_join(MW_count) %>% 
-  filter(!reference) %>% 
+  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>%
+  ungroup() %>%
+  right_join(MW_count) %>%
+  filter(!reference) %>%
   mutate((sum - mean_sum) / sd_sum)
 
 
-# Output sample info only
+# Continue with sample only
 results <- results %>%
-  dplyr::filter(sample == sample_name)  # Keep in the output only the analyzable sample
+  dplyr::filter(sample == sample_name) %>%
+  tidyr::drop_na() %>%
+  dplyr::arrange(desc(focus, start))
+
+
+# HMM
+temp_tsv <- paste0(sample_name, ".temp")
+hmm_temp <- paste0(temp_tsv, ".hmm")
+
+
+write_tsv(results, temp_tsv)
+command <-
+  paste("python", hmm_script_location, "-i", temp_tsv, "-o", hmm_temp)
+
+
+if (system(command) == 0) {
+  results <- read_tsv(hmm_temp)
+
+} else {
+  stop("hmm.py did not finish with expected exit code!")
+}
 
 
 # Clean the output
@@ -137,14 +155,14 @@ results <- results %>%
     chromosome,
     start,
     end,
-    focus,
     reads,
     gc_corrected,
     gc,
     sample,
     z_score_ref,
     ratio,
-    Mann_Whitney
+    Mann_Whitney,
+    HMM
   )
 
 
@@ -170,7 +188,7 @@ smoothed <- DNAcopy::smooth.CNA(
 
 segments <-
   DNAcopy::segment(smoothed, verbose = 1, nperm = 10000)$output %>%
-  dplyr::filter(loc.start != loc.end)
+    dplyr::filter(loc.start != loc.end)
 
 
 readr::write_tsv(results, paste0(sample_name, ".results.tsv"))
