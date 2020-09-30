@@ -104,31 +104,9 @@ results <- ref_bins %>%
 results <- results %>%
   dplyr::group_by(chromosome, start) %>%
   dplyr::mutate(Mann_Whitney = -log10(wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value)) %>%
-  dplyr::ungroup()
-
-
-MW_count <- results %>%
-  dplyr::mutate(MW = Mann_Whitney, sign = sign(ratio)) %>%
-  dplyr::group_by(sample, reference, focus, sign) %>%
-  dplyr::summarise(sum = sum(MW) / n()) %>%
-  dplyr::ungroup()
-
-
-MW_stats <- MW_count %>%
-  filter(reference) %>%
-  dplyr::group_by(focus, sign) %>%
-  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>%
-  ungroup() %>%
-  right_join(MW_count) %>%
-  filter(!reference) %>%
-  mutate((sum - mean_sum) / sd_sum)
-
-
-# Continue with sample only
-results <- results %>%
-  dplyr::filter(sample == sample_name) %>%
+  dplyr::ungroup() %>%
   tidyr::drop_na() %>%
-  dplyr::arrange(desc(focus, start))
+  dplyr::arrange(desc(sample, focus, start))
 
 
 # HMM
@@ -147,6 +125,28 @@ if (system(command) == 0) {
 } else {
   stop("hmm.py did not finish with expected exit code!")
 }
+
+
+MW_count <- results %>%
+  dplyr::mutate(MW = Mann_Whitney, sign = sign(ratio)) %>%
+  dplyr::group_by(sample, reference, focus, sign, HMM) %>%
+  dplyr::summarise(sum = sum(MW) / n()) %>%
+  dplyr::ungroup()
+
+
+MW_stats <- MW_count %>%
+  filter(reference) %>%
+  dplyr::group_by(focus, sign, HMM) %>%
+  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>%
+  ungroup() %>%
+  right_join(MW_count) %>%
+  filter(!reference) %>%
+  mutate((sum - mean_sum) / sd_sum)
+
+
+# Continue with sample only
+results <- results %>%
+  dplyr::filter(sample == sample_name)
 
 
 # Clean the output

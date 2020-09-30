@@ -31,6 +31,6 @@ def apply_hmm(df: pd.DataFrame):
 
 
 pd.read_table(os.path.abspath(args.in_file)) \
-    .groupby('focus') \
+    .groupby(["sample", "focus"]) \
     .apply(apply_hmm) \
     .to_csv(os.path.abspath(args.out), sep="\t", index=False)
