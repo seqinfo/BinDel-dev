@@ -23,7 +23,7 @@ def apply_hmm(df: pd.DataFrame):
     model.transmat_ = np.array([[0.7, 0.3],
                                 [0.3, 0.7]])
 
-    model.means_ = np.array([[-0.20, 1.1], [0, 0.4]])
+    model.means_ = np.array([[-0.22, 1.2], [0, 0.45]])
     model.covars_ = np.tile(np.identity(2), (states, 1, 1))
 
     df[["HMM"]] = model.predict(df[["ratio", "Mann_Whitney"]].to_numpy())
