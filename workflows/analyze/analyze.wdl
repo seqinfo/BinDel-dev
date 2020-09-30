@@ -45,9 +45,9 @@ task analyze {
   }
 
   runtime {
-    time: 30
+    time: 50
     cpu: 1
-    mem: 10
+    mem: 50
   }
     output {
      File results = glob("*.results.tsv")[0]
@@ -69,7 +69,7 @@ task visualize {
   }
 
   runtime {
-    time: 10
+    time: 15
     cpu: 1
     mem: 10
   }
