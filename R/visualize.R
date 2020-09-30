@@ -28,7 +28,8 @@ results <- read_tsv(results_location) %>%
   ) %>%
   dplyr::select(-temp) %>%
   dplyr::arrange(chr_number) %>%
-  dplyr::filter(!is.na(z_score_ref))
+  dplyr::filter(!is.na(z_score_ref)) %>%
+  mutate(HMM = paste0("S", HMM))
 
 
 focuses <- results %>%
@@ -132,13 +133,17 @@ genes <-
 
 targets <-
   ggplot(target_results, aes(x = start, y = ratio)) +
-  geom_point(aes(color = HMM), size = 1, alpha = 1) +
-  geom_line(aes(color = HMM), size = 0.001, alpha = 0.5) +
+  geom_line(size = 0.001,
+            alpha = 0.5,
+            color = "grey") +
+  geom_point(aes(x = start, y = ratio, color = HMM),
+             size = 1,
+             alpha = 1) +
   scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
   facet_wrap(facets = vars(focus),
              scales = "free",
              ncol = 2) +
-  scale_color_identity() +
+  scale_color_manual(values = c("S0" = "red", "S1" = "black", "S2" = "purple")) +
   theme +
   get_line(1) +
   get_line(0) +
@@ -147,11 +152,12 @@ targets <-
 
 
 pvalues <-
-  ggplot(results, aes(
-    x = start,
-    y = -log10(Mann_Whitney),
-    color = focus != chromosome
-  )) +
+  ggplot(results,
+         aes(
+           x = start,
+           y = Mann_Whitney,
+           color = focus != chromosome
+         )) +
   geom_point(size = 1, alpha = 1) +
   geom_segment(data = segments,
                aes(

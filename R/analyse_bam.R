@@ -1,4 +1,5 @@
 source(here::here("R/util.R"))
+hmm_script_location <- here::here("R/hmm.py")
 
 args = commandArgs(trailingOnly = TRUE)
 
@@ -130,40 +131,20 @@ results <- results %>%
   dplyr::filter(sample == sample_name)  # Keep in the output only the analyzable sample
 
 
-# HMM
-results <- results %>%
-  dplyr::group_by(focus) %>%
-  tidyr::nest() %>%
-  dplyr::mutate(HMM = purrr::map(data, function(df)
-    depmixS4::posterior(
-      depmixS4::fit(
-        depmixS4::depmix(
-          list(ratio ~ 1, Mann_Whitney ~ 1),
-          family = list(gaussian(), gaussian()),
-          nstates = 2,
-          data = df,
-        )
-      )
-    ))) %>%
-  tidyr::unnest(cols = c(data, HMM)) %>%
-  dplyr::mutate(HMM = state) %>%
-  dplyr::ungroup()
-
-
 # Clean the output
 results <- results %>%
   dplyr::select(
     chromosome,
     start,
     end,
+    focus,
     reads,
     gc_corrected,
     gc,
     sample,
     z_score_ref,
     ratio,
-    Mann_Whitney,
-    HMM
+    Mann_Whitney
   )
 
 
