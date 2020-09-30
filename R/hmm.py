@@ -20,9 +20,10 @@ def apply_hmm(df: pd.DataFrame):
     model: hmm.GaussianHMM = hmm.GaussianHMM(n_components=states, covariance_type="full")
     model.startprob_ = np.array([1 / 4000, 1 - 1 / 4000])
 
-    model.transmat_ = np.array(states * [states * [1 / states]])
+    model.transmat_ = np.array([[0.7, 0.3],
+                                [0.3, 0.7]])
 
-    model.means_ = np.array([[-0.4, 1.3], [0, 0.5]])
+    model.means_ = np.array([[-0.25, 1.3], [0, 0.5]])
     model.covars_ = np.tile(np.identity(2), (states, 1, 1))
 
     df[["HMM"]] = model.predict(df[["ratio", "Mann_Whitney"]].to_numpy())
