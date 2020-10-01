@@ -71,8 +71,9 @@ without_sample <- bin_length_normalized %>%
 # Calculate each reference bin i mean
 ref_bins <- without_sample %>%
   dplyr::group_by(chromosome, start) %>%
-  dplyr::summarise(expected = mean(gc_corrected)) %>%
-  dplyr::ungroup()
+  dplyr::summarise(expected = mean(gc_corrected), sd = sd(gc_corrected)) %>%
+  dplyr::ungroup() %>%
+  filter(sd <= 1e-08)
 
 
 reference_bin_info <- without_sample %>%
@@ -86,7 +87,7 @@ reference_bin_info <- without_sample %>%
 
 bin_length_normalized <- without_sample %>%
   dplyr::bind_rows(sample_only) %>%
-  dplyr::left_join(reference_bin_info)
+  dplyr::right_join(reference_bin_info)
 
 
 # Z-score calculation with reference (bin wise)

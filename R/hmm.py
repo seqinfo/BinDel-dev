@@ -16,14 +16,15 @@ args = parser.parse_args()
 
 
 def apply_hmm(df: pd.DataFrame):
-    states = 2
+    states: int = 3
     model: hmm.GaussianHMM = hmm.GaussianHMM(n_components=states, covariance_type="full")
-    model.startprob_ = np.array([1 / 4000, 1 - 1 / 4000])
+    model.startprob_ = np.array(3 * [1 / 3])
 
-    model.transmat_ = np.array([[0.7, 0.3],
-                                [0.3, 0.7]])
+    model.transmat_ = np.array([[0.5, 0.25, 0.25],
+                                [0.25, 0.5, 0.25],
+                                [0.25, 0.25, 0.5]])
 
-    model.means_ = np.array([[-0.22, 1.2], [0, 0.45]])
+    model.means_ = np.array([[-0.7, 1.2], [0, 0.45], [0.7, 1.2]])
     model.covars_ = np.tile(np.identity(2), (states, 1, 1))
 
     df[["HMM"]] = model.predict(df[["ratio", "Mann_Whitney"]].to_numpy())
