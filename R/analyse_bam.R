@@ -72,8 +72,8 @@ without_sample <- bin_length_normalized %>%
 ref_bins <- without_sample %>%
   dplyr::group_by(chromosome, start) %>%
   dplyr::summarise(expected = mean(gc_corrected), sd = sd(gc_corrected)) %>%
-  dplyr::ungroup() %>%
-  filter(sd <= 1e-08)
+  dplyr::ungroup()# %>%
+  #filter(sd <= 1e-08)
 
 
 reference_bin_info <- without_sample %>%
