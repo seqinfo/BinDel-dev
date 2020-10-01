@@ -24,7 +24,7 @@ def apply_hmm(df: pd.DataFrame):
                                 [0.25, 0.5, 0.25],
                                 [0.25, 0.25, 0.5]])
 
-    model.means_ = np.array([[-0.7, 1.2], [0, 0.45], [0.7, 1.2]])
+    model.means_ = np.array([[-0.5, 1.2], [0, 0.45], [0.5, 1.2]])
     model.covars_ = np.tile(np.identity(2), (states, 1, 1))
 
     df[["HMM"]] = model.predict(df[["ratio", "Mann_Whitney"]].to_numpy())
