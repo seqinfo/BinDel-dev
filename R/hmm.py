@@ -18,7 +18,7 @@ args = parser.parse_args()
 def apply_hmm(df: pd.DataFrame):
     states: int = 3
     model: hmm.GaussianHMM = hmm.GaussianHMM(n_components=states, covariance_type="full")
-    model.startprob_ = np.array([1 / states, 0, 1 / states])
+    model.startprob_ = np.array([0, 1, 0])
     model.transmat_ = np.array(states * [states * [1 / states]])
     model.means_ = np.array([[-0.7, 1.2], [0, 0.45], [0.7, 1.2]])
     model.covars_ = np.tile(np.identity(2), (states, 1, 1))
