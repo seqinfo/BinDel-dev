@@ -202,6 +202,12 @@ ggplot(results, aes(x = start, y = sd)) +
   main_theme +
   scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6))
 
+ggplot(stats %>% filter(HMM == "S0"), aes(x = length, y = n)) +
+  geom_bar(stat = "identity") +
+  facet_wrap( ~ focus + HMM, scales = "free") +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  main_theme
+
 ggplot(stats %>% filter(HMM == "S1"), aes(x = length, y = n)) +
   geom_bar(stat = "identity") +
   facet_wrap( ~ focus + HMM, scales = "free") +
@@ -209,12 +215,6 @@ ggplot(stats %>% filter(HMM == "S1"), aes(x = length, y = n)) +
   main_theme
 
 ggplot(stats %>% filter(HMM == "S2"), aes(x = length, y = n)) +
-  geom_bar(stat = "identity") +
-  facet_wrap( ~ focus + HMM, scales = "free") +
-  scale_x_continuous(breaks = pretty_breaks()) +
-  main_theme
-
-ggplot(stats %>% filter(HMM == "S3"), aes(x = length, y = n)) +
   geom_bar(stat = "identity") +
   facet_wrap( ~ focus + HMM, scales = "free") +
   scale_x_continuous(breaks = pretty_breaks()) +
