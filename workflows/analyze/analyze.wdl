@@ -16,6 +16,7 @@ workflow Main {
 
   output {
     Array[File] scores = analyze.results 
+    Array[File] stats = analyze.stats 
     Array[File] plots = analyze.plots 
   }
 }
@@ -39,6 +40,7 @@ task analyze {
   }
     output {
      File results = glob("*.results.tsv")[0]
+     File results = glob("*.stats.tsv")[0]
      File plots = glob("*.pdf")[0]     
   }
 }

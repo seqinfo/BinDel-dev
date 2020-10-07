@@ -1,5 +1,6 @@
 source(here::here("R/util.R"))
 hmm_script_location <- here::here("R/hmm.py")
+stats_script_location <- here::here("R/stats.py")
 
 args <- commandArgs(trailingOnly = TRUE)
 
@@ -118,22 +119,59 @@ temp_tsv <- paste0(sample_name, ".temp")
 hmm_temp <- paste0(temp_tsv, ".hmm")
 
 
-write_tsv(results, temp_tsv)
+readr::write_tsv(results, temp_tsv)
 command <-
   paste("python", hmm_script_location, "-i", temp_tsv, "-o", hmm_temp)
 
 
 if (system(command) == 0) {
-  results <- read_tsv(hmm_temp)
+  results <- readr::read_tsv(hmm_temp)
   
 } else {
   stop("hmm.py did not finish with expected exit code!")
 }
 
+
+# Output, plots and additional statistics
+
+
 # Add state names for plotting
 results <- results %>%
-  mutate(HMM = paste0("S", HMM))
+  dplyr::mutate(HMM = paste0("S", HMM))
 
+
+# Statistics:
+stats <- results %>%
+  tidyr::pivot_wider(id_cols = c(focus, HMM, start)) %>%
+  dplyr::arrange(desc(focus, start))
+
+
+temp_tsv <- paste0(sample_name, ".temp")
+stats_temp <- paste0(temp_tsv, ".stats")
+readr::write_tsv(stats, temp_tsv)
+
+
+command <-
+  paste("python",
+        stats_script_location,
+        "-i",
+        temp_tsv,
+        "-o",
+        stats_temp)
+
+if (system(command) == 0) {
+  stats <- readr::read_tsv(stats_temp) %>%
+    dplyr::group_by(focus, HMM, length) %>%
+    dplyr::summarise(n = n())
+  
+  readr::write_tsv(stats, paste0(sample_name, ".stats.tsv"))
+  
+} else {
+  stop("stats.py did not finish with expected exit code!")
+}
+
+
+# Plots
 pdf(
   file = paste0(sample_name, ".pdf"),
   title = sample_name,
@@ -163,6 +201,25 @@ ggplot(results, aes(x = start, y = sd)) +
   facet_wrap( ~ focus, scales = "free") +
   main_theme +
   scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6))
+
+ggplot(stats %>% filter(HMM == "S1"), aes(x = length, y = n)) +
+  geom_bar(stat = "identity") +
+  facet_wrap( ~ focus + HMM, scales = "free") +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  main_theme
+
+ggplot(stats %>% filter(HMM == "S2"), aes(x = length, y = n)) +
+  geom_bar(stat = "identity") +
+  facet_wrap( ~ focus + HMM, scales = "free") +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  main_theme
+
+ggplot(stats %>% filter(HMM == "S3"), aes(x = length, y = n)) +
+  geom_bar(stat = "identity") +
+  facet_wrap( ~ focus + HMM, scales = "free") +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  main_theme
+
 dev.off()
 
 
@@ -182,6 +239,5 @@ results <- results %>%
     Mann_Whitney,
     HMM
   )
-
 
 readr::write_tsv(results, paste0(sample_name, ".results.tsv"))
