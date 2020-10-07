@@ -11,10 +11,6 @@
     "/gpfs/hpc/samba/CCHT/service_lab/science/niptify_control_set/outputs_cnv/SC005.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A282N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A232N.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A328N.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A389N.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A477N.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A376N.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A789N.bam"
+    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A376N.bam"
   ]
 }
