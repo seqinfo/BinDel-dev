@@ -86,7 +86,8 @@ reference_bin_info <- without_sample %>%
 
 bin_length_normalized <- without_sample %>%
   dplyr::bind_rows(sample_only) %>%
-  dplyr::right_join(reference_bin_info)
+  dplyr::right_join(reference_bin_info) %>% 
+  filter(sd <= 1.5e-08)
 
 
 # Z-score calculation with reference (bin wise)
