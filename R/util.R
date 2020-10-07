@@ -1,18 +1,11 @@
 library(BSgenome.Hsapiens.UCSC.hg38)
-library(depmixS4)
-library(DNAcopy)
-library(dplyr)
 library(GenomicAlignments)
-library(purrr)
-library(readr)
 library(Rsamtools)
-library(tidyr)
+library(scales)
+library(tidyverse)
 
-
-bin_counts <- function(bam_location, bed_location) {
-  bed <- read_tsv(bed_location)
+bin_counts <- function(bam_location, bed) {
   bam <- read_bam_counts(bam_location)
-  
   binned_counts <- bed %>%
     mutate(reads = assay(
       summarizeOverlaps(makeGRangesFromDataFrame(.), bam, mode = "IntersectionStrict")
@@ -23,8 +16,8 @@ bin_counts <- function(bam_location, bed_location) {
 }
 
 
-find_gc <- function(bed_location) {
-  reads <- read_tsv(bed_location) %>%
+find_gc <- function(bed) {
+  reads <- bed %>%
     mutate(gc = letterFrequency(
       getSeq(BSgenome.Hsapiens.UCSC.hg38,
              GRanges(
@@ -64,4 +57,34 @@ lagTransformation <- function(ds, n) {
     setNames(lag_names)
   ds <- ds %>% mutate_at(vars(names(ds)), lag_functions)
   return(ds)
+}
+
+
+main_theme <- theme_bw() +
+  theme(
+    plot.title = element_blank(),
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    strip.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 0.5,
+      vjust = 0.5
+    )
+  )
+
+
+
+get_line <- function(y) {
+  return(geom_hline(
+    yintercept = y,
+    linetype = "dashed",
+    color = "grey",
+    size = 1
+  ))
 }

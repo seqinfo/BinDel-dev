@@ -4,24 +4,26 @@ hmm_script_location <- here::here("R/hmm.py")
 args <- commandArgs(trailingOnly = TRUE)
 
 
-if (length(args) != 3) {
-  stop(
-    "Please provide (1) analyzable BAM (.bam), (2) analyzable regions (.bed) and (3) reference file (.tsv).",
-    call. = FALSE
-  )
+if (length(args) != 2) {
+  stop("Please provide (1) analyzable BAM (.bam) and (2) reference file (.tsv).",
+       call. = FALSE)
 }
 
 
 bam_location <- args[1]
-bed_location <- args[2]
-reference_location <- args[3]
+reference_location <- args[2]
+
+reference <-
+  readr::read_tsv(reference_location) # Reference samples to be used to calculate z-scores
+
+bed <- reference %>%
+  select(chromosome, start, end, focus) %>%
+  distinct(chromosome, start, end, focus)
 
 
 sample_name <- basename(bam_location)
-binned_reads <- bin_counts(bam_location, bed_location) # Bin BAM
-queried_gc <- find_gc(bed_location) # Find GC for the locations
-reference <-
-  readr::read_tsv(reference_location) # Reference samples to be used to calculate z-scores
+binned_reads <- bin_counts(bam_location, bed) # Bin BAM
+queried_gc <- find_gc(bed) # Find GC for the locations
 
 
 # Merge: BAM + reference + GC
@@ -43,26 +45,22 @@ gc_corrected <- merged %>%
   dplyr::ungroup()
 
 
-# Normalize by sample (important to make samples comparable)
+# Normalize by sample
 gc_corrected <- gc_corrected %>%
   dplyr::group_by(sample) %>%
   dplyr::mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
-  dplyr::ungroup()
-
-
-# Normalize by bin length
-bin_length_normalized <- gc_corrected %>%
+  dplyr::ungroup() %>% # And by bin length:
   dplyr::mutate(gc_corrected = gc_corrected / (end - start))
 
 
 # Calculate reference group statistics
-sample_only <- bin_length_normalized %>%
+sample_only <- gc_corrected %>%
   dplyr::filter(sample == sample_name) %>%
   dplyr::mutate(reference = FALSE)
 
 
 # Calculate ref set (each) bin SD and mean
-without_sample <- bin_length_normalized %>%
+without_sample <- gc_corrected %>%
   dplyr::filter(sample != sample_name) %>%
   dplyr::ungroup() %>%
   dplyr::mutate(reference = TRUE)
@@ -71,9 +69,9 @@ without_sample <- bin_length_normalized %>%
 # Calculate each reference bin i mean
 ref_bins <- without_sample %>%
   dplyr::group_by(chromosome, start) %>%
-  dplyr::summarise(expected = mean(gc_corrected), sd = sd(gc_corrected)) %>%
-  dplyr::ungroup() %>%
-  filter(sd <= 1.5e-08)
+  dplyr::summarise(expected = mean(gc_corrected),
+                   sd = sd(gc_corrected)) %>%
+  dplyr::ungroup()
 
 
 reference_bin_info <- without_sample %>%
@@ -110,6 +108,11 @@ results <- results %>%
   dplyr::arrange(desc(sample, focus, start))
 
 
+# Continue with sample only
+results <- results %>%
+  dplyr::filter(sample == sample_name)
+
+
 # HMM
 temp_tsv <- paste0(sample_name, ".temp")
 hmm_temp <- paste0(temp_tsv, ".hmm")
@@ -122,38 +125,52 @@ command <-
 
 if (system(command) == 0) {
   results <- read_tsv(hmm_temp)
-
+  
 } else {
   stop("hmm.py did not finish with expected exit code!")
 }
 
-
-MW_count <- results %>%
-  dplyr::mutate(MW = Mann_Whitney, sign = sign(ratio)) %>%
-  dplyr::group_by(sample, reference, focus, sign, HMM) %>%
-  dplyr::summarise(sum = sum(MW)) %>%
-  dplyr::ungroup()
-
-
-MW_stats <- MW_count %>%
-  filter(reference) %>%
-  dplyr::group_by(focus, sign, HMM) %>%
-  summarise(mean_sum = mean(sum), sd_sum = sd(sum)) %>%
-  ungroup() %>%
-  right_join(MW_count) %>%
-  filter(!reference) %>%
-  mutate((sum - mean_sum) / sd_sum)
-
-
-# Continue with sample only
+# Add state names for plotting
 results <- results %>%
-  dplyr::filter(sample == sample_name)
+  mutate(HMM = paste0("S", HMM))
+
+pdf(
+  file = paste0(sample_name, ".pdf"),
+  title = sample_name,
+  width = 10,
+  height = 20
+)
+
+ggplot(results, aes(x = start, y = ratio)) +
+  geom_line(size = 0.001,
+            alpha = 0.5,
+            color = "grey") +
+  geom_point(aes(x = start, y = ratio, color = HMM),
+             size = 1,
+             alpha = 1) +
+  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+  facet_wrap(facets = ~ focus,
+             scales = "free",
+             ncol = 3) +
+  scale_color_manual(values = c("S0" = "red", "S1" = "grey", "S2" = "purple")) +
+  main_theme +
+  get_line(1) +
+  get_line(0) +
+  get_line(-1)
+
+ggplot(results, aes(x = start, y = sd)) +
+  geom_bar(stat = "identity") +
+  facet_wrap( ~ focus, scales = "free") +
+  main_theme +
+  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6))
+dev.off()
 
 
 # Clean the output
 results <- results %>%
   dplyr::select(
     chromosome,
+    focus,
     start,
     end,
     reads,
@@ -167,31 +184,4 @@ results <- results %>%
   )
 
 
-# Calculate aberrations with circular binary segmentation
-# PMID: 15475419
-CNA.object <- DNAcopy::CNA(
-  genomdat = -log10(results$Mann_Whitney),
-  chrom = results$chromosome,
-  maploc = results$start,
-  data.type = "logratio",
-  sampleid = basename(bam_location)
-)
-
-
-smoothed <- DNAcopy::smooth.CNA(
-  CNA.object,
-  smooth.region = 10,
-  outlier.SD.scale = 4,
-  smooth.SD.scale = 2,
-  trim = 0.025
-)
-
-
-segments <-
-  DNAcopy::segment(smoothed, verbose = 1, nperm = 10000)$output %>%
-    dplyr::filter(loc.start != loc.end)
-
-
 readr::write_tsv(results, paste0(sample_name, ".results.tsv"))
-readr::write_tsv(MW_stats, paste0(sample_name, ".metrics.tsv"))
-readr::write_tsv(segments, paste0(sample_name, ".segments.tsv"))

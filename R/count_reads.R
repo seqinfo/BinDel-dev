@@ -13,7 +13,7 @@ if (length(args) != 2) {
 bam_location <- args[1]
 bed_location <- args[2]
 
-reads_per_bin <- bin_counts(bam_location, bed_location)
+bed <- read_tsv(bed_location)
 
-
+reads_per_bin <- bin_counts(bam_location, bed)
 write_tsv(path = paste0(basename(bam_location), ".tsv"), x = reads_per_bin)
