@@ -40,7 +40,7 @@ task analyze {
   }
     output {
      File results = glob("*.results.tsv")[0]
-     File results = glob("*.stats.tsv")[0]
+     File stats = glob("*.stats.tsv")[0]
      File plots = glob("*.pdf")[0]     
   }
 }
