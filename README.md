@@ -4,6 +4,7 @@
 1. System with Slurm Workload Manager
 2. Coordinates of regions to analyze (in .bed format)
 
+
 ## Dependencies
 1. [BSgenome.Hsapiens.UCSC.hg38](https://anaconda.org/bioconda/bioconductor-bsgenome.hsapiens.ucsc.hg38)
 2. [Cromwell](https://anaconda.org/bioconda/cromwell)
