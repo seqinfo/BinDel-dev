@@ -14,7 +14,9 @@ parser.add_argument("-o", "--output", dest="out", help="output file name")
 
 args = parser.parse_args()
 
-
+# TODO: GMMHMM ? https://hmmlearn.readthedocs.io/en/latest/api.html#hmmlearn.hmm.GMMHMM
+# TODO: andmeteaduse meetodid
+# TODO: Gaussi segumudel hoopis?
 def apply_hmm(df: pd.DataFrame):
     states: int = 3
     model: hmm.GaussianHMM = hmm.GaussianHMM(n_components=states, covariance_type="full")
