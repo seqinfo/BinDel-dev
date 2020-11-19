@@ -1,0 +1,100 @@
+---
+title: "PPDx - DiGeorge analysis"
+author: "Priit Paluoja"
+date: "19 11 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Read samples
+
+Read all binned samples and find their GC-content.
+
+```{r message=FALSE}
+source("R/util.R")
+library(plotly)
+
+data <- readr::read_tsv("reference.tsv") %>%
+  dplyr::left_join(find_gc(
+    dplyr::select(.data = ., chromosome, start, end, focus) %>%
+      dplyr::distinct(chromosome, start, end, focus)
+  ))
+
+```
+
+## GC correct + normalize by sample
+PMID 28500333 and PMID 20454671
+
+```{r message=FALSE}
+
+data <- data %>%
+  dplyr::group_by(sample, gc) %>%
+  dplyr::mutate(avg_reads_gc_interval = mean(reads)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(sample) %>%
+  dplyr::mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
+  dplyr::mutate(gc_corrected = reads * weights) %>%
+  dplyr::filter(!is.na(gc_corrected)) %>%
+  dplyr::ungroup() %>% 
+  # Normalize by sample
+  dplyr::group_by(sample) %>%
+  dplyr::mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
+  dplyr::ungroup() %>% # And by bin length:
+  dplyr::mutate(gc_corrected = gc_corrected / (end - start)) %>% 
+  dplyr::select(-end, -gc, -reads, -avg_reads_gc_interval) 
+```
+
+## Focus on the DiGeorge region, but normalize with the entire chromosome 22.
+
+```{r message=FALSE}
+
+data <- data %>% 
+ # dplyr::filter(focus == "DiGeorge") %>% 
+  dplyr::filter(chromosome == "chr22")
+
+```
+
+## Hypothesis free plotting of the normalized and GC corrected samples.
+
+```{r message=FALSE}
+ggplot(data, aes(x = start, y = gc_corrected, color = sample)) +
+  geom_line(aes(group = sample)) +
+  main_theme +
+  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+  scale_color_grey()
+
+```
+
+Plot illustrates that there are two highly variable regions (18300001 - 19100001
+and 21000001 to end). It is not optimal to focus on such variable regions.
+
+
+## Keep bins between 19100001 - 21000001
+
+```{r message=FALSE}
+#data <- data %>% 
+  #dplyr::filter(between(start, 19100001, 21000001)) 
+```
+
+## Visualise SC005 with filtered bins, the DiGeorge synthetic validation sample from SeraCare
+
+```{r message=FALSE}
+ggplotly(
+  ggplot(data, aes(
+    x = start,
+    y = scale(gc_corrected),
+    color = sample == "SC005"
+  )) +
+    geom_line(aes(group = sample)) +
+    main_theme +
+    scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+    scale_color_manual(values = c("grey", "red"))
+)
+```
+
+SC005 has clearly less reads than other samples. However, it has also overlap
+with other samples.
+
