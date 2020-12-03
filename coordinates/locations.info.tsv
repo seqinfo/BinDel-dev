@@ -1,12 +1,14 @@
 chromosome	start	end	focus
 chr2	1	242193529	chr2
-chr1	1	27600000	1p36 deletion syndrome
-chr4	1	4500000	Wolf-Hirschhorn syndrome
-chr5	1	48800000	Cri-du-chat syndrome
-chr7	72700000	77900000	WILLIAMS-BEUREN SYNDROME
-chr8	116700000	126300000	Langer-Giedion syndrome
-chr11	114600000	135086622	Jacobsen syndrome
-chr15	20500001	27800000	Prader-Willi/Angelman syndrome
+chr1	1	27600000	1p36
+chr4	1	4500000	Wolf-Hirschhorn
+chr5	1	48800000	Cri-du-chat
+chr7	72700000	77900000	Williams-Beuren
+chr8	116700000	126300000	Langer-Giedion
+chr11	114600000	135086622	Jacobsen
+chr15	1	20500000	chr15
+chr15	20500001	27800000	PW/AS
+chr15	27800001	100000000	chr15
 chr22	1	17400000	chr22
-chr22	17400001	21700000	DiGeorge syndrome
+chr22	17400001	21700000	DiGeorge
 chr22	21700001	50800000	chr22
