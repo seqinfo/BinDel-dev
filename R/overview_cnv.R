@@ -1,6 +1,5 @@
 library(BSgenome.Hsapiens.UCSC.hg38)
 library(tidyverse)
-library(plotly)
 
 find_gc <- function(bed) {
   reads <- bed %>%
