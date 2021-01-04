@@ -46,8 +46,6 @@ samples <- readr::read_tsv("reference.tsv") %>%
       distinct(chr, start, end, focus)
   )) %>%
   # GC correct
-  filter(reads != 0) %>% 
-  filter(!is.na(reads)) %>% 
   group_by(sample, gc) %>%
   mutate(avg_reads_gc_interval = mean(reads)) %>%
   ungroup() %>%
