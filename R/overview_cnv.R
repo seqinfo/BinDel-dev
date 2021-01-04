@@ -45,6 +45,7 @@ samples <- readr::read_tsv("reference.tsv") %>%
     select(.data = ., chr, start, end, focus) %>%
       distinct(chr, start, end, focus)
   )) %>%
+  mutate(sample = str_remove(sample, ".bam")) %>%
   # GC correct
   group_by(sample, gc) %>%
   mutate(avg_reads_gc_interval = mean(reads)) %>%
@@ -83,7 +84,7 @@ reference <- samples %>%
 filtered <- reference %>%
   group_by(chr) %>%
   filter(mean_ref_bin > mean(mean_ref_bin)) %>%
-  filter(mean_ref_sd < mean(mean_ref_sd) * 0.8)
+  filter(mean_ref_sd < mean(mean_ref_sd))
 
 samples <- samples %>%
   right_join(filtered) %>%
