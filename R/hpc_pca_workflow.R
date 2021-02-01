@@ -47,9 +47,9 @@ samples <-
   mutate(reads_chr = sum(reads)) %>%
   ungroup() %>%
   # Optimize memory
-  select(-end, -gc, -reads, -avg_reads_gc_interval, -weights) %>%
+  select(-end,-gc,-reads,-avg_reads_gc_interval,-weights) %>%
   # mutate(sample = str_replace(sample, "_S[0-9]+$", "")) %>%
-  left_join(reference) %>% 
+  left_join(reference) %>%
   arrange(desc(reference))
 
 
@@ -67,7 +67,7 @@ wider <- samples %>%
 # Train PCA
 ref <- wider %>%
   filter(reference) %>%
-  select(-reference,-sample)
+  select(-reference, -sample)
 
 mu <- colMeans(ref, na.rm = T)
 refPca <- prcomp(ref)
@@ -79,9 +79,10 @@ Xhat <- scale(Xhat, center = -mu, scale = FALSE)
 # Use trained PCA on other samples
 pred <- wider %>%
   filter(is.na(reference)) %>%
-  select(-reference,-sample)
+  select(-reference, -sample)
 
-Yhat <- predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
+Yhat <-
+  predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
 Yhat <- scale(Yhat, center = -mu, scale = FALSE)
 
 # Actual PCA normalization and conversion back to long:
@@ -124,6 +125,7 @@ samples <- normalized %>%
   right_join(filtered) %>%
   mutate(z_score = (gc_corrected - mean_ref_bin) / mean_ref_sd) %>%
   mutate(under_median = as.integer(gc_corrected < mean_ref_bin)) %>%
+  mutate(over_median = as.integer(gc_corrected >= mean_ref_bin)) %>%
   filter(!is.na(z_score)) %>%
   mutate(reference = !is.na(reference)) %>%
   group_by(sample, focus) %>%
@@ -135,13 +137,16 @@ samples <- normalized %>%
                                 z_score <= 0 ~ NA_real_), na.rm = T) / sqrt(n()),
     z_score_PPDX = sum(z_score) / sqrt(n()),
     under_median = sum(under_median),
+    over_median = sum(over_median),
     mid_range = (max(z_score) + min(z_score)) / 2
   ) %>%
   mutate(
     z_score_PPDX_norm =  (z_score_PPDX + 1) / (under_median + 2),
+    z_score_PPDX_norm2 =  (z_score_PPDX + 1) / (over_median + 2),
     dup_score = (z_score_pos + 1) / (-1 * z_score_neg + 2)
   ) %>%
-  select(-z_score_neg, -z_score_pos)
+  select(-z_score_neg,-z_score_pos)
+
 
 
 write_tsv(samples, out_name)
