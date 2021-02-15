@@ -8,6 +8,7 @@
     "/gpfs/hpc/samba/CCHT/service_lab/science/preprocessed/NIPTIFY/SC005.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/preprocessed/NIPTIFY/C075N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/preprocessed/validatsioon/NIPT-NK-015_S13.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/preprocessed/validatsioon/NIPT-NK-045_S17.bam"
+    "/gpfs/hpc/samba/CCHT/service_lab/science/preprocessed/validatsioon/NIPT-NK-045_S17.bam",
+    "/gpfs/hpc/samba/CCHT/service_lab/science/preprocessed/NIPTIFY/C613N.bam"
   ]
 }
