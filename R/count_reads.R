@@ -11,6 +11,19 @@ if (length(args) != 2) {
        call. = FALSE)
 }
 
+
+read_bam_counts <- function(bam_location) {
+  param <-
+    ScanBamParam(
+      flag = scanBamFlag(isDuplicate = FALSE, isSecondaryAlignment = FALSE),
+      what = c("pos")
+    )
+  
+  return(readGAlignments(bam_location, param = param))
+}
+
+
+
 bin_counts <- function(bam_location, bed) {
   bam <- read_bam_counts(bam_location)
   binned_counts <- bed %>%
