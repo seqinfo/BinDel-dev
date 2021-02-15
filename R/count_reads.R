@@ -1,19 +1,37 @@
-source(here::here("R/util.R"))
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(GenomicAlignments)
+library(Rsamtools)
+library(tidyverse)
 
 args <- commandArgs(trailingOnly = TRUE)
 
 
 if (length(args) != 2) {
-  stop(
-    "Please provide (1) binnable BAM file (.bam) and (2) regions to bin (.bed)",
-    call. = FALSE
-  )
+  stop("Please provide (1) binnable BAM file (.bam) and (2) regions to bin (.bed)",
+       call. = FALSE)
 }
+
+bin_counts <- function(bam_location, bed) {
+  bam <- read_bam_counts(bam_location)
+  binned_counts <- bed %>%
+    mutate(reads = assay(
+      summarizeOverlaps(makeGRangesFromDataFrame(.), bam, mode = "IntersectionStrict")
+    )) %>%
+    mutate(sample = basename(bam_location))
+  
+  return(binned_counts)
+}
+
+
 
 bam_location <- args[1]
 bed_location <- args[2]
 
 bed <- read_tsv(bed_location)
 
-reads_per_bin <- bin_counts(bam_location, bed)
+reads_per_bin <- bin_counts(bam_location, bed) %>%
+  mutate(sample = group_indices(., sample)) %>%
+  mutate(sample = paste0("ref.", id))
+
+
 write_tsv(path = paste0(basename(bam_location), ".tsv"), x = reads_per_bin)

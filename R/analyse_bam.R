@@ -1,6 +1,7 @@
-source(here::here("R/util.R"))
-hmm_script_location <- here::here("R/hmm.py")
-stats_script_location <- here::here("R/stats.py")
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(tidyverse)
+library(GenomicAlignments)
+library(Rsamtools)
 
 args <- commandArgs(trailingOnly = TRUE)
 
@@ -12,233 +13,304 @@ if (length(args) != 2) {
 
 
 bam_location <- args[1]
+sample_name <- basename(bam_location)
+
 reference_location <- args[2]
 
+
+# Useful for 45,X detection (and aneuploidy detection), but can hide CNVs.
+# Not recommended for micro-deletion detection.
+bin_filter_on <- FALSE
+
+# Has important effect for micro-deletions detection
+use_pca <- TRUE
+# Output probabilities of not being reference.
+output_mahalanobis <- TRUE
+# Use GC-correct (recommended to use)
+do_gc_correct <- TRUE
+# If PCA normalization is used, how many components?
+# Tested to have effect between 20-160.
+nComp <- 160
+
+# Save plot
+create_plot <- TRUE
+# Include reference in the output?
+include_reference <- TRUE
+
+# Optimize RAM usage
+clean_env <- TRUE
+
+find_gc <- function(bed) {
+  reads <- bed %>%
+    mutate(gc = letterFrequency(
+      getSeq(BSgenome.Hsapiens.UCSC.hg38,
+             GRanges(chr, IRanges(
+               start = start, end = end
+             ))),
+      "GC",
+      as.prob = T
+    )) %>%
+    mutate(gc = round(gc, 1))
+}
+
+bin_counts <- function(bam_location, bed) {
+  bam <- readGAlignments(bam_location, param =  ScanBamParam(
+    flag = scanBamFlag(isDuplicate = FALSE, isSecondaryAlignment = FALSE),
+    what = c("pos")
+  ))
+  
+  binned_counts <- bed %>%
+    mutate(reads = assay(
+      summarizeOverlaps(makeGRangesFromDataFrame(.), bam, mode = "IntersectionStrict")
+    )) %>%
+    mutate(sample = basename(bam_location))
+  
+  return(binned_counts)
+}
+
+# Reference samples to be used to calculate z-scores
 reference <-
-  readr::read_tsv(reference_location) # Reference samples to be used to calculate z-scores
-
-bed <- reference %>%
-  select(chromosome, start, end, focus) %>%
-  distinct(chromosome, start, end, focus)
+  read_tsv(reference_location) %>%
+  mutate(reference = TRUE)
 
 
-sample_name <- basename(bam_location)
-binned_reads <- bin_counts(bam_location, bed) # Bin BAM
-queried_gc <- find_gc(bed) # Find GC for the locations
+# Bin BAM under investigation
+binned_reads <- bin_counts(
+  bam_location,
+  reference %>%
+    select(chr, start, end, focus) %>%
+    distinct(chr, start, end, focus)
+) %>%
+  mutate(reference = FALSE)
 
 
-# Merge: BAM + reference + GC
-merged <- reference %>%
-  dplyr::mutate(sample = paste0("ref.set.", sample)) %>% # reference samples names must not overlap with the analyzable sample.
-  dplyr::bind_rows(binned_reads) %>%
-  dplyr::left_join(queried_gc)
+# Merge: BAM + reference
+samples <- reference %>%
+  # Note, reference samples names must not overlap with the analyzable sample.
+  dplyr::bind_rows(binned_reads)
 
+
+if (clean_env) {
+  rm(binned_reads)
+}
 
 # GC-correct (sample wise) (PMID: 28500333 and PMID: 20454671)
-gc_corrected <- merged %>%
-  dplyr::group_by(sample, gc) %>%
-  dplyr::mutate(avg_reads_gc_interval = mean(reads)) %>%
-  dplyr::ungroup() %>%
-  dplyr::group_by(sample) %>%
-  dplyr::mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
-  dplyr::mutate(gc_corrected = reads * weights) %>%
-  dplyr::filter(!is.na(gc_corrected)) %>%
-  dplyr::ungroup()
-
-
-# Normalize by sample
-gc_corrected <- gc_corrected %>%
-  dplyr::group_by(sample) %>%
-  dplyr::mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
-  dplyr::ungroup() %>% # And by bin length:
-  dplyr::mutate(gc_corrected = gc_corrected / (end - start))
-
-
-# Calculate reference group statistics
-sample_only <- gc_corrected %>%
-  dplyr::filter(sample == sample_name) %>%
-  dplyr::mutate(reference = FALSE)
-
-
-# Calculate ref set (each) bin SD and mean
-without_sample <- gc_corrected %>%
-  dplyr::filter(sample != sample_name) %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(reference = TRUE)
-
-
-# Calculate each reference bin i mean
-ref_bins <- without_sample %>%
-  dplyr::group_by(chromosome, start) %>%
-  dplyr::summarise(expected = mean(gc_corrected),
-                   sd = sd(gc_corrected)) %>%
-  dplyr::ungroup() %>% 
-  filter(sd <= 1.5e-08)
-
-
-reference_bin_info <- without_sample %>%
-  dplyr::group_by(focus, start, end) %>%
-  dplyr::mutate(mean_ref_bin = mean(gc_corrected)) %>%
-  dplyr::mutate(mean_ref_sd = sd(gc_corrected)) %>%
-  dplyr::ungroup() %>%
-  dplyr::select(focus, start, end, mean_ref_bin, mean_ref_sd) %>%
-  dplyr::distinct()
-
-
-bin_length_normalized <- without_sample %>%
-  dplyr::bind_rows(sample_only) %>%
-  dplyr::right_join(reference_bin_info)
-
-
-# Z-score calculation with reference (bin wise)
-results <- bin_length_normalized %>%
-  dplyr::mutate(z_score_ref = (gc_corrected - mean_ref_bin) / mean_ref_sd)
-
-
-# Calculate expected value and actual value ratio
-results <- ref_bins %>%
-  dplyr::right_join(results, by = c("chromosome", "start")) %>%
-  dplyr::mutate(ratio = log(gc_corrected / expected, base = 2))
-
-
-# Mann–Whitney U test
-results <- results %>%
-  dplyr::group_by(chromosome, start) %>%
-  dplyr::mutate(Mann_Whitney = -log10(wilcox.test(gc_corrected ~ reference, exact = FALSE)$p.value)) %>%
-  dplyr::ungroup() %>%
-  tidyr::drop_na() %>%
-  dplyr::arrange(desc(sample, focus, start))
-
-
-# Continue with sample only
-results <- results %>%
-  dplyr::filter(sample == sample_name)
-
-
-# HMM
-temp_tsv <- paste0(sample_name, ".temp")
-hmm_temp <- paste0(temp_tsv, ".hmm")
-
-
-readr::write_tsv(results, temp_tsv)
-command <-
-  paste("python", hmm_script_location, "-i", temp_tsv, "-o", hmm_temp)
-
-
-if (system(command) == 0) {
-  results <- readr::read_tsv(hmm_temp)
+if (do_gc_correct) {
+  # Find GC% of the genome (HG38)
+  samples <- samples %>%
+    left_join(find_gc(
+      select(.data = ., chr, start, end, focus) %>%
+        distinct(chr, start, end, focus)
+    )) %>%
+    # Do GC correct
+    group_by(sample, gc) %>%
+    mutate(avg_reads_gc_interval = mean(reads)) %>%
+    ungroup() %>%
+    group_by(sample) %>%
+    mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
+    mutate(gc_corrected = reads * weights) %>%
+    filter(!is.na(gc_corrected)) %>%
+    ungroup()
   
-} else {
-  stop("hmm.py did not finish with expected exit code!")
+} else{
+  samples <- samples %>%
+    mutate(gc_corrected = reads) %>%
+    filter(!is.na(gc_corrected))
+}
+
+samples <- samples %>%
+  # Sample read count correct
+  group_by(sample) %>%
+  mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
+  ungroup() %>%
+  # Sample bin length correct
+  mutate(gc_corrected = gc_corrected / (end - start)) %>%
+  # Optimize memory
+  select(chr, focus, start, sample, reference, gc_corrected)
+
+
+if (use_pca) {
+  # For PCA sort ()
+  samples <- samples %>%
+    arrange(reference)
+  
+  # Pivot wide for PCA normalization
+  wider <- samples %>%
+    select(focus, start, sample, reference, gc_corrected) %>%
+    pivot_wider(
+      names_from = c(focus, start),
+      id_cols = c(sample, reference),
+      values_from = gc_corrected,
+      names_sep = ":"
+    )
+  
+  # https://stats.stackexchange.com/questions/229092/how-to-reverse-pca-and-reconstruct-original-variables-from-several-principal-com
+  # Train PCA
+  ref <- wider %>%
+    filter(reference) %>%
+    select(-reference,-sample)
+  
+  mu <- colMeans(ref, na.rm = T)
+  refPca <- prcomp(ref)
+  
+  
+  Xhat <- refPca$x[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
+  Xhat <- scale(Xhat, center = -mu, scale = FALSE)
+  
+  # Use trained PCA on other samples
+  pred <- wider %>%
+    filter(!reference) %>%
+    select(-reference,-sample)
+  
+  Yhat <-
+    predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
+  Yhat <- scale(Yhat, center = -mu, scale = FALSE)
+  
+  # Actual PCA normalization and conversion back to long:
+  normalized <-
+    bind_rows(as.data.frame(as.matrix(pred) / as.matrix(Yhat)),
+              as.data.frame(as.matrix(ref) / as.matrix(Xhat))) %>%
+    pivot_longer(
+      names_sep = ":",
+      names_to = c("focus", "start"),
+      cols = everything(),
+      values_to = "gc_corrected"
+    )
+  
+  normalized$sample <- samples$sample
+  normalized$reference <- samples$reference
+  normalized$chr <- samples$chr
+  samples <- normalized
+  
+  # Clean memory footprint
+  if (clean_env) {
+    rm(wider)
+    rm(pred)
+    rm(ref)
+    rm(Yhat)
+    rm(Xhat)
+    rm(normalized)
+  }
+  
+}
+
+# Calculate each reference bin i mean and filter out high variance and low mean
+reference <- samples %>%
+  filter(reference) %>%
+  group_by(chr, start) %>%
+  summarise(mean_ref_bin = mean(gc_corrected),
+            mean_ref_sd = sd(gc_corrected)) %>%
+  ungroup()
+
+
+if (bin_filter_on) {
+  filtered <- reference %>%
+    group_by(chr) %>%
+    filter(mean_ref_bin > mean(mean_ref_bin)) %>%
+    filter(mean_ref_sd < mean(mean_ref_sd)) %>%
+    ungroup()
+} else{
+  filtered <- reference
 }
 
 
-# Output, plots and additional statistics
+samples <- samples %>%
+  right_join(filtered) %>%
+  mutate(
+    z_score = (gc_corrected - mean_ref_bin) / mean_ref_sd,
+    over_median = as.integer(gc_corrected >= mean_ref_bin)
+  ) %>%
+  filter(!is.na(z_score)) %>%
+  group_by(sample, focus, reference) %>%
+  summarise(z_score_PPDX = sum(z_score) / sqrt(n()),
+            over_median = sum(over_median)) %>%
+  mutate(z_score_PPDX_norm =  (z_score_PPDX + 1) / (over_median + 2)) %>%
+  group_by(reference, focus) %>%
+  mutate(mean_x = mean(z_score_PPDX_norm),
+         mean_y = mean(z_score_PPDX)) %>%
+  ungroup()
 
-
-# Add state names for plotting
-results <- results %>%
-  dplyr::mutate(HMM = paste0("S", HMM))
-
-
-# Statistics:
-stats <- results %>%
-  tidyr::pivot_wider(id_cols = c(focus, HMM, start)) %>%
-  dplyr::arrange(desc(focus, start))
-
-
-temp_tsv <- paste0(sample_name, ".temp")
-stats_temp <- paste0(temp_tsv, ".stats")
-readr::write_tsv(stats, temp_tsv)
-
-
-command <-
-  paste("python",
-        stats_script_location,
-        "-i",
-        temp_tsv,
-        "-o",
-        stats_temp)
-
-if (system(command) == 0) {
-  stats <- readr::read_tsv(stats_temp) %>%
-    dplyr::group_by(focus, HMM, length) %>%
-    dplyr::summarise(n = n())
-  
-  readr::write_tsv(stats, paste0(sample_name, ".stats.tsv"))
-  
-} else {
-  stop("stats.py did not finish with expected exit code!")
+if (clean_env) {
+  rm(filtered)
 }
 
+if (output_mahalanobis) {
+  samples <- samples %>%
+    group_by(focus) %>%
+    group_split() %>%
+    map_dfr( ~ {
+      cov <-
+        cov(.x %>%
+              filter(reference) %>%
+              select(z_score_PPDX_norm, z_score_PPDX))
+      
+      center <- .x %>%
+        filter(reference) %>%
+        select(mean_x, mean_y) %>%
+        distinct()
+      
+      distances <- mahalanobis(
+        .x %>% select(z_score_PPDX_norm, z_score_PPDX),
+        c(center$mean_x, center$mean_y),
+        cov
+      )
+      
+      bind_cols(
+        sample = .x$sample,
+        focus = .x$focus,
+        reference = .x$reference,
+        z_score_PPDX_norm = .x$z_score_PPDX_norm,
+        z_score_PPDX = .x$z_score_PPDX,
+        p = -log10(pchisq(
+          distances, df = 2, lower.tail = FALSE
+        ) + 1e-100)
+      )
+    })
+  
+}
 
-# Plots
-pdf(
-  file = paste0(sample_name, ".pdf"),
-  title = sample_name,
-  width = 10,
-  height = 20
-)
-
-ggplot(results, aes(x = start, y = ratio)) +
-  geom_line(size = 0.001,
-            alpha = 0.5,
-            color = "grey") +
-  geom_point(aes(x = start, y = ratio, color = HMM),
-             size = 1,
-             alpha = 1) +
-  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
-  facet_wrap(facets = ~ focus,
-             scales = "free",
-             ncol = 3) +
-  scale_color_manual(values = c("S0" = "red", "S1" = "grey", "S2" = "purple")) +
-  main_theme +
-  get_line(1) +
-  get_line(0) +
-  get_line(-1)
-
-ggplot(results, aes(x = start, y = sd)) +
-  geom_bar(stat = "identity") +
-  facet_wrap( ~ focus, scales = "free") +
-  main_theme +
-  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6))
-
-ggplot(stats %>% filter(HMM == "S0"), aes(x = length, y = n)) +
-  geom_bar(stat = "identity") +
-  facet_wrap( ~ focus + HMM, scales = "free") +
-  scale_x_continuous(breaks = pretty_breaks()) +
-  main_theme
-
-ggplot(stats %>% filter(HMM == "S1"), aes(x = length, y = n)) +
-  geom_bar(stat = "identity") +
-  facet_wrap( ~ focus + HMM, scales = "free") +
-  scale_x_continuous(breaks = pretty_breaks()) +
-  main_theme
-
-ggplot(stats %>% filter(HMM == "S2"), aes(x = length, y = n)) +
-  geom_bar(stat = "identity") +
-  facet_wrap( ~ focus + HMM, scales = "free") +
-  scale_x_continuous(breaks = pretty_breaks()) +
-  main_theme
-
-dev.off()
-
-
-# Clean the output
-results <- results %>%
-  dplyr::select(
-    chromosome,
-    focus,
-    start,
-    end,
-    reads,
-    gc_corrected,
-    gc,
-    sample,
-    z_score_ref,
-    ratio,
-    Mann_Whitney,
-    HMM
+main_theme <- theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    strip.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(
+      angle = 90,
+      hjust = 1,
+      vjust = 0.5
+    )
   )
 
-readr::write_tsv(results, paste0(sample_name, ".results.tsv"))
+
+if (create_plot) {
+  last_plot <- ggplot(samples, aes(x = focus,
+                                   y = p)) +
+    geom_point(
+      data = samples %>% filter(reference),
+      aes(alpha = 0.5),
+      color = "grey",
+      shape = 16
+    ) +
+    geom_point(
+      data = samples %>% filter(!reference),
+      color = "black",
+      shape = 17
+    ) +
+    ylab("Probability of interest") +
+    ggtitle(sample_name) +
+    main_theme +
+    scale_color_grey()
+  
+  
+  ggsave(paste0(sample_name, ".png"), last_plot)
+  
+}
+
+if (include_reference) {
+  write_tsv(samples, paste0(sample_name, ".tsv"))
+} else{
+  write_tsv(samples %>% filter(!reference), paste0(sample_name, ".tsv"))
+}

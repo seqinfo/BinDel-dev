@@ -2,45 +2,44 @@ version 1.0
 
 workflow Main {
 
-  input {
-    Array[String] bam_locations
-    File coordinates   
-  }
-
-  scatter (bamPath in bam_locations) {
-    call analyze {
-      input:
-        bamPath = bamPath      
+    input {
+        Array[String] bam_locations
+        File coordinates
     }
-  }
 
-  output {
-    Array[File] scores = analyze.results 
-    Array[File] stats = analyze.stats 
-    Array[File] plots = analyze.plots 
-  }
+    scatter (bamPath in bam_locations) {
+        call analyze {
+            input:
+                bamPath = bamPath
+        }
+    }
+
+    output {
+        Array[File] scores = analyze.results
+        Array[File] stats = analyze.stats
+        Array[File] plots = analyze.plots
+    }
 }
 
 task analyze {
 
-  input {
-    File bamPath
-    File reference
+    input {
+        File bamPath
+        File reference
     }
 
-  command {
-    set -e
-    Rscript $analyser ${bamPath} ${reference}
-  }
+    command {
+        set -e
+        Rscript $analyser ${bamPath} ${reference}
+    }
 
-  runtime {
-    time: 50
-    cpu: 1
-    mem: 50
-  }
+    runtime {
+        time: 50
+        cpu: 1
+        mem: 50
+    }
     output {
-     File results = glob("*.results.tsv")[0]
-     File stats = glob("*.stats.tsv")[0]
-     File plots = glob("*.pdf")[0]     
-  }
+        File result =  basename(bamPath) + ".tsv"
+        File plot = basename(bamPath) + ".png"
+    }
 }

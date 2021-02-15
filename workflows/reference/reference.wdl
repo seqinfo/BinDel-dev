@@ -1,69 +1,67 @@
 version 1.0
 
 workflow Main {
-  
-  input {
-    Array[String] bam_locations
-  }
 
-  scatter (bamPath in bam_locations) {
-    call bin {
-      input:
-        bamPath = bamPath
+    input {
+        Array[String] bam_locations
     }
-  }
 
-  call merge {
-    input:
-      counts = bin.counts
-  }
+    scatter (bamPath in bam_locations) {
+        call bin {
+            input:
+                bamPath = bamPath
+        }
+    }
 
-  output {
-    File reference = merge.reference 
-  }
+    call merge {
+        input:
+            counts = bin.counts
+    }
+
+    output {
+        File reference = merge.reference
+    }
 }
-
 
 task bin {
 
-  input {
-    File bamPath
-    File regions
+    input {
+        File bamPath
+        File regions
     }
 
-  command {
-    set -e
-    Rscript $count_reads ${bamPath} ${regions}
-  }
+    command {
+        set -e
+        Rscript $count_reads ${bamPath} ${regions}
+    }
 
-  runtime {
-    time: 10
-    cpu: 1
-    mem: 10
-  }
+    runtime {
+        time: 10
+        cpu: 1
+        mem: 10
+    }
     output {
-     File counts = glob("*.tsv")[0]
-  }
+        File counts = glob("*.tsv")[0]
+    }
 }
-
 
 task merge {
 
-  input {
-    Array[File] counts
+    input {
+        Array[File] counts
     }
 
-  command {
-    head -1 ${counts[0]} > reference.tsv; tail -n+2 -q ${sep = " " counts} >> reference.tsv
+    command {
+        head -1 ${counts[0]} > reference.tsv; tail -n+2 -q ${sep = " " counts} >> reference.tsv
     }
 
-  runtime {
-    time: 20
-    cpu: 1
-    mem: 10
-  }
+    runtime {
+        time: 20
+        cpu: 1
+        mem: 10
+    }
 
-  output {
-     File reference = "reference.tsv"
-  }
+    output {
+        File reference = "reference.tsv"
+    }
 }
