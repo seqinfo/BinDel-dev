@@ -43,9 +43,6 @@ bed_location <- args[2]
 bed <- read_tsv(bed_location)
 
 reads_per_bin <- bin_counts(bam_location, bed) %>%
-  group_by(sample) %>%
-  mutate(sample = paste0("ref.", cur_group_id())) %>%
-  ungroup()
-
+  mutate(sample = paste0("rf.", sample)) 
 
 write_tsv(path = paste0(basename(bam_location), ".tsv"), x = reads_per_bin)
