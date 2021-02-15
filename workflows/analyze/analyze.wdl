@@ -15,9 +15,8 @@ workflow Main {
     }
 
     output {
-        Array[File] scores = analyze.results
-        Array[File] stats = analyze.stats
-        Array[File] plots = analyze.plots
+        Array[File] scores = analyze.result
+        Array[File] plots = analyze.plot
     }
 }
 
