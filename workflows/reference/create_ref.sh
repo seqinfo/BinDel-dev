@@ -17,6 +17,6 @@ source activate detector
 
 export count_reads=$(realpath ../../R/count_reads.R)
 
-cromwell -Dconfig.file=cromwell.conf -Xmx12g run -i inputs_all.json -o options_ref.json \
+cromwell -Dconfig.file=cromwell.conf -Xmx12g run -i inputs_ref_665.json -o options_ref.json \
   reference.wdl
 

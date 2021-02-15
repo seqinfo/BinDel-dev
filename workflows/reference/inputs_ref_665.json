@@ -126,7 +126,6 @@
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A597N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A446N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A713N.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A794N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A349N-2.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A488N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A119N.bam",
@@ -141,7 +140,6 @@
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A98N-1.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A619N-2B.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A539N.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A569N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A350N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A229N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A554N.bam",
@@ -274,7 +272,6 @@
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A157N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A195N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A600N.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A142N-1.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A545N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A606N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A383N.bam",
@@ -483,7 +480,6 @@
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A739N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A653N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A509N.bam",
-    "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A556N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A255N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A108N-2.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A718N-2A.bam",
@@ -670,6 +666,5 @@
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A186N-2.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A122N.bam",
     "/gpfs/hpc/samba/CCHT/service_lab/science/NIPTeR-master/data/mapped_reference/lanes-4/A789N.bam"
-    
   ]
 }
