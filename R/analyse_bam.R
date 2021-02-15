@@ -35,7 +35,7 @@ nComp <- 160
 # Save plot
 create_plot <- TRUE
 # Include reference in the output?
-include_reference <- TRUE
+include_reference <- FALSE
 
 # Optimize RAM usage
 clean_env <- TRUE
