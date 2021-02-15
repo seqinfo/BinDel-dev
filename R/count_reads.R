@@ -43,9 +43,10 @@ bed_location <- args[2]
 bed <- read_tsv(bed_location)
 
 reads_per_bin <- bin_counts(bam_location, bed) %>%
-  group_by(sample) %>% 
-  mutate(sample = group_indices(., sample)) %>%
-  mutate(sample = paste0("ref.", sample)) %>% 
+  mutate(id = group_indices(., sample)) %>%
+  mutate(id = paste0("ref.", id)) %>% 
+  mutate(sample = id) %>% 
+  select(-id) %>% 
   ungroup()
 
 
