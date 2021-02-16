@@ -1,0 +1,286 @@
+#' Find GC% for GRCh38 based .bed data frame.
+#'
+#' This function calculates  z_score_PPDX_norm, z_score_PPDX and optionally
+#' probabilities of being interest (recommended metric).
+#'
+#' @param bed A data frame in .bed format with columns: 'chr', 'start', 'end', 'focus'.
+#' @return A data frame in bed format with GC%.
+find_gc <- function(bed) {
+  reads <- bed %>%
+    dplyr::mutate(gc = Biostrings::letterFrequency(
+      Biostrings::getSeq(
+        BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38,
+        GenomicRanges::GRanges(chr, IRanges::IRanges(start = start, end = end))
+      ),
+      "GC",
+      as.prob = T
+    )) %>%
+    dplyr::mutate(gc = round(gc, 1))
+}
+
+
+#' Bin a BAM file for the bins provided by the .bed file.
+#'
+#' This function calculates  z_score_PPDX_norm, z_score_PPDX and optionally
+#' probabilities of being interest (recommended metric).
+#'
+#' @param bam_location A location to the BAM-file to bin.
+#' @param bed A data frame in .bed format with columns: 'chr', 'start', 'end', 'focus'.
+#' @return A B data frame in bed format with GC%.
+#' @export
+bin_counts <- function(bam_location, bed) {
+  bam <-
+    GenomicAlignments::readGAlignments(bam_location,
+                                       param =  Rsamtools::ScanBamParam(
+                                         flag = Rsamtools::scanBamFlag(isDuplicate = FALSE, isSecondaryAlignment = FALSE),
+                                         what = c("pos")
+                                       ))
+
+  binned_counts <- bed %>%
+    dplyr::mutate(reads = assay(
+      GenomicAlignments::summarizeOverlaps(GenomicRanges::makeGRangesFromDataFrame(.), bam, mode = "IntersectionStrict")
+    )) %>%
+    dplyr::mutate(sample = basename(bam_location))
+
+  return(binned_counts)
+}
+
+
+#' Score BAM-file
+#'
+#' This function calculates  z_score_PPDX_norm, z_score_PPDX and optionally
+#' probabilities of being interest (recommended metric).
+#'
+#' @param bam_location Path to the input file
+#' @param reference_location Path to the reference file
+#' @param do_gc_correct Use bin-based GC-correct? PMID: 28500333 and PMID: 20454671
+#' @param use_pca Use PCA based normalization? Has important effect for micro-deletions detection.
+#' @param nComp How many components to use in PCA-based normalization. Should be lower than the number of genomic bins used.
+#' @param output_mahalanobis Output also mahalanobis based probabilities of being different from the reference group?
+#' @param bin_filter_on filter bins: filter(bin > mean(chr)), filter(bin_sd < mean(chr_sd)). Not recommended for detecting all the microdeletions. It can hide some CNVs, but can be helpful for detecting 45,X (if female fetus reference group is used.)
+#' @param include_reference Include reference in the output?
+#' @param clean_env Optimize RAM usage by cleaning temp variables in this function?
+#' @return A data frame with scores for the provided BAM.
+#' @export
+calculate_scores <- function(bam_location,
+                             reference_location,
+                             do_gc_correct = TRUE,
+                             use_pca = TRUE,
+                             nComp = 160,
+                             output_mahalanobis = TRUE,
+                             filter_on = FALSE,
+                             include_reference = FALSE,
+                             clean_env = TRUE) {
+  sample_name <- basename(bam_location)
+
+  # Reference samples to be used to calculate z-scores
+  reference <-
+    readr::read_tsv(reference_location) %>%
+    dplyr::mutate(reference = TRUE)
+
+
+  # Bin BAM under investigation
+  binned_reads <- bin_counts(
+    bam_location,
+    reference %>%
+      dplyr::select(chr, start, end, focus) %>%
+      dplyr::distinct(chr, start, end, focus)
+  ) %>%
+    dplyr::mutate(reference = FALSE)
+
+
+  # Merge: BAM + reference
+  samples <- reference %>%
+    # Note, reference samples names must not overlap with the analyzable sample.
+    dplyr::bind_rows(binned_reads)
+
+
+  if (clean_env) {
+    rm(binned_reads)
+  }
+
+  # GC-correct (sample wise) (PMID: 28500333 and PMID: 20454671)
+  if (do_gc_correct) {
+    # Find GC% of the genome (HG38)
+    samples <- samples %>%
+      dplyr::left_join(find_gc(
+        dplyr::select(.data = ., chr, start, end, focus) %>%
+          dplyr::distinct(chr, start, end, focus)
+      )) %>%
+      # Do GC correct
+      dplyr::group_by (sample, gc) %>%
+      dplyr::mutate(avg_reads_gc_interval = mean(reads)) %>%
+      dplyr::ungroup() %>%
+      dplyr::group_by (sample) %>%
+      dplyr::mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
+      dplyr::mutate(gc_corrected = reads * weights) %>%
+      dplyr::filter(!is.na(gc_corrected)) %>%
+      dplyr::ungroup()
+
+  } else{
+    samples <- samples %>%
+      dplyr::mutate(gc_corrected = reads) %>%
+      dplyr::filter(!is.na(gc_corrected))
+  }
+
+  samples <- samples %>%
+    # Sample read count correct
+    dplyr::group_by (sample) %>%
+    dplyr::mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
+    dplyr::ungroup() %>%
+    # Sample bin length correct
+    dplyr::mutate(gc_corrected = gc_corrected / (end - start)) %>%
+    # Optimize memory
+    dplyr::select(chr, focus, start, sample, reference, gc_corrected)
+
+
+  if (use_pca) {
+    # For PCA sort ()
+    samples <- samples %>%
+      dplyr::arrange(reference)
+
+    # Pivot wide for PCA normalization
+    wider <- samples %>%
+      dplyr::select(focus, start, sample, reference, gc_corrected) %>%
+      tidyr::pivot_wider(
+        names_from = c(focus, start),
+        id_cols = c(sample, reference),
+        values_from = gc_corrected,
+        names_sep = ":"
+      )
+
+    # https://stats.stackexchange.com/questions/229092/how-to-reverse-pca-and-reconstruct-original-variables-from-several-principal-com
+    # Train PCA
+    ref <- wider %>%
+      dplyr::filter(reference) %>%
+      dplyr::select(-reference, -sample)
+
+    mu <- colMeans(ref, na.rm = T)
+    refPca <- stats::prcomp(ref)
+
+
+    Xhat <- refPca$x[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
+    Xhat <- scale(Xhat, center = -mu, scale = FALSE)
+
+    # Use trained PCA on other samples
+    pred <- wider %>%
+      dplyr::filter(!reference) %>%
+      dplyr::select(-reference, -sample)
+
+    Yhat <-
+      stats::predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
+    Yhat <- scale(Yhat, center = -mu, scale = FALSE)
+
+    # Actual PCA normalization and conversion back to long:
+    normalized <-
+      bind_rows(as.data.frame(as.matrix(pred) / as.matrix(Yhat)),
+                as.data.frame(as.matrix(ref) / as.matrix(Xhat))) %>%
+      tidyr::pivot_longer(
+        names_sep = ":",
+        names_to = c("focus", "start"),
+        cols = everything(),
+        values_to = "gc_corrected"
+      )
+
+    normalized$sample <- samples$sample
+    normalized$reference <- samples$reference
+    normalized$chr <- samples$chr
+    samples <- normalized
+
+    # Clean memory footprint
+    if (clean_env) {
+      rm(wider)
+      rm(pred)
+      rm(ref)
+      rm(Yhat)
+      rm(Xhat)
+      rm(normalized)
+    }
+
+  }
+
+  # Calculate each reference bin i mean and dplyr::filter out high variance and low mean
+  reference <- samples %>%
+    dplyr::filter(reference) %>%
+    dplyr::group_by (chr, start) %>%
+    dplyr::summarise (mean_ref_bin = mean(gc_corrected),
+                      mean_ref_sd = sd(gc_corrected)) %>%
+    dplyr::ungroup()
+
+
+  if (bin_dplyr::filter_on) {
+    filtered <- reference %>%
+      dplyr::group_by (chr) %>%
+      dplyr::filter(mean_ref_bin > mean(mean_ref_bin)) %>%
+      dplyr::filter(mean_ref_sd < mean(mean_ref_sd)) %>%
+      dplyr::ungroup()
+  } else{
+    filtered <- reference
+  }
+
+
+  samples <- samples %>%
+    dplyr::right_join(filtered) %>%
+    dplyr::mutate(
+      z_score = (gc_corrected - mean_ref_bin) / mean_ref_sd,
+      over_median = as.integer(gc_corrected >= mean_ref_bin)
+    ) %>%
+    dplyr::filter(!is.na(z_score)) %>%
+    dplyr::group_by (sample, focus, reference) %>%
+    dplyr::summarise (
+      z_score_PPDX = sum(z_score) / sqrt(n()),
+      over_median = sum(over_median)
+    ) %>%
+    dplyr::mutate(z_score_PPDX_norm =  (z_score_PPDX + 1) / (over_median + 2)) %>%
+    dplyr::group_by (reference, focus) %>%
+    dplyr::mutate(mean_x = mean(z_score_PPDX_norm),
+                  mean_y = mean(z_score_PPDX)) %>%
+    dplyr::ungroup()
+
+  if (clean_env) {
+    rm(filtered)
+  }
+
+  if (output_mahalanobis) {
+    samples <- samples %>%
+      dplyr::group_by (focus) %>%
+      dplyr::group_split() %>%
+      purrr::map_dfr(~ {
+        cov <-
+          stats::cov(
+            .x %>%
+              dplyr::filter(reference) %>%
+              dplyr::select(z_score_PPDX_norm, z_score_PPDX)
+          )
+
+        center <- .x %>%
+          dplyr::filter(reference) %>%
+          dplyr::select(mean_x, mean_y) %>%
+          dplyr::distinct()
+
+        distances <- stats::mahalanobis(
+          .x %>% dplyr::select(z_score_PPDX_norm, z_score_PPDX),
+          c(center$mean_x, center$mean_y),
+          stats::cov
+        )
+
+        bind_cols(
+          sample = .x$sample,
+          focus = .x$focus,
+          reference = .x$reference,
+          z_score_PPDX_norm = .x$z_score_PPDX_norm,
+          z_score_PPDX = .x$z_score_PPDX,
+          p = -log10(
+            stats::pchisq(distances, df = 2, lower.tail = FALSE) + 1e-100
+          )
+        )
+      })
+
+  }
+
+  if (include_reference) {
+    return(samples)
+  } else{
+    return(samples %>% dplyr::filter(!reference))
+  }
+}
