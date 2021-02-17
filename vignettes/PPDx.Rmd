@@ -60,7 +60,7 @@ last_plot <- ggplot2::ggplot(samples, aes(x = focus,
     shape = 16
   ) +
   ggplot2::geom_point(
-    data = samples %>% dplyr:filter(!reference),
+    data = samples %>% dplyr::filter(!reference),
     color = "black",
     shape = 17
   ) +
