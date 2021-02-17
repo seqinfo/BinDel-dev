@@ -231,7 +231,7 @@ calculate_scores <- function(bam_location,
     dplyr::filter(!is.na(z_score)) %>%
     dplyr::group_by (sample, focus, reference) %>%
     dplyr::summarise (
-      z_score_PPDX = sum(z_score) / sqrt(n()),
+      z_score_PPDX = sum(z_score) / sqrt(dplyr::n()),
       over_median = sum(over_median)
     ) %>%
     dplyr::mutate(z_score_PPDX_norm =  (z_score_PPDX + 1) / (over_median + 2)) %>%
