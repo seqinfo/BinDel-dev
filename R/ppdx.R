@@ -301,7 +301,7 @@ plot_result <- function(result) {
   
   # Plot results
   plot <-
-    ggplot2::ggplot(ordered, aes(x = stats::reorder(focus, chr), y = p)) +
+    ggplot2::ggplot(ordered, ggplot2::aes(x = stats::reorder(focus, chr), y = p)) +
     ggplot2::geom_point(
       alpha = ordered$alpha,
       shape = ordered$shape,
