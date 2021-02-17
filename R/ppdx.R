@@ -71,7 +71,7 @@ calculate_scores <- function(bam_location,
                              use_pca = TRUE,
                              nComp = 160,
                              output_mahalanobis = TRUE,
-                             filter_on = FALSE,
+                             bin_filter_on = FALSE,
                              include_reference = FALSE,
                              clean_env = TRUE) {
   sample_name <- basename(bam_location)
@@ -211,7 +211,7 @@ calculate_scores <- function(bam_location,
     dplyr::ungroup()
 
 
-  if (bin_dplyr::filter_on) {
+  if (bin_filter_on) {
     filtered <- reference %>%
       dplyr::group_by (chr) %>%
       dplyr::filter(mean_ref_bin > mean(mean_ref_bin)) %>%
