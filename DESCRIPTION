@@ -29,6 +29,7 @@ Imports:
   GenomicRanges,
   ggplot2,
   IRanges,
+  magrittr,
   purrr,
   readr,
   Rsamtools,
