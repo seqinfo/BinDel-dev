@@ -3,6 +3,7 @@
 #' This function calculates  z_score_PPDX_norm, z_score_PPDX and optionally
 #' probabilities of being interest (recommended metric).
 #'
+#' @importFrom magrittr %>%
 #' @param bed A data frame in .bed format with columns: 'chr', 'start', 'end', 'focus'.
 #' @return A data frame in bed format with GC%.
 find_gc <- function(bed) {
@@ -24,6 +25,7 @@ find_gc <- function(bed) {
 #' This function calculates  z_score_PPDX_norm, z_score_PPDX and optionally
 #' probabilities of being interest (recommended metric).
 #'
+#' @importFrom magrittr %>%
 #' @param bam_location A location to the BAM-file to bin.
 #' @param bed A data frame in .bed format with columns: 'chr', 'start', 'end', 'focus'.
 #' @return A B data frame in bed format with GC%.
@@ -51,6 +53,7 @@ bin_counts <- function(bam_location, bed) {
 #' This function calculates  z_score_PPDX_norm, z_score_PPDX and optionally
 #' probabilities of being interest (recommended metric).
 #'
+#' @importFrom magrittr %>%
 #' @param bam_location Path to the input file
 #' @param reference_location Path to the reference file
 #' @param do_gc_correct Use bin-based GC-correct? PMID: 28500333 and PMID: 20454671
