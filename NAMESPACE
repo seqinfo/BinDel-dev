@@ -2,3 +2,4 @@
 
 export(bin_counts)
 export(calculate_scores)
+importFrom(magrittr,"%>%")
