@@ -1,29 +1,41 @@
 Package: ppdx
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person(given = "Priit",
-           family = "Paluoja",
-           role = c("aut", "cre"),
-           email = "priitpaluoja@gmail.com",
-           comment = c(ORCID = "0000-0002-2016-661X"))
+Title: PPDX microdeletion detector
+Version: 2.0.2
+Authors@R: c(
+  person(
+    given = "Priit", 
+    family = "Paluoja", 
+    role = c("aut", "cre"),
+    email = "priitpaluoja@gmail.com",
+    comment = c(ORCID = "0000-0002-2016-661X")),
+  person(
+    given = "Priit",
+    family = "Palta",
+    role = c("aut"),
+    email = "priit.palta@gmail.com",
+    comment = c(ORCID = "0000-0001-9320-7008")))
 Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+License: CC BY-NC-SA 4.0
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+biocViews:
 Imports:
   Biostrings,
   BSgenome.Hsapiens.UCSC.hg38,
   dplyr,
   GenomicAlignments,
   GenomicRanges,
+  ggplot2,
   IRanges,
   purrr,
   readr,
   Rsamtools,
   stats,
+  stringr,
   tidyr
-
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
