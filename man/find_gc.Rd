@@ -13,6 +13,5 @@ find_gc(bed)
 A data frame in bed format with GC\%.
 }
 \description{
-This function calculates  z_score_PPDX_norm, z_score_PPDX and optionally
-probabilities of being interest (recommended metric).
+Find GC\% for GRCh38 based .bed data frame.
 }

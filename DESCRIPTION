@@ -1,6 +1,6 @@
 Package: ppdx
 Title: PPDX microdeletion detector
-Version: 2.0.2
+Version: 2.0.4
 Authors@R: c(
   person(
     given = "Priit", 
