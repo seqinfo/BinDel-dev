@@ -176,12 +176,12 @@ calculate_scores <- function(bam_location,
 
     # Actual PCA normalization and conversion back to long:
     normalized <-
-      bind_rows(as.data.frame(as.matrix(pred) / as.matrix(Yhat)),
+      dplyr::bind_rows(as.data.frame(as.matrix(pred) / as.matrix(Yhat)),
                 as.data.frame(as.matrix(ref) / as.matrix(Xhat))) %>%
       tidyr::pivot_longer(
         names_sep = ":",
         names_to = c("focus", "start"),
-        cols = everything(),
+        cols = dplyr::everything(),
         values_to = "gc_corrected"
       )
 
@@ -267,7 +267,7 @@ calculate_scores <- function(bam_location,
           stats::cov
         )
 
-        bind_cols(
+        dplyr::bind_cols(
           sample = .x$sample,
           focus = .x$focus,
           reference = .x$reference,
