@@ -264,7 +264,7 @@ calculate_scores <- function(bam_location,
         distances <- stats::mahalanobis(
           .x %>% dplyr::select(z_score_PPDX_norm, z_score_PPDX),
           c(center$mean_x, center$mean_y),
-          stats::cov
+          cov
         )
 
         dplyr::bind_cols(
