@@ -25,9 +25,9 @@ infer_normality(
 
 \item{use_pca}{Use PCA based normalization? Has important effect for micro-deletions detection.}
 
-\item{nComp}{How many components to use in PCA-based normalization. Should be lower than the number of genomic bins used.}
+\item{nComp}{How many components to use in PCA-based normalization. Must be lower than the number of reference samples.}
 
-\item{bin_filter_on}{filter bins: filter(bin > mean(chr)), filter(bin_sd < mean(chr_sd)). Not recommended for detecting all the microdeletions. It can hide some CNVs, but can be helpful for detecting 45,X (if female fetus reference group is used).}
+\item{bin_filter_on}{filter bins: filter(bin > mean(chr)), filter(bin_sd < mean(chr_sd)). Experimental, can hide some CNVs, but can be helpful for detecting 45,X (if female fetus reference group is used).}
 
 \item{include_reference}{Include reference in the output?}
 

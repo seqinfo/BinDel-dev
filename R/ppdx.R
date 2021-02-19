@@ -51,8 +51,8 @@ bin_bam <- function(bam_location, bed) {
 #' @param reference_location Path to the reference file
 #' @param do_gc_correct Use bin-based GC-correct? PMID: 28500333 and PMID: 20454671
 #' @param use_pca Use PCA based normalization? Has important effect for micro-deletions detection.
-#' @param nComp How many components to use in PCA-based normalization. Should be lower than the number of genomic bins used.
-#' @param bin_filter_on filter bins: filter(bin > mean(chr)), filter(bin_sd < mean(chr_sd)). Not recommended for detecting all the microdeletions. It can hide some CNVs, but can be helpful for detecting 45,X (if female fetus reference group is used).
+#' @param nComp How many components to use in PCA-based normalization. Must be lower than the number of reference samples.
+#' @param bin_filter_on filter bins: filter(bin > mean(chr)), filter(bin_sd < mean(chr_sd)). Experimental, can hide some CNVs, but can be helpful for detecting 45,X (if female fetus reference group is used).
 #' @param include_reference Include reference in the output?
 #' @param clean_env Optimize RAM usage by cleaning temp variables in this function?
 #' @return A data frame with scores for the provided BAM.
@@ -68,21 +68,54 @@ infer_normality <- function(bam_location,
                             clean_env = TRUE) {
   sample_name <- basename(bam_location)
   
+  
+  message("Reading reference file from:", reference_location)
   # Reference samples to be used to calculate z-scores
   reference <-
     readr::read_tsv(reference_location) %>%
     dplyr::mutate(reference = TRUE)
   
-  
-  if (use_pca) {
-    if (nrow(reference %>%
-             dplyr::select(sample) %>%
-             dplyr::distinct(sample)) < nComp) {
-      stop("nComp must be lower than number of reference samples.")
+  # Check if reference file has all the required columns.
+  ref_expected_cols <-
+    c("chr", "start", "end", "focus", "reads", "sample")
+  for (col in ref_expected_cols) {
+    if (!col %in% colnames(reference)) {
+      stop(paste0("Reference file has a missing column: '", col, "'."))
     }
   }
   
+  number_of_reference_samples <- nrow(reference %>%
+                                        dplyr::select(sample) %>%
+                                        dplyr::distinct(sample))
   
+  if (nrow(reference) == 0) {
+    stop("Reference file cannot be empty")
+  }
+  
+  if (number_of_reference_samples < 10) {
+    warning("Reference group has less than 10 samples.")
+  } else{
+    message("Reference group has",
+            number_of_reference_samples,
+            "samples.")
+  }
+  
+  
+  if (use_pca) {
+    if (number_of_reference_samples < nComp) {
+      stop(
+        paste0(
+          "nComp (",
+          nComp,
+          ") must be lower than number of reference samples(",
+          number_of_reference_samples,
+          ")."
+        )
+      )
+    }
+  }
+  
+  message("Reading and binning: ", bam_location)
   # Bin BAM under investigation
   binned_reads <- bin_bam(
     bam_location,
@@ -93,6 +126,7 @@ infer_normality <- function(bam_location,
     dplyr::mutate(reference = FALSE)
   
   
+  message("Checking if bam name is unique in terms of reference.")
   # Note, reference samples names must not overlap with the analyzable sample.
   if (nrow(
     binned_reads %>%
@@ -103,7 +137,7 @@ infer_normality <- function(bam_location,
     stop("Sample to infer probabilites name is present in reference group.")
   }
   
-  
+  message("Merging BAM and reference for calculations.")
   # Merge: BAM + reference
   samples <- reference %>%
     dplyr::bind_rows(binned_reads)
@@ -115,6 +149,7 @@ infer_normality <- function(bam_location,
   
   # GC-correct (sample wise) (PMID: 28500333 and PMID: 20454671)
   if (do_gc_correct) {
+    message("Applying GC% correct")
     # Find GC% of the genome (HG38)
     samples <- samples %>%
       dplyr::left_join(find_gc(
@@ -132,11 +167,13 @@ infer_normality <- function(bam_location,
       dplyr::ungroup()
     
   } else{
+    warning("Skipping GC% correct")
     samples <- samples %>%
       dplyr::mutate(gc_corrected = reads) %>%
       dplyr::filter(!is.na(gc_corrected))
   }
   
+  message("Normalizin by read count and bin length.")
   samples <- samples %>%
     # Sample read count correct
     dplyr::group_by (sample) %>%
@@ -149,6 +186,7 @@ infer_normality <- function(bam_location,
   
   
   if (use_pca) {
+    message("Applying PCA normalization with", nComp , "components.")
     # For PCA sort ()
     samples <- samples %>%
       dplyr::arrange(reference)
@@ -167,7 +205,7 @@ infer_normality <- function(bam_location,
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
@@ -179,7 +217,7 @@ infer_normality <- function(bam_location,
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     Yhat <-
       stats::predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
@@ -213,7 +251,8 @@ infer_normality <- function(bam_location,
     
   }
   
-  # Calculate each reference bin i mean and dplyr::filter out high variance and low mean
+  message("Calulating reference group statistics.")
+  # Calculate each reference bin i mean
   reference <- samples %>%
     dplyr::filter(reference) %>%
     dplyr::group_by (chr, start) %>%
@@ -221,8 +260,9 @@ infer_normality <- function(bam_location,
                       mean_ref_sd = sd(gc_corrected)) %>%
     dplyr::ungroup()
   
-  
+  # Filter out high variance and low mean
   if (bin_filter_on) {
+    warning("Experimental bin-filtering is on. Filtering high variance and low mean")
     filtered <- reference %>%
       dplyr::group_by (chr) %>%
       dplyr::filter(mean_ref_bin > mean(mean_ref_bin)) %>%
@@ -232,7 +272,7 @@ infer_normality <- function(bam_location,
     filtered <- reference
   }
   
-  
+  message("Calculating metrics.")
   samples <- samples %>%
     dplyr::right_join(filtered) %>%
     dplyr::mutate(
@@ -259,7 +299,7 @@ infer_normality <- function(bam_location,
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr(~ {
+    purrr::map_dfr( ~ {
       cov <-
         stats::cov(
           .x %>%
