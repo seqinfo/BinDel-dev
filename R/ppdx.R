@@ -134,7 +134,7 @@ infer_normality <- function(bam_location,
     dplyr::distinct(sample) %>%
     dplyr::inner_join(reference %>% dplyr::select(sample))
   ) != 0) {
-    stop("Sample to infer probabilites name is present in reference group.")
+    stop("BAM name is present in the reference group. Stopping.")
   }
   
   message("Merging BAM and reference for calculations.")
