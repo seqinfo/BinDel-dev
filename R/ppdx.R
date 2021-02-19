@@ -74,6 +74,15 @@ infer_normality <- function(bam_location,
     dplyr::mutate(reference = TRUE)
   
   
+  if (use_pca) {
+    if (nrow(reference %>%
+             dplyr::select(sample) %>%
+             dplyr::distinct(sample)) < nComp) {
+      stop("nComp must be lower than number of reference samples.")
+    }
+  }
+  
+  
   # Bin BAM under investigation
   binned_reads <- bin_bam(
     bam_location,
@@ -84,9 +93,19 @@ infer_normality <- function(bam_location,
     dplyr::mutate(reference = FALSE)
   
   
+  # Note, reference samples names must not overlap with the analyzable sample.
+  if (nrow(
+    binned_reads %>%
+    dplyr::select(sample) %>%
+    dplyr::distinct(sample) %>%
+    dplyr::inner_join(reference %>% dplyr::select(sample))
+  ) != 0) {
+    stop("Sample to infer probabilites name is present in reference group.")
+  }
+  
+  
   # Merge: BAM + reference
   samples <- reference %>%
-    # Note, reference samples names must not overlap with the analyzable sample.
     dplyr::bind_rows(binned_reads)
   
   
