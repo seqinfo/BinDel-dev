@@ -95,9 +95,9 @@ infer_normality <- function(bam_location,
   if (number_of_reference_samples < 10) {
     warning("Reference group has less than 10 samples.")
   } else{
-    message("Reference group has",
+    message("Reference group has ",
             number_of_reference_samples,
-            "samples.")
+            " samples.")
   }
   
   
@@ -149,7 +149,7 @@ infer_normality <- function(bam_location,
   
   # GC-correct (sample wise) (PMID: 28500333 and PMID: 20454671)
   if (do_gc_correct) {
-    message("Applying GC% correct")
+    message("Applying GC% correct.")
     # Find GC% of the genome (HG38)
     samples <- samples %>%
       dplyr::left_join(find_gc(
@@ -167,7 +167,7 @@ infer_normality <- function(bam_location,
       dplyr::ungroup()
     
   } else{
-    warning("Skipping GC% correct")
+    warning("Skipping GC% correct.")
     samples <- samples %>%
       dplyr::mutate(gc_corrected = reads) %>%
       dplyr::filter(!is.na(gc_corrected))
@@ -186,7 +186,7 @@ infer_normality <- function(bam_location,
   
   
   if (use_pca) {
-    message("Applying PCA normalization with", nComp , "components.")
+    message("Applying PCA normalization with ", nComp , " components.")
     # For PCA sort ()
     samples <- samples %>%
       dplyr::arrange(reference)
