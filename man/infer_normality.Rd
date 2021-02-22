@@ -2,18 +2,14 @@
 % Please edit documentation in R/ppdx.R
 \name{infer_normality}
 \alias{infer_normality}
-\title{Infer normality based on the binned read count.}
+\title{Infer sample normality probability.}
 \usage{
 infer_normality(
   bam_location,
   reference_location,
-  do_gc_correct = TRUE,
   use_pca = TRUE,
-  nComp = 160,
-  output_mahalanobis = TRUE,
-  bin_filter_on = FALSE,
-  include_reference = FALSE,
-  clean_env = TRUE
+  nComp = 80,
+  include_reference = FALSE
 )
 }
 \arguments{
@@ -21,21 +17,30 @@ infer_normality(
 
 \item{reference_location}{Path to the reference file}
 
-\item{do_gc_correct}{Use bin-based GC-correct? PMID: 28500333 and PMID: 20454671}
+\item{use_pca}{Use PCA based normalization?}
 
-\item{use_pca}{Use PCA based normalization? Has important effect for micro-deletions detection.}
-
-\item{nComp}{How many components to use in PCA-based normalization. Must be lower than the number of reference samples.}
-
-\item{bin_filter_on}{filter bins: filter(bin > mean(chr)), filter(bin_sd < mean(chr_sd)). Experimental, can hide some CNVs, but can be helpful for detecting 45,X (if female fetus reference group is used).}
+\item{nComp}{How many components to use in PCA-based normalization?}
 
 \item{include_reference}{Include reference in the output?}
-
-\item{clean_env}{Optimize RAM usage by cleaning temp variables in this function?}
 }
 \value{
 A data frame with scores for the provided BAM.
 }
 \description{
-Infer normality based on the binned read count.
+This function does the following:
+\enumerate{
+\item Apply bin-based GC\% correct.
+\item Normalizing by read count.
+\item Normalize by bin length.
+\item Apply PCA-based normalization
+\item Calculate reference group statistics per focus region.
+\item Calculate sample Mahalanobis distance from the reference group.
+\item Calculate -log10 chi-squared distribution probabilities.
+}
+}
+\examples{
+
+bam <- "sample.bam"
+reference <- "reference.tsv"
+metrics <- infer_normality(bam, reference)
 }
