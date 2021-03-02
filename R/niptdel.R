@@ -32,13 +32,13 @@ bin_bam <- function(bam_location, bed) {
                                          flag = Rsamtools::scanBamFlag(isDuplicate = FALSE, isSecondaryAlignment = FALSE),
                                          what = c("pos")
                                        ))
-
+  
   binned_counts <- bed %>%
     dplyr::mutate(reads = SummarizedExperiment::assay(
       GenomicAlignments::summarizeOverlaps(GenomicRanges::makeGRangesFromDataFrame(.), bam, mode = "IntersectionStrict")
     )) %>%
     dplyr::mutate(sample = basename(bam_location))
-
+  
   return(binned_counts)
 }
 
@@ -73,14 +73,14 @@ infer_normality <- function(bam_location,
                             nComp = 80,
                             include_reference = FALSE) {
   sample_name <- basename(bam_location)
-
-
+  
+  
   message("Reading reference file from:", reference_location)
   # Reference samples to be used to calculate z-scores
   reference <-
     readr::read_tsv(reference_location) %>%
-      dplyr::mutate(reference = TRUE)
-
+    dplyr::mutate(reference = TRUE)
+  
   # Check if reference file has all the required columns.
   ref_expected_cols <-
     c("chr", "start", "end", "focus", "reads", "sample")
@@ -89,15 +89,15 @@ infer_normality <- function(bam_location,
       stop(paste0("Reference file has a missing column: '", col, "'."))
     }
   }
-
+  
   number_of_reference_samples <- nrow(reference %>%
                                         dplyr::select(sample) %>%
                                         dplyr::distinct(sample))
-
+  
   if (nrow(reference) == 0) {
     stop("Reference file cannot be empty")
   }
-
+  
   if (number_of_reference_samples < 10) {
     warning("Reference group has less than 10 samples.")
   } else {
@@ -105,8 +105,8 @@ infer_normality <- function(bam_location,
             number_of_reference_samples,
             " samples.")
   }
-
-
+  
+  
   if (use_pca) {
     if (number_of_reference_samples < nComp) {
       stop(
@@ -120,7 +120,7 @@ infer_normality <- function(bam_location,
       )
     }
   }
-
+  
   message("Reading and binning: ", bam_location)
   # Bin BAM under investigation
   binned_reads <- bin_bam(
@@ -130,28 +130,28 @@ infer_normality <- function(bam_location,
       dplyr::distinct(chr, start, end, focus)
   ) %>%
     dplyr::mutate(reference = FALSE)
-
-
+  
+  
   message("Checking if bam name is unique in terms of reference.")
   # Note, reference samples names must not overlap with the analyzable sample.
   if (nrow(
     binned_reads %>%
-      dplyr::select(sample) %>%
-      dplyr::distinct(sample) %>%
-      dplyr::inner_join(reference %>% dplyr::select(sample))
+    dplyr::select(sample) %>%
+    dplyr::distinct(sample) %>%
+    dplyr::inner_join(reference %>% dplyr::select(sample))
   ) != 0) {
     stop("BAM name is present in the reference group. Stopping.")
   }
-
+  
   message("Merging BAM and reference for calculations.")
   # Merge: BAM + reference
   samples <- reference %>%
     dplyr::bind_rows(binned_reads)
-
-
+  
+  
   rm(binned_reads)
-
-
+  
+  
   # GC-correct (sample wise) (PMID: 28500333 and PMID: 20454671)
   message("Applying GC% correct.")
   # Find GC% of the genome (HG38)
@@ -169,8 +169,8 @@ infer_normality <- function(bam_location,
     dplyr::mutate(gc_corrected = reads * weights) %>%
     dplyr::filter(!is.na(gc_corrected)) %>%
     dplyr::ungroup()
-
-
+  
+  
   message("Normalizing by read count and bin length.")
   samples <- samples %>%
     # Sample read count correct
@@ -181,14 +181,14 @@ infer_normality <- function(bam_location,
     dplyr::mutate(gc_corrected = gc_corrected / (end - start)) %>%
     # Optimize memory
     dplyr::select(chr, focus, start, sample, reference, gc_corrected)
-
-
+  
+  
   if (use_pca) {
     message("Applying PCA normalization with ", nComp, " components.")
     # For PCA sort ()
     samples <- samples %>%
       dplyr::arrange(reference)
-
+    
     # Pivot wide for PCA normalization
     wider <- samples %>%
       dplyr::select(focus, start, sample, reference, gc_corrected) %>%
@@ -198,56 +198,56 @@ infer_normality <- function(bam_location,
         values_from = gc_corrected,
         names_sep = ":"
       )
-
+    
     # https://stats.stackexchange.com/questions/229092/how-to-reverse-pca-and-reconstruct-original-variables-from-several-principal-com
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
       dplyr::select(-reference, -sample)
-
+    
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
-
-
+    
+    
     Xhat <- refPca$x[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
     Xhat <- scale(Xhat, center = -mu, scale = FALSE)
-
+    
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
       dplyr::select(-reference, -sample)
-
+    
     Yhat <-
       stats::predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
     Yhat <- scale(Yhat, center = -mu, scale = FALSE)
-
+    
     # Actual PCA normalization and conversion back to long:
     normalized <-
       dplyr::bind_rows(as.data.frame(as.matrix(pred) / as.matrix(Yhat)),
                        as.data.frame(as.matrix(ref) / as.matrix(Xhat))) %>%
-        tidyr::pivot_longer(
-          names_sep = ":",
-          names_to = c("focus", "start"),
-          cols = dplyr::everything(),
-          values_to = "gc_corrected"
-        )
-
+      tidyr::pivot_longer(
+        names_sep = ":",
+        names_to = c("focus", "start"),
+        cols = dplyr::everything(),
+        values_to = "gc_corrected"
+      )
+    
     normalized$sample <- samples$sample
     normalized$reference <- samples$reference
     normalized$chr <- samples$chr
     samples <- normalized
-
-
+    
+    
     rm(wider)
     rm(pred)
     rm(ref)
     rm(Yhat)
     rm(Xhat)
     rm(normalized)
-
-
+    
+    
   }
-
+  
   message("Calulating reference group statistics.")
   # Calculate each reference bin i mean
   reference <- samples %>%
@@ -256,8 +256,8 @@ infer_normality <- function(bam_location,
     dplyr::summarise(mean_ref_bin = mean(gc_corrected),
                      mean_ref_sd = sd(gc_corrected)) %>%
     dplyr::ungroup()
-
-
+  
+  
   message("Calculating metrics.")
   samples <- samples %>%
     dplyr::right_join(reference) %>%
@@ -269,6 +269,7 @@ infer_normality <- function(bam_location,
     dplyr::group_by(sample, chr, focus, reference) %>%
     dplyr::summarise(
       z_score_PPDX = sum(z_score) / sqrt(dplyr::n()),
+      affected_over = sum(over_median) / dplyr::n() * 100,
       over_median = sum(over_median)
     ) %>%
     dplyr::mutate(z_score_PPDX_norm = (z_score_PPDX + 1) / (over_median + 2)) %>%
@@ -276,33 +277,32 @@ infer_normality <- function(bam_location,
     dplyr::mutate(mean_x = mean(z_score_PPDX_norm),
                   mean_y = mean(z_score_PPDX)) %>%
     dplyr::ungroup()
-
-
-  rm(filtered)
-
-
+  
+  
+  
+  
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr(~{
+    purrr::map_dfr(~ {
       cov <-
         stats::cov(
           .x %>%
             dplyr::filter(reference) %>%
             dplyr::select(z_score_PPDX_norm, z_score_PPDX)
         )
-
+      
       center <- .x %>%
         dplyr::filter(reference) %>%
         dplyr::select(mean_x, mean_y) %>%
         dplyr::distinct()
-
+      
       distances <- stats::mahalanobis(
         .x %>% dplyr::select(z_score_PPDX_norm, z_score_PPDX),
         c(center$mean_x, center$mean_y),
         cov
       )
-
+      
       dplyr::bind_cols(
         sample = .x$sample,
         chr = .x$chr,
@@ -310,13 +310,15 @@ infer_normality <- function(bam_location,
         reference = .x$reference,
         z_score_PPDX_norm = .x$z_score_PPDX_norm,
         z_score_PPDX = .x$z_score_PPDX,
+        affected_over = .x$affected_over,
+        affected_under = 100 - .x$affected_over,
         p = -log10(stats::pchisq(
           distances, df = 2, lower.tail = FALSE
         ) + 1e-100)
       )
     })
-
-
+  
+  
   if (include_reference) {
     return(samples)
   } else {
@@ -340,33 +342,33 @@ plot_result <- function(result) {
     dplyr::mutate(shape = ifelse(reference, 21L, shape)) %>%
     dplyr::mutate(color = ifelse(reference, "grey", "black")) %>%
     dplyr::mutate(alpha = ifelse(reference, 0.5, 1))
-
-
+  
+  
   # Plot results
   plot <-
     ggplot2::ggplot(ordered, ggplot2::aes(x = stats::reorder(focus, chr), y = p)) +
-      ggplot2::geom_point(
-        alpha = ordered$alpha,
-        shape = ordered$shape,
-        color = ordered$color,
-        fill = ordered$color,
-        size = 1.6
-      ) +
-      ggplot2::ylab("High risk probability") +
-      ggplot2::ggtitle(basename(bam_path)) +
-      ggplot2::theme_bw() +
-      ggplot2::theme(
-        panel.border = ggplot2::element_blank(),
-        axis.line = ggplot2::element_line(),
-        strip.background = ggplot2::element_blank(),
-        panel.grid.minor = ggplot2::element_blank(),
-        legend.position = "none",
-        axis.title.x = ggplot2::element_blank(),
-        axis.text.x = ggplot2::element_text(
-          angle = 90,
-          hjust = 1,
-          vjust = 0.5
-        )
+    ggplot2::geom_point(
+      alpha = ordered$alpha,
+      shape = ordered$shape,
+      color = ordered$color,
+      fill = ordered$color,
+      size = 1.6
+    ) +
+    ggplot2::ylab("High risk probability") +
+    ggplot2::ggtitle(basename(bam_path)) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      panel.border = ggplot2::element_blank(),
+      axis.line = ggplot2::element_line(),
+      strip.background = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
+      legend.position = "none",
+      axis.title.x = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(
+        angle = 90,
+        hjust = 1,
+        vjust = 0.5
       )
+    )
   return(plot)
 }
