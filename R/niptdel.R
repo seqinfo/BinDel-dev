@@ -287,7 +287,7 @@ infer_normality <- function(bam_location,
           ggplot2::ggplot(
             .,
             ggplot2::aes(
-              start,
+              as.numeric(start),
               z_score_PPDX_norm,
               group = sample,
               color = reference
