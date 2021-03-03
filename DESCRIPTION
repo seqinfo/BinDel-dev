@@ -1,6 +1,6 @@
 Package: niptdel
 Title: NiptDel
-Version: 2.1.1
+Version: 2.2.0
 Authors@R: c(
   person(
     given = "Priit", 
@@ -28,6 +28,7 @@ Imports:
   GenomicAlignments,
   GenomicRanges,
   ggplot2,
+  ggrastr,
   IRanges,
   magrittr,
   purrr,

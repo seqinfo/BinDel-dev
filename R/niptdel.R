@@ -59,7 +59,7 @@ bin_bam <- function(bam_location, bed) {
 #' @param reference_location Path to the reference file
 #' @param use_pca Use PCA based normalization?
 #' @param nComp How many components to use in PCA-based normalization?
-#' @param include_reference Include reference in the output?
+#' @param plot_results Create and save detailed plots?
 #' @return A data frame with scores for the provided BAM.
 #' @export
 #' @examples
@@ -71,7 +71,7 @@ infer_normality <- function(bam_location,
                             reference_location,
                             use_pca = TRUE,
                             nComp = 80,
-                            include_reference = FALSE) {
+                            plot_results = TRUE)  {
   sample_name <- basename(bam_location)
   
   
@@ -271,13 +271,60 @@ infer_normality <- function(bam_location,
       z_score_PPDX = z_score / sqrt(dplyr::n()),
       # Normalize z_score_PPDX with over_median + Laplace smoothing
       z_score_PPDX_norm = ((z_score / sqrt(dplyr::n(
+        
       ))) + 1 / n()) / (sum(over_median) + 2 / n())
-    ) %>%
+    )
+  
+  # Create detailed plots of the regions
+  if (plot_results) {
+    message("Creating and saving region plots.")
+    
+    pdf(paste0(sample_name, ".details", ".pdf"))
+    samples %>%
+      dplyr::group_by(focus) %>%
+      dplyr::do({
+        print(
+          ggplot2::ggplot(
+            .,
+            ggplot2::aes(
+              start,
+              z_score_PPDX_norm,
+              group = sample,
+              color = reference
+            )
+          ) +
+            ggrastr::rasterise(ggplot2::geom_line()) +
+            ggplot2::scale_x_continuous(
+              labels = function(x)
+                format(
+                  x,
+                  big.mark = " ",
+                  decimal.mark = ",",
+                  scientific = FALSE
+                )
+            ) +
+            ggplot2::scale_color_manual(values = c("red", "grey")) +
+            ggplot2::ylab("Normalized Z-score") +
+            ggplot2::ggtitle(paste(sample_name, unique(.$focus))) +
+            ggplot2::theme_bw() +
+            ggplot2::theme(
+              panel.border = ggplot2::element_blank(),
+              axis.title.x = ggplot2::element_blank(),
+              axis.line = ggplot2::element_line(),
+              strip.background = ggplot2::element_blank(),
+              axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5)
+            )
+        )
+        invisible(.)
+      })
+    dev.off()
+  }
+  
+  samples <- samples %>%
     dplyr::summarise(
       z_score_PPDX = sum(z_score_PPDX),
       z_score_PPDX_norm = sum(z_score_PPDX_norm),
       affected_over = sum(over_median) / dplyr::n() * 100,
-      over_median = sum(over_median)
     ) %>%
     dplyr::group_by(reference, chr, focus) %>%
     dplyr::mutate(mean_x = mean(z_score_PPDX_norm),
@@ -325,56 +372,47 @@ infer_normality <- function(bam_location,
     })
   
   
-  if (include_reference) {
-    return(samples)
-  } else {
-    return(samples %>% dplyr::filter(!reference))
-  }
-}
-
-
-#' Plot inferred probabilities
-#'
-#'
-#' @importFrom magrittr %>%
-#' @param result inferred data frame
-#' @return A ggplot2 plot object
-#' @export
-plot_result <- function(result) {
-  ordered <- result %>%
-    dplyr::mutate(chr = as.numeric(stringr::str_remove(chr, "chr"))) %>%
-    dplyr::mutate(sign = sign(z_score_PPDX)) %>%
-    dplyr::mutate(shape = ifelse(sign > 0, 24L, ifelse(sign < 0, 25L, 18L))) %>%
-    dplyr::mutate(shape = ifelse(reference, 21L, shape)) %>%
-    dplyr::mutate(color = ifelse(reference, "grey", "black")) %>%
-    dplyr::mutate(alpha = ifelse(reference, 0.5, 1))
-  
-  
-  # Plot results
-  plot <-
-    ggplot2::ggplot(ordered, ggplot2::aes(x = stats::reorder(focus, chr), y = p)) +
-    ggplot2::geom_point(
-      alpha = ordered$alpha,
-      shape = ordered$shape,
-      color = ordered$color,
-      fill = ordered$color,
-      size = 1.6
-    ) +
-    ggplot2::ylab("High risk probability") +
-    ggplot2::ggtitle(basename(bam_path)) +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      panel.border = ggplot2::element_blank(),
-      axis.line = ggplot2::element_line(),
-      strip.background = ggplot2::element_blank(),
-      panel.grid.minor = ggplot2::element_blank(),
-      legend.position = "none",
-      axis.title.x = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(
-        angle = 90,
-        hjust = 1,
-        vjust = 0.5
-      )
+  if (plot_results) {
+    ordered <- result %>%
+      dplyr::mutate(chr = as.numeric(stringr::str_remove(chr, "chr"))) %>%
+      dplyr::mutate(sign = sign(z_score_PPDX)) %>%
+      dplyr::mutate(shape = ifelse(sign > 0, 24L, ifelse(sign < 0, 25L, 18L))) %>%
+      dplyr::mutate(shape = ifelse(reference, 21L, shape)) %>%
+      dplyr::mutate(color = ifelse(reference, "grey", "black")) %>%
+      dplyr::mutate(alpha = ifelse(reference, 0.5, 1))
+    
+    
+    # Plot results
+    ggplot2::ggsave(
+      paste0(sample_name, ".summary", ".png"),
+      ggplot2::ggplot(ordered, ggplot2::aes(
+        x = stats::reorder(focus, chr), y = p
+      )) +
+        ggplot2::geom_point(
+          alpha = ordered$alpha,
+          shape = ordered$shape,
+          color = ordered$color,
+          fill = ordered$color,
+          size = 1.6
+        ) +
+        ggplot2::ylab("High risk probability") +
+        ggplot2::ggtitle(basename(bam_path)) +
+        ggplot2::theme_bw() +
+        ggplot2::theme(
+          panel.border = ggplot2::element_blank(),
+          axis.line = ggplot2::element_line(),
+          strip.background = ggplot2::element_blank(),
+          panel.grid.minor = ggplot2::element_blank(),
+          legend.position = "none",
+          axis.title.x = ggplot2::element_blank(),
+          axis.text.x = ggplot2::element_text(
+            angle = 90,
+            hjust = 1,
+            vjust = 0.5
+          )
+        )
     )
-  return(plot)
+  }
+  
+  return(samples %>% dplyr::filter(!reference))
 }

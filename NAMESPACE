@@ -2,5 +2,4 @@
 
 export(bin_bam)
 export(infer_normality)
-export(plot_result)
 importFrom(magrittr,"%>%")
