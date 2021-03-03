@@ -267,12 +267,18 @@ infer_normality <- function(bam_location,
     ) %>%
     dplyr::filter(!is.na(z_score)) %>%
     dplyr::group_by(sample, chr, focus, reference) %>%
+    dplyr::mutate(
+      z_score_PPDX = z_score / sqrt(dplyr::n()),
+      # Normalize z_score_PPDX with over_median + Laplace smoothing
+      z_score_PPDX_norm = ((z_score / sqrt(dplyr::n(
+      ))) + 1 / n()) / (sum(over_median) + 2 / n())
+    ) %>%
     dplyr::summarise(
-      z_score_PPDX = sum(z_score) / sqrt(dplyr::n()),
+      z_score_PPDX = sum(z_score_PPDX),
+      z_score_PPDX_norm = sum(z_score_PPDX_norm),
       affected_over = sum(over_median) / dplyr::n() * 100,
       over_median = sum(over_median)
     ) %>%
-    dplyr::mutate(z_score_PPDX_norm = (z_score_PPDX + 1) / (over_median + 2)) %>%
     dplyr::group_by(reference, chr, focus) %>%
     dplyr::mutate(mean_x = mean(z_score_PPDX_norm),
                   mean_y = mean(z_score_PPDX)) %>%
