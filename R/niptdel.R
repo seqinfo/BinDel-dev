@@ -203,7 +203,7 @@ infer_normality <- function(bam_location,
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
@@ -215,7 +215,7 @@ infer_normality <- function(bam_location,
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     Yhat <-
       stats::predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
@@ -279,8 +279,10 @@ infer_normality <- function(bam_location,
   if (plot_results) {
     message("Creating and saving region plots.")
     
-    pdf(paste0(sample_name, ".details", ".pdf"))
+    pdf(paste0(sample_name, ".details", ".pdf"), title = sample_name)
     samples %>%
+      dplyr::mutate(chr = as.numeric(stringr::str_remove(chr, "chr"))) %>%
+      dplyr::arrange(chr) %>%
       dplyr::group_by(focus) %>%
       dplyr::do({
         print(
@@ -293,7 +295,8 @@ infer_normality <- function(bam_location,
               color = reference
             )
           ) +
-            ggrastr::rasterise(ggplot2::geom_line()) +
+            ggrastr::rasterise(ggplot2::geom_line(), dpi = 300) +
+            ggplot2::geom_hline(yintercept = 0) +
             ggplot2::scale_x_continuous(
               labels = function(x)
                 format(
@@ -337,7 +340,7 @@ infer_normality <- function(bam_location,
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr(~ {
+    purrr::map_dfr( ~ {
       cov <-
         stats::cov(
           .x %>%
