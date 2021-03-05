@@ -79,7 +79,11 @@ infer_normality <- function(bam_location,
   # Reference samples to be used to calculate z-scores
   reference <-
     readr::read_tsv(reference_location) %>%
-    dplyr::mutate(reference = TRUE)
+    dplyr::mutate(reference = TRUE) %>% 
+    dplyr::group_by(sample) %>% 
+    # de-identify reference. 
+    dplyr::mutate(sample = dplyr::cur_group_id()) %>% 
+    dplyr::ungroup()
   
   # Check if reference file has all the required columns.
   ref_expected_cols <-
