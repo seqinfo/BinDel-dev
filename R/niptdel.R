@@ -299,7 +299,7 @@ infer_normality <- function(bam_location,
               color = reference
             )
           ) +
-            ggrastr::rasterise(ggplot2::geom_line(), dpi = 300) +
+            ggrastr::rasterise(ggplot2::geom_line(), dpi = 250) +
             ggplot2::geom_hline(yintercept = 0) +
             ggplot2::scale_x_continuous(
               labels = function(x)
