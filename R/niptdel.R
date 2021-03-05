@@ -203,7 +203,7 @@ infer_normality <- function(bam_location,
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
-      dplyr::select(-reference,-sample)
+      dplyr::select(-reference, -sample)
     
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
@@ -215,7 +215,7 @@ infer_normality <- function(bam_location,
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
-      dplyr::select(-reference,-sample)
+      dplyr::select(-reference, -sample)
     
     Yhat <-
       stats::predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
@@ -340,7 +340,7 @@ infer_normality <- function(bam_location,
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr( ~ {
+    purrr::map_dfr(~ {
       cov <-
         stats::cov(
           .x %>%
@@ -417,5 +417,5 @@ infer_normality <- function(bam_location,
     )
   }
   
-  return(samples %>% dplyr::filter(!reference))
+  return(samples %>% dplyr::filter(!reference) %>% dplyr::select(-reference))
 }
