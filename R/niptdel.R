@@ -376,6 +376,7 @@ infer_normality <- function(bam_location,
   
   
   if (plot_results) {
+    message("Creating and saving sample specific plot.")
     ordered <- samples %>%
       dplyr::mutate(chr = as.numeric(stringr::str_remove(chr, "chr"))) %>%
       dplyr::mutate(sign = sign(z_score_PPDX)) %>%
