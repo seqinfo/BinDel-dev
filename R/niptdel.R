@@ -206,7 +206,7 @@ infer_normality <- function(bam_location,
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
@@ -218,7 +218,7 @@ infer_normality <- function(bam_location,
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     rm(wider)
     
@@ -341,7 +341,7 @@ infer_normality <- function(bam_location,
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr(~ {
+    purrr::map_dfr( ~ {
       cov <-
         stats::cov(
           .x %>%
@@ -368,7 +368,6 @@ infer_normality <- function(bam_location,
         z_score_PPDX_norm = .x$z_score_PPDX_norm,
         z_score_PPDX = .x$z_score_PPDX,
         affected_over = .x$affected_over,
-        affected_under = 100 - .x$affected_over,
         p = -log10(stats::pchisq(
           distances, df = 2, lower.tail = FALSE
         ) + 1e-100)
@@ -421,7 +420,17 @@ infer_normality <- function(bam_location,
   }
   
   message("Returning metrics.")
-  return(samples %>%
-           dplyr::filter(!reference) %>%
-           dplyr::select(-reference))
+  return(
+    samples %>%
+      dplyr::filter(!reference) %>%
+      dplyr::select(-reference) %>%
+      dplyr::rename(Sample = sample) %>%
+      dplyr::rename(Chromosome = chr) %>%
+      dplyr::rename(Subregion = focus) %>%
+      dplyr::rename(`% of bins over reference bin mean median` = affected_over) %>%
+      dplyr::rename(`High risk probability` = p) %>%
+      dplyr::rename(`Z-Score` = z_score_PPDX) %>%
+      dplyr::rename(`Normalized Z-Score` = z_score_PPDX_norm) %>%
+      dplyr::mutate_if(is.numeric, round, 3)
+  )
 }
