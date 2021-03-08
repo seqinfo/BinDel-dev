@@ -310,7 +310,6 @@ infer_normality <- function(bam_location,
                 )
             ) +
             ggplot2::scale_color_manual(values = c("red", "grey")) +
-            ggplot2::ylim(-1, 1) +
             ggplot2::ylab("Normalized Z-score") +
             ggplot2::ggtitle(paste(sample_name, unique(.$focus))) +
             ggplot2::theme_bw() +
