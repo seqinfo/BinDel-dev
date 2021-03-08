@@ -79,10 +79,10 @@ infer_normality <- function(bam_location,
   # Reference samples to be used to calculate z-scores
   reference <-
     readr::read_tsv(reference_location) %>%
-    dplyr::mutate(reference = TRUE) %>% 
-    dplyr::group_by(sample) %>% 
-    # de-identify reference. 
-    dplyr::mutate(sample = dplyr::cur_group_id()) %>% 
+    dplyr::mutate(reference = TRUE) %>%
+    dplyr::group_by(sample) %>%
+    # de-identify reference.
+    dplyr::mutate(sample = dplyr::cur_group_id()) %>%
     dplyr::ungroup()
   
   # Check if reference file has all the required columns.
@@ -207,7 +207,7 @@ infer_normality <- function(bam_location,
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
@@ -219,7 +219,7 @@ infer_normality <- function(bam_location,
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     Yhat <-
       stats::predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
@@ -283,7 +283,9 @@ infer_normality <- function(bam_location,
   if (plot_results) {
     message("Creating and saving region plots.")
     
-    pdf(paste0(sample_name, ".details", ".pdf"), title = sample_name)
+    pdf(paste0(sample_name, ".details", ".pdf"),
+        title = sample_name,
+        height = 5)
     samples %>%
       dplyr::mutate(chr = as.numeric(stringr::str_remove(chr, "chr"))) %>%
       dplyr::arrange(chr) %>%
@@ -299,7 +301,7 @@ infer_normality <- function(bam_location,
               color = reference
             )
           ) +
-            ggrastr::rasterise(ggplot2::geom_line(), dpi = 250) +
+            ggrastr::rasterise(ggplot2::geom_line(), dpi = 200) +
             ggplot2::geom_hline(yintercept = 0) +
             ggplot2::scale_x_continuous(
               labels = function(x)
@@ -345,7 +347,7 @@ infer_normality <- function(bam_location,
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr(~ {
+    purrr::map_dfr( ~ {
       cov <-
         stats::cov(
           .x %>%
