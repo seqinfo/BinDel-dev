@@ -206,7 +206,7 @@ infer_normality <- function(bam_location,
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
-      dplyr::select(-reference,-sample)
+      dplyr::select(-reference, -sample)
     
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
@@ -218,7 +218,9 @@ infer_normality <- function(bam_location,
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
-      dplyr::select(-reference,-sample)
+      dplyr::select(-reference, -sample)
+    
+    rm(wider)
     
     Yhat <-
       stats::predict(refPca, pred)[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
@@ -235,20 +237,14 @@ infer_normality <- function(bam_location,
         values_to = "gc_corrected"
       )
     
+    rm(pred, ref, Yhat, Xhat)
+    
     normalized$sample <- samples$sample
     normalized$reference <- samples$reference
     normalized$chr <- samples$chr
     samples <- normalized
     
-    
-    rm(wider)
-    rm(pred)
-    rm(ref)
-    rm(Yhat)
-    rm(Xhat)
     rm(normalized)
-    
-    
   }
   
   message("Calulating reference group statistics.")
@@ -341,12 +337,10 @@ infer_normality <- function(bam_location,
     dplyr::ungroup()
   
   
-  
-  
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr( ~ {
+    purrr::map_dfr(~ {
       cov <-
         stats::cov(
           .x %>%
