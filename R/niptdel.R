@@ -166,11 +166,10 @@ infer_normality <- function(bam_location,
     )) %>%
     # Do GC correct
     dplyr::group_by(sample, gc) %>%
-    dplyr::mutate(avg_reads_gc_interval = mean(reads)) %>%
+    dplyr::mutate(reads_gc_interval = mean(reads)) %>%
     dplyr::ungroup() %>%
     dplyr::group_by(sample) %>%
-    dplyr::mutate(weights = mean(reads) / avg_reads_gc_interval) %>%
-    dplyr::mutate(gc_corrected = reads * weights) %>%
+    dplyr::mutate(gc_corrected = reads * mean(reads) / reads_gc_interval) %>%
     dplyr::filter(!is.na(gc_corrected)) %>%
     dplyr::ungroup()
   
