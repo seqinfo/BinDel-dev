@@ -419,5 +419,6 @@ infer_normality <- function(bam_location,
     )
   }
   
+  message("Returning metrics.")
   return(samples %>% dplyr::filter(!reference) %>% dplyr::select(-reference))
 }
