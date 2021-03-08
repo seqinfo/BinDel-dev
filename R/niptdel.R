@@ -153,7 +153,7 @@ infer_normality <- function(bam_location,
     dplyr::bind_rows(binned_reads)
   
   
-  rm(binned_reads)
+  rm(binned_reads, reference)
   
   
   # GC-correct (sample wise) (PMID: 28500333 and PMID: 20454671)
@@ -273,6 +273,8 @@ infer_normality <- function(bam_location,
         
       ))) + 1 / n()) / (sum(over_median) + 2 / n())
     )
+  
+  rm(reference)
   
   # Create detailed plots of the regions
   if (plot_results) {
@@ -420,5 +422,7 @@ infer_normality <- function(bam_location,
   }
   
   message("Returning metrics.")
-  return(samples %>% dplyr::filter(!reference) %>% dplyr::select(-reference))
+  return(samples %>%
+           dplyr::filter(!reference) %>%
+           dplyr::select(-reference))
 }
