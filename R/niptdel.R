@@ -82,7 +82,7 @@ infer_normality <- function(bam_location,
     dplyr::mutate(reference = TRUE) %>%
     dplyr::group_by(sample) %>%
     # de-identify reference.
-    dplyr::mutate(sample = dplyr::cur_group_id()) %>%
+    dplyr::mutate(sample = as.character(dplyr::cur_group_id())) %>%
     dplyr::ungroup()
   
   # Check if reference file has all the required columns.
