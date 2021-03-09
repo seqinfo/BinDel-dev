@@ -399,7 +399,7 @@ infer_normality <- function(bam_location,
           fill = ordered$color,
           size = 1.6
         ) +
-        ggplot2::ylim(0, 100) +
+        ggplot2::ylim(0, 105) +
         ggplot2::ylab("High risk probability") +
         ggplot2::ggtitle(basename(bam_path)) +
         ggplot2::theme_bw() +
