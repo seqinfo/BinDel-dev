@@ -1,6 +1,6 @@
 Package: niptdel
 Title: NiptDel
-Version: 2.2.7
+Version: 2.2.8
 Authors@R: c(
   person(
     given = "Priit", 
@@ -36,7 +36,8 @@ Imports:
   Rsamtools,
   stats,
   stringr,
-  tidyr
+  tidyr,
+  utils
 Suggests: 
     knitr,
     rmarkdown

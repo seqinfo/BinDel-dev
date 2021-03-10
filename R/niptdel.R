@@ -74,6 +74,12 @@ infer_normality <- function(bam_location,
                             plot_results = TRUE)  {
   sample_name <- basename(bam_location)
   
+  message(paste(
+    utils::packageName(),
+    "version:",
+    utils::packageVersion(utils::packageName())
+  ))
+  
   
   message("Reading reference file from:", reference_location)
   # Reference samples to be used to calculate z-scores
@@ -386,6 +392,15 @@ infer_normality <- function(bam_location,
       dplyr::mutate(alpha = ifelse(reference, 0.5, 1))
     
     
+    capt <- paste(
+      "High-risk probability of the regions of interest.",
+      "The higher the region's risk probability, the more probable the",
+      "deviation from the healthy reference group. The upwards triangle hints",
+      "for duplication, downwards triangle hints for the deletion. High-risk",
+      "candidates need to be verified by outputted genomic bin figure, which",
+      "depicts a sample of interest compared to the healthy reference group."
+    )
+    
     # Plot results
     ggplot2::ggsave(
       paste0(sample_name, ".summary", ".png"),
@@ -401,14 +416,29 @@ infer_normality <- function(bam_location,
         ) +
         ggplot2::ylim(0, 105) +
         ggplot2::ylab("High risk probability") +
-        ggplot2::ggtitle(basename(bam_path)) +
         ggplot2::theme_bw() +
+        ggplot2::labs(
+          title = paste(
+            basename(bam_path),
+            "scientific",
+            utils::packageName(),
+            "report"
+          ),
+          subtitle = paste("Version: ", utils::packageVersion(utils::packageName())),
+          caption = stringr::str_wrap(capt, width = 100)
+        ) +
         ggplot2::theme(
           panel.border = ggplot2::element_blank(),
           axis.line = ggplot2::element_line(),
           strip.background = ggplot2::element_blank(),
           panel.grid.minor = ggplot2::element_blank(),
           legend.position = "none",
+          plot.caption = ggplot2::element_text(
+            hjust = 0,
+            vjust = 0,
+            face = "italic",
+            color = "black"
+          ),
           axis.title.x = ggplot2::element_blank(),
           axis.text.x = ggplot2::element_text(
             angle = 90,
