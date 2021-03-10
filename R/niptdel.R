@@ -59,7 +59,8 @@ bin_bam <- function(bam_location, bed) {
 #' @param reference_location Path to the reference file
 #' @param use_pca Use PCA based normalization?
 #' @param nComp How many components to use in PCA-based normalization?
-#' @param plot_results Create and save detailed plots?
+#' @param bin_plot Create and save detailed bin plots?
+#' @param result_plot Create and save detailed result?
 #' @return A data frame with scores for the provided BAM.
 #' @export
 #' @examples
@@ -71,7 +72,8 @@ infer_normality <- function(bam_location,
                             reference_location,
                             use_pca = TRUE,
                             nComp = 80,
-                            plot_results = TRUE)  {
+                            bin_plot = TRUE,
+                            result_plot = TRUE)  {
   sample_name <- basename(bam_location)
   
   message(paste(
@@ -212,7 +214,7 @@ infer_normality <- function(bam_location,
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
-      dplyr::select(-reference,-sample)
+      dplyr::select(-reference, -sample)
     
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
@@ -224,7 +226,7 @@ infer_normality <- function(bam_location,
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
-      dplyr::select(-reference,-sample)
+      dplyr::select(-reference, -sample)
     
     rm(wider)
     
@@ -283,7 +285,7 @@ infer_normality <- function(bam_location,
   rm(reference)
   
   # Create detailed plots of the regions
-  if (plot_results) {
+  if (bin_plot) {
     message("Creating and saving region plots.")
     
     pdf(paste0(sample_name, ".details", ".pdf"),
@@ -347,7 +349,7 @@ infer_normality <- function(bam_location,
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr( ~ {
+    purrr::map_dfr(~ {
       cov <-
         stats::cov(
           .x %>%
@@ -381,7 +383,7 @@ infer_normality <- function(bam_location,
     })
   
   
-  if (plot_results) {
+  if (result_plot) {
     message("Creating and saving sample specific plot.")
     ordered <- samples %>%
       dplyr::mutate(chr = as.numeric(stringr::str_remove(chr, "chr"))) %>%

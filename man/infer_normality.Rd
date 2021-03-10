@@ -9,7 +9,8 @@ infer_normality(
   reference_location,
   use_pca = TRUE,
   nComp = 80,
-  plot_results = TRUE
+  bin_plot = TRUE,
+  result_plot = TRUE
 )
 }
 \arguments{
@@ -21,7 +22,9 @@ infer_normality(
 
 \item{nComp}{How many components to use in PCA-based normalization?}
 
-\item{plot_results}{Create and save detailed plots?}
+\item{bin_plot}{Create and save detailed bin plots?}
+
+\item{result_plot}{Create and save detailed result?}
 }
 \value{
 A data frame with scores for the provided BAM.
