@@ -41,8 +41,7 @@ save_bin_plot <- function(samples, sample_name) {
       )
     ) +
       ggrastr::rasterise(ggplot2::geom_line(), dpi = 200) +
-      #ggplot2::geom_line() +
-      ggplot2::facet_wrap( ~ focus, scales = "free", ncol = 2) +
+      ggplot2::facet_wrap(~ focus, scales = "free", ncol = 2) +
       ggplot2::geom_hline(yintercept = 0) +
       ggplot2::scale_x_continuous(
         labels = function(x)
@@ -205,6 +204,7 @@ bin_bam <- function(bam_location, bed) {
 #' @param nComp How many components to use in PCA-based normalization?
 #' @param bin_plot Create and save detailed bin plots?
 #' @param result_plot Create and save detailed result?
+#' @param save_bins Save bins?
 #' @return A data frame with scores for the provided BAM.
 #' @export
 #' @examples
@@ -217,7 +217,8 @@ infer_normality <- function(bam_location,
                             use_pca = TRUE,
                             nComp = 80,
                             bin_plot = TRUE,
-                            result_plot = TRUE)  {
+                            result_plot = TRUE,
+                            save_bins = FALSE)  {
   sample_name <- basename(bam_location)
   
   message(paste(
@@ -358,7 +359,7 @@ infer_normality <- function(bam_location,
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
@@ -370,7 +371,7 @@ infer_normality <- function(bam_location,
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
-      dplyr::select(-reference, -sample)
+      dplyr::select(-reference,-sample)
     
     rm(wider)
     
@@ -434,6 +435,18 @@ infer_normality <- function(bam_location,
     save_bin_plot(samples, sample_name)
   }
   
+  if (save_bins) {
+    message("Writing bins to file.")
+    readr::write_tsv(
+      samples %>%
+        dplyr::ungroup() %>% 
+        dplyr::filter(sample == sample_name) %>%
+        dplyr::select(chr, focus, start, z_score_PPDX_norm) %>%
+        dplyr::rename(`Normalized Z-Score` = z_score_PPDX_norm),
+      paste0(sample_name, ".bins", ".tsv")
+    )
+  }
+  
   samples <- samples %>%
     dplyr::summarise(
       z_score_PPDX = sum(z_score_PPDX),
@@ -449,7 +462,7 @@ infer_normality <- function(bam_location,
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr(~ {
+    purrr::map_dfr( ~ {
       cov <-
         stats::cov(
           .x %>%

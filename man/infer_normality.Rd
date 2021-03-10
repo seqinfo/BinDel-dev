@@ -10,7 +10,8 @@ infer_normality(
   use_pca = TRUE,
   nComp = 80,
   bin_plot = TRUE,
-  result_plot = TRUE
+  result_plot = TRUE,
+  save_bins = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ infer_normality(
 \item{bin_plot}{Create and save detailed bin plots?}
 
 \item{result_plot}{Create and save detailed result?}
+
+\item{save_bins}{Save bins?}
 }
 \value{
 A data frame with scores for the provided BAM.
