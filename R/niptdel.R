@@ -41,7 +41,7 @@ save_bin_plot <- function(samples, sample_name) {
       )
     ) +
       ggplot2::geom_line() +
-      ggplot2::facet_wrap(~ focus, scales = "free", ncol = 2) +
+      ggplot2::facet_wrap( ~ focus, scales = "free", ncol = 2) +
       ggplot2::geom_hline(yintercept = 0) +
       ggplot2::scale_x_continuous(
         labels = function(x)
@@ -172,7 +172,8 @@ bin_bam <- function(bam_location, bed) {
   bam <-
     GenomicAlignments::readGAlignments(bam_location,
                                        param = Rsamtools::ScanBamParam(
-                                         flag = Rsamtools::scanBamFlag(isDuplicate = FALSE, isSecondaryAlignment = FALSE),
+                                         flag = Rsamtools::scanBamFlag(isDuplicate = FALSE,
+                                                                       isSecondaryAlignment = FALSE),
                                          what = c("pos")
                                        ))
   
@@ -196,7 +197,7 @@ bin_bam <- function(bam_location, bed) {
 #' 5. Calculate reference group statistics per focus region.
 #' 6. Calculate sample Mahalanobis distance from the reference group.
 #' 7. Calculate -log10 chi-squared distribution probabilities.
-#' 
+#'
 #' Outputs results to different files.
 #'
 #' @importFrom magrittr %>%
@@ -360,7 +361,7 @@ infer_normality <- function(bam_location,
     # Train PCA
     ref <- wider %>%
       dplyr::filter(reference) %>%
-      dplyr::select(-reference,-sample)
+      dplyr::select(-reference, -sample)
     
     mu <- colMeans(ref, na.rm = T)
     refPca <- stats::prcomp(ref)
@@ -372,7 +373,7 @@ infer_normality <- function(bam_location,
     # Use trained PCA on other samples
     pred <- wider %>%
       dplyr::filter(!reference) %>%
-      dplyr::select(-reference,-sample)
+      dplyr::select(-reference, -sample)
     
     rm(wider)
     
@@ -463,7 +464,7 @@ infer_normality <- function(bam_location,
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr( ~ {
+    purrr::map_dfr(~ {
       cov <-
         stats::cov(
           .x %>%
