@@ -30,7 +30,7 @@ save_bin_plot <- function(samples, sample_name) {
     )
   
   ggplot2::ggsave(
-    paste0(sample_name, ".bins", ".pdf"),
+    paste0(sample_name, ".bins", ".png"),
     ggplot2::ggplot(
       samples,
       ggplot2::aes(
@@ -40,7 +40,7 @@ save_bin_plot <- function(samples, sample_name) {
         color = reference
       )
     ) +
-      ggrastr::rasterise(ggplot2::geom_line(), dpi = 200) +
+      ggplot2::geom_line() +
       ggplot2::facet_wrap(~ focus, scales = "free", ncol = 2) +
       ggplot2::geom_hline(yintercept = 0) +
       ggplot2::scale_x_continuous(
