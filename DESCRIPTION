@@ -1,6 +1,6 @@
 Package: niptdel
 Title: NiptDel
-Version: 2.3.1
+Version: 2.4.0
 Authors@R: c(
   person(
     given = "Priit", 
@@ -38,7 +38,3 @@ Imports:
   stringr,
   tidyr,
   utils
-Suggests: 
-    knitr,
-    rmarkdown
-VignetteBuilder: knitr

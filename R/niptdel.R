@@ -196,6 +196,8 @@ bin_bam <- function(bam_location, bed) {
 #' 5. Calculate reference group statistics per focus region.
 #' 6. Calculate sample Mahalanobis distance from the reference group.
 #' 7. Calculate -log10 chi-squared distribution probabilities.
+#' 
+#' Outputs results to different files.
 #'
 #' @importFrom magrittr %>%
 #' @param bam_location Path to the input file
@@ -205,7 +207,6 @@ bin_bam <- function(bam_location, bed) {
 #' @param bin_plot Create and save detailed bin plots?
 #' @param result_plot Create and save detailed result?
 #' @param save_bins Save bins?
-#' @return A data frame with scores for the provided BAM.
 #' @export
 #' @examples
 #'
@@ -424,7 +425,7 @@ infer_normality <- function(bam_location,
       # Normalize z_score_PPDX with over_median + Laplace smoothing
       z_score_PPDX_norm = ((z_score / sqrt(dplyr::n(
         
-      ))) + 1 / n()) / (sum(over_median) + 2 / n())
+      ))) + 1 / dplyr::n()) / (sum(over_median) + 2 / dplyr::n())
     )
   
   rm(reference)
@@ -439,7 +440,7 @@ infer_normality <- function(bam_location,
     message("Writing bins to file.")
     readr::write_tsv(
       samples %>%
-        dplyr::ungroup() %>% 
+        dplyr::ungroup() %>%
         dplyr::filter(sample == sample_name) %>%
         dplyr::select(chr, focus, start, z_score_PPDX_norm) %>%
         dplyr::rename(`Normalized Z-Score` = z_score_PPDX_norm),
@@ -502,17 +503,18 @@ infer_normality <- function(bam_location,
   }
   
   message("Returning metrics.")
-  return(
-    samples %>%
-      dplyr::filter(!reference) %>%
-      dplyr::select(-reference) %>%
-      dplyr::rename(Sample = sample) %>%
-      dplyr::rename(Chromosome = chr) %>%
-      dplyr::rename(Subregion = focus) %>%
-      dplyr::rename(`% of bins over reference bin mean median` = affected_over) %>%
-      dplyr::rename(`High risk probability` = p) %>%
-      dplyr::rename(`Z-Score` = z_score_PPDX) %>%
-      dplyr::rename(`Normalized Z-Score` = z_score_PPDX_norm) %>%
-      dplyr::mutate_if(is.numeric, round, 3)
-  )
+  
+  samples %>%
+    dplyr::filter(!reference) %>%
+    dplyr::select(-reference) %>%
+    dplyr::rename(Sample = sample) %>%
+    dplyr::rename(Chromosome = chr) %>%
+    dplyr::rename(Subregion = focus) %>%
+    dplyr::rename(`% of bins over reference bin mean median` = affected_over) %>%
+    dplyr::rename(`High risk probability` = p) %>%
+    dplyr::rename(`Z-Score` = z_score_PPDX) %>%
+    dplyr::rename(`Normalized Z-Score` = z_score_PPDX_norm) %>%
+    dplyr::mutate_if(is.numeric, round, 3) %>%
+    readr::write_tsv(paste0(sample_name, ".tsv"))
+  
 }

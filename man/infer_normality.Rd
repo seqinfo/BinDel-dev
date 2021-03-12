@@ -29,9 +29,6 @@ infer_normality(
 
 \item{save_bins}{Save bins?}
 }
-\value{
-A data frame with scores for the provided BAM.
-}
 \description{
 This function does the following:
 \enumerate{
@@ -43,6 +40,9 @@ This function does the following:
 \item Calculate sample Mahalanobis distance from the reference group.
 \item Calculate -log10 chi-squared distribution probabilities.
 }
+}
+\details{
+Outputs results to different files.
 }
 \examples{
 
