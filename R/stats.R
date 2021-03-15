@@ -1,18 +1,23 @@
-#' Calculate bin statistics. Can be only called right after normalization.
+#' Calculate bin statistics.
 #'
-#' Required columns "chr", "start", "reference", "gc_corrected".
+#' Calculate each genomic bin statistics compared to the reference group. Can
+#'  be only called right after normalization.
+#'
+#' Required columns \emph{chr}, \emph{start}, \emph{reference}, \emph{gc_corrected}.
 #'
 #'
-#' 1. Calculates reference group each (by chromosome and start coordinate) bin
-#' mean and sd.
-#' 2. Calculates regular Z-score for each sample (inc reference sample) and
-#' if this samples bin is over ref mean bin.
-#' 3. Group by "sample", "chr", "focus", "reference" and calculate
-#' * PPDX (Z-score divided by sqrt())
-#' * PPDX_norm ((PPDX + 1) / (n_bins_over_mean + 2))
+#' \enumerate{
+#'  \item Calculates reference group each bin (by chromosome and start coordinate)
+#' mean and SD.
+#'  \item Calculates regular Z-score for each sample (including reference sample) and
+#' if the bin is over the reference mean bin.
+#' \item Group by \emph{sample}, \emph{chr}, \emph{focus}, \emph{reference} and calculate
+#' * \eqn{PPDX = \frac{Z-score}{\sqrt{n}}}
+#' * \eqn{PPDX_norm = \frac{PPDX + 1}{n_{bins_over_mean} + 2}} # Laplace smoothing
+#' }
 #
 #' @param samples A normalized data frame to be used in bin calculation.
-#' @return A data frame that has added columns PPDX, PPDX_norm-
+#' @return A data frame that has added columns \emph{PPDX}, \emph{PPDX_norm}.
 calculate_bin_stat <- function(samples) {
   message("Calulating reference group statistics.")
   # Calculate each reference bin i mean
@@ -39,7 +44,8 @@ calculate_bin_stat <- function(samples) {
       PPDX_norm = ((z_score / sqrt(dplyr::n(
         
       ))) + 1 / dplyr::n()) / (sum(over_mean) + 2 / dplyr::n())
-    )
+    ) %>% 
+    dplyr::ungroup()
   
   return(samples)
 }
@@ -47,16 +53,21 @@ calculate_bin_stat <- function(samples) {
 
 #' Calculate summary statistics (probabilities)
 #'
-#' 1. Sums sample "PPDX", "PPDX_norm", "over_mean"
-#' 2. Calculates reference mean of "PPDX" and "PPDX_norm"
-#' 3. For each subregion (focus) calculates Mahalanobis distance from the 
-#' reference group (PPDX, PPDX_norm) and transforms it with chi-square(df = 2)
-#' to -log10 probability.
+#' Aggregates bin statistics to region high probability risks. Requires columns
+#' \emph{PPDX}, \emph{PPDX_norm} and \emph{over_mean}.
 #'
+#'\enumerate{
+#' \item Sums sample \emph{PPDX}, \emph{PPDX_norm}, \emph{over_mean}.
+#' \item Calculates reference mean of \emph{PPDX} and \emph{PPDX_norm}.
+#' \item For each subregion (focus) calculates Mahalanobis distance from the
+#' reference group (\emph{PPDX}, \emph{PPDX_norm}) and transforms it with chi-square(df = 2)
+#' to -log10 probability.
+#'}
 #' @param samples A binned statistics data frame.
 #' @return A data frame with probabilities
 calculate_summary <- function(samples) {
   samples <- samples %>%
+    dplyr::group_by(sample, chr, focus, reference) %>%
     dplyr::summarise(
       PPDX = sum(PPDX),
       PPDX_norm = sum(PPDX_norm),

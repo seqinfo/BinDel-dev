@@ -2,7 +2,7 @@
 % Please edit documentation in R/niptdel.R
 \name{infer_normality}
 \alias{infer_normality}
-\title{Infer sample normality probability.}
+\title{Infer sample high-risk probability.}
 \usage{
 infer_normality(
   bam_location,

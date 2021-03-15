@@ -1,11 +1,13 @@
 
 
-#' Bin aligned sequences (from .bam) into genomic bins based on the .bed file.
+
+
+#' Bin aligned sequences (from \emph{.bam}) into genomic bins based on the \emph{.bed} file.
 #'
 #'
 #' @importFrom magrittr %>%
 #' @param bam_location A location to the BAM-file to bin.
-#' @param bed A data frame in .bed format with columns: 'chr', 'start', 'end', 'focus'.
+#' @param bed A data frame in .bed format with columns: \emph{chr}, \emph{start}, \emph{end}, \emph{focus}.
 #' @return A data frame in bed format with GC%.
 #' @export
 bin_bam <- function(bam_location, bed) {
@@ -30,7 +32,7 @@ bin_bam <- function(bam_location, bed) {
 #' Find GC% for GRCh38 based .bed data frame.
 #'
 #' @importFrom magrittr %>%
-#' @param bed A data frame in .bed format with columns: 'chr', 'start', 'end', 'focus'.
+#' @param bed A data frame in .bed format with columns: \emph{chr}, \emph{start}, \emph{end}, \emph{focus}.
 #' @return A data frame in bed format with GC%.
 find_gc <- function(bed) {
   reads <- bed %>%

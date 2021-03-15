@@ -1,13 +1,15 @@
-#' Infer sample normality probability.
+#' Infer sample high-risk probability.
 #'
 #' This function does the following:
-#' 1. Apply bin-based GC% correct.
-#' 2. Normalizing by read count.
-#' 3. Normalize by bin length.
-#' 4. Apply PCA-based normalization
-#' 5. Calculate reference group statistics per focus region.
-#' 6. Calculate sample Mahalanobis distance from the reference group.
-#' 7. Calculate -log10 chi-squared distribution probabilities.
+#' \enumerate{
+#' \item Apply bin-based GC% correct.
+#' \item Normalizing by read count.
+#' \item Normalize by bin length.
+#' \item Apply PCA-based normalization
+#' \item Calculate reference group statistics per focus region.
+#' \item Calculate sample Mahalanobis distance from the reference group.
+#' \item Calculate -log10 chi-squared distribution probabilities.
+#' }
 #'
 #' Outputs results to different files.
 #'
@@ -70,7 +72,7 @@ infer_normality <- function(bam_location,
   
   samples <- samples %>%
     gc_correct() %>%
-    normalize_reads() %>% 
+    normalize_reads() %>%
     # Optimize memory
     dplyr::select(chr, focus, start, sample, reference, gc_corrected)
   

@@ -7,7 +7,7 @@
 find_gc(bed)
 }
 \arguments{
-\item{bed}{A data frame in .bed format with columns: 'chr', 'start', 'end', 'focus'.}
+\item{bed}{A data frame in .bed format with columns: \emph{chr}, \emph{start}, \emph{end}, \emph{focus}.}
 }
 \value{
 A data frame in bed format with GC\%.

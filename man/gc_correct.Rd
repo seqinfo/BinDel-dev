@@ -2,7 +2,7 @@
 % Please edit documentation in R/normalise.R
 \name{gc_correct}
 \alias{gc_correct}
-\title{GC\% bin-correct (sample wise) (PMID: 28500333 and PMID: 20454671)}
+\title{GC\% bin-correct}
 \usage{
 gc_correct(samples)
 }
@@ -13,6 +13,7 @@ gc_correct(samples)
 A GC\% corrected data frame.
 }
 \description{
-Expects columns "chr", "start", "end", "focus", "reads", "samples" and
-creates column "gc_correct).
+Sample wise, based on PMID: 28500333 and PMID: 20454671. Expects columns
+\emph{chr}, \emph{start}, \emph{end}, \emph{focus}, \emph{reads},
+\emph{samples}. Creates column \emph{gc_correct}.
 }

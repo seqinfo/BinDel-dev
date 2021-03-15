@@ -1,8 +1,8 @@
 #' Creates and saves binned normalized Z-Score figure per region.
 #'
 #' @importFrom magrittr %>%
-#' @param data A binned Z-scored data frame with columns "focus"," start",
-#'  "PPDX_norm", "sample" and reference.
+#' @param data A binned Z-scored data frame with columns \emph{focus}, \emph{start},
+#'  \emph{PPDX_norm}, \emph{sample} and \emph{reference}.
 #' @param sample_name sample name of interest
 save_bin_plot <- function(samples, sample_name) {
   capt <-
@@ -24,7 +24,7 @@ save_bin_plot <- function(samples, sample_name) {
       )
     ) +
       ggplot2::geom_line() +
-      ggplot2::facet_wrap( ~ focus, scales = "free", ncol = 2) +
+      ggplot2::facet_wrap(~ focus, scales = "free", ncol = 2) +
       ggplot2::geom_hline(yintercept = 0) +
       ggplot2::scale_x_continuous(
         labels = function(x)
@@ -73,8 +73,8 @@ save_bin_plot <- function(samples, sample_name) {
 #' Create and save combined probability result figure.
 #'
 #' @importFrom magrittr %>%
-#' @param data A probability data frame with columns "chr", "PPDX",
-#' and "focus".
+#' @param data A probability data frame with columns \emph{chr}, \emph{PPDX},
+#' and \emph{focus}.
 #' @param sample_name sample name of interest
 save_result_plot <- function(samples, sample_name) {
   ordered <- samples %>%

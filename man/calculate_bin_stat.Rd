@@ -2,7 +2,7 @@
 % Please edit documentation in R/stats.R
 \name{calculate_bin_stat}
 \alias{calculate_bin_stat}
-\title{Calculate bin statistics. Can be only called right after normalization.}
+\title{Calculate bin statistics.}
 \usage{
 calculate_bin_stat(samples)
 }
@@ -10,21 +10,24 @@ calculate_bin_stat(samples)
 \item{samples}{A normalized data frame to be used in bin calculation.}
 }
 \value{
-A data frame that has added columns PPDX, PPDX_norm-
+A data frame that has added columns \emph{PPDX}, \emph{PPDX_norm}.
 }
 \description{
-Required columns "chr", "start", "reference", "gc_corrected".
+Calculate each genomic bin statistics compared to the reference group. Can
+be only called right after normalization.
 }
 \details{
+Required columns \emph{chr}, \emph{start}, \emph{reference}, \emph{gc_corrected}.
+
 \enumerate{
-\item Calculates reference group each (by chromosome and start coordinate) bin
-mean and sd.
-\item Calculates regular Z-score for each sample (inc reference sample) and
-if this samples bin is over ref mean bin.
-\item Group by "sample", "chr", "focus", "reference" and calculate
-}
+\item Calculates reference group each bin (by chromosome and start coordinate)
+mean and SD.
+\item Calculates regular Z-score for each sample (including reference sample) and
+if the bin is over the reference mean bin.
+\item Group by \emph{sample}, \emph{chr}, \emph{focus}, \emph{reference} and calculate
 \itemize{
-\item PPDX (Z-score divided by sqrt())
-\item PPDX_norm ((PPDX + 1) / (n_bins_over_mean + 2))
+\item \eqn{PPDX = \frac{Z-score}{\sqrt{n}}}
+\item \eqn{PPDX_norm = \frac{PPDX + 1}{n_{bins_over_mean} + 2}} # Laplace smoothing
+}
 }
 }

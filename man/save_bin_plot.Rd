@@ -9,8 +9,8 @@ save_bin_plot(samples, sample_name)
 \arguments{
 \item{sample_name}{sample name of interest}
 
-\item{data}{A binned Z-scored data frame with columns "focus"," start",
-"PPDX_norm", "sample" and reference.}
+\item{data}{A binned Z-scored data frame with columns \emph{focus}, \emph{start},
+\emph{PPDX_norm}, \emph{sample} and \emph{reference}.}
 }
 \description{
 Creates and saves binned normalized Z-Score figure per region.

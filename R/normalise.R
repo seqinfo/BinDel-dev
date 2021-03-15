@@ -1,7 +1,8 @@
-#' GC% bin-correct (sample wise) (PMID: 28500333 and PMID: 20454671)
+#' GC% bin-correct
 #'
-#' Expects columns "chr", "start", "end", "focus", "reads", "samples" and
-#' creates column "gc_correct).
+#' Sample wise, based on PMID: 28500333 and PMID: 20454671. Expects columns
+#' \emph{chr}, \emph{start}, \emph{end}, \emph{focus}, \emph{reads},
+#' \emph{samples}. Creates column \emph{gc_correct}.
 #'
 #' @importFrom magrittr %>%
 #' @param samples A data frame to GC% correct.
@@ -26,10 +27,10 @@ gc_correct <- function(samples) {
 }
 
 
-#' Normalize by read count and bin length. Expects GC% correct to be done.
+#' Normalize bin read count by sample total read count and bin length.
 #'
 #' @importFrom magrittr %>%
-#' @param samples A data frame to normalize.
+#' @param samples \code{\link{gc_correct}} output.
 #' @return A normalized data frame.
 normalize_reads <- function(samples) {
   message("Normalizing by read count and bin length.")
@@ -40,16 +41,20 @@ normalize_reads <- function(samples) {
       dplyr::mutate(gc_corrected = gc_corrected / sum(gc_corrected)) %>%
       dplyr::ungroup() %>%
       # Sample bin length correct
-      dplyr::mutate(gc_corrected = gc_corrected / (end - start))
+      dplyr::mutate(gc_corrected = gc_corrected / (end - start)) %>% 
+      dplyr::ungroup()
   )
 }
 
 
-#' PCA-normalize. Expects other normalization steps to be completed.
-#' Based on:
-#' https://stats.stackexchange.com/questions/229092/how-to-reverse-pca-and-reconstruct-original-variables-from-several-principal-com
+#' PCA-normalize.
+#'
+#' Expects other normalization steps (\code{\link{normalize_reads}} and
+#' \code{\link{gc_correct}}) to be completed.
+#' Based on \href{https://stats.stackexchange.com/questions/229092/how-to-reverse-pca-and-reconstruct-original-variables-from-several-principal-com}{StackExchange answer}.
+#'
 #' @importFrom magrittr %>%
-#' @param samples A data frame to PCA-normalize.
+#' @param samples \code{\link{normalize_reads}} output.
 #' @return A normalized data frame.
 pca_correct <- function(samples) {
   message("Applying PCA normalization with ", nComp, " components.")
@@ -67,11 +72,10 @@ pca_correct <- function(samples) {
       names_sep = ":"
     )
   
-  #
   # Train PCA
   ref <- wider %>%
     dplyr::filter(reference) %>%
-    dplyr::select(-reference, -sample)
+    dplyr::select(-reference,-sample)
   
   mu <- colMeans(ref, na.rm = T)
   refPca <- stats::prcomp(ref)
@@ -83,7 +87,7 @@ pca_correct <- function(samples) {
   # Use trained PCA on other samples
   pred <- wider %>%
     dplyr::filter(!reference) %>%
-    dplyr::select(-reference, -sample)
+    dplyr::select(-reference,-sample)
   
   rm(wider)
   

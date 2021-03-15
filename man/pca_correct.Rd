@@ -2,20 +2,18 @@
 % Please edit documentation in R/normalise.R
 \name{pca_correct}
 \alias{pca_correct}
-\title{PCA-normalize. Expects other normalization steps to be completed.
-Based on:
-https://stats.stackexchange.com/questions/229092/how-to-reverse-pca-and-reconstruct-original-variables-from-several-principal-com}
+\title{PCA-normalize.}
 \usage{
 pca_correct(samples)
 }
 \arguments{
-\item{samples}{A data frame to PCA-normalize.}
+\item{samples}{\code{\link{normalize_reads}} output.}
 }
 \value{
 A normalized data frame.
 }
 \description{
-PCA-normalize. Expects other normalization steps to be completed.
-Based on:
-https://stats.stackexchange.com/questions/229092/how-to-reverse-pca-and-reconstruct-original-variables-from-several-principal-com
+Expects other normalization steps (\code{\link{normalize_reads}} and
+\code{\link{gc_correct}}) to be completed.
+Based on \href{https://stats.stackexchange.com/questions/229092/how-to-reverse-pca-and-reconstruct-original-variables-from-several-principal-com}{StackExchange answer}.
 }

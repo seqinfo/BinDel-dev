@@ -2,16 +2,16 @@
 % Please edit documentation in R/normalise.R
 \name{normalize_reads}
 \alias{normalize_reads}
-\title{Normalize by read count and bin length. Expects GC\% correct to be done.}
+\title{Normalize bin read count by sample total read count and bin length.}
 \usage{
 normalize_reads(samples)
 }
 \arguments{
-\item{samples}{A data frame to normalize.}
+\item{samples}{\code{\link{gc_correct}} output.}
 }
 \value{
 A normalized data frame.
 }
 \description{
-Normalize by read count and bin length. Expects GC\% correct to be done.
+Normalize bin read count by sample total read count and bin length.
 }

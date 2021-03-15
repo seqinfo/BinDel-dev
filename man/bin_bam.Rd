@@ -2,18 +2,18 @@
 % Please edit documentation in R/util.R
 \name{bin_bam}
 \alias{bin_bam}
-\title{Bin aligned sequences (from .bam) into genomic bins based on the .bed file.}
+\title{Bin aligned sequences (from \emph{.bam}) into genomic bins based on the \emph{.bed} file.}
 \usage{
 bin_bam(bam_location, bed)
 }
 \arguments{
 \item{bam_location}{A location to the BAM-file to bin.}
 
-\item{bed}{A data frame in .bed format with columns: 'chr', 'start', 'end', 'focus'.}
+\item{bed}{A data frame in .bed format with columns: \emph{chr}, \emph{start}, \emph{end}, \emph{focus}.}
 }
 \value{
 A data frame in bed format with GC\%.
 }
 \description{
-Bin aligned sequences (from .bam) into genomic bins based on the .bed file.
+Bin aligned sequences (from \emph{.bam}) into genomic bins based on the \emph{.bed} file.
 }

@@ -13,11 +13,15 @@ calculate_summary(samples)
 A data frame with probabilities
 }
 \description{
+Aggregates bin statistics to region high probability risks. Requires columns
+\emph{PPDX}, \emph{PPDX_norm} and \emph{over_mean}.
+}
+\details{
 \enumerate{
-\item Sums sample "PPDX", "PPDX_norm", "over_mean"
-\item Calculates reference mean of "PPDX" and "PPDX_norm"
+\item Sums sample \emph{PPDX}, \emph{PPDX_norm}, \emph{over_mean}.
+\item Calculates reference mean of \emph{PPDX} and \emph{PPDX_norm}.
 \item For each subregion (focus) calculates Mahalanobis distance from the
-reference group (PPDX, PPDX_norm) and transforms it with chi-square(df = 2)
+reference group (\emph{PPDX}, \emph{PPDX_norm}) and transforms it with chi-square(df = 2)
 to -log10 probability.
 }
 }

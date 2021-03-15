@@ -9,8 +9,8 @@ save_result_plot(samples, sample_name)
 \arguments{
 \item{sample_name}{sample name of interest}
 
-\item{data}{A probability data frame with columns "chr", "PPDX",
-and "focus".}
+\item{data}{A probability data frame with columns \emph{chr}, \emph{PPDX},
+and \emph{focus}.}
 }
 \description{
 Create and save combined probability result figure.
