@@ -2,4 +2,5 @@
 
 export(bin_bam)
 export(infer_normality)
+export(message_package_version)
 importFrom(magrittr,"%>%")

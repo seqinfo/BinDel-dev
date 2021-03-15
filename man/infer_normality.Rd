@@ -11,7 +11,8 @@ infer_normality(
   nComp = 80,
   bin_plot = TRUE,
   result_plot = TRUE,
-  save_bins = FALSE
+  save_bins = FALSE,
+  pretty_output_columns = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ infer_normality(
 \item{result_plot}{Create and save detailed result?}
 
 \item{save_bins}{Save bins?}
+
+\item{pretty_output_columns}{Output 'nice' human readable column names?}
 }
 \description{
 This function does the following:
@@ -48,5 +51,6 @@ Outputs results to different files.
 
 bam <- "sample.bam"
 reference <- "reference.tsv"
-metrics <- infer_normality(bam, reference)
+infer_normality(bam, reference)
+head("sample.bam.tsv")
 }
