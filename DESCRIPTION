@@ -1,6 +1,6 @@
 Package: niptdel
 Title: NiptDel
-Version: 2.4.3
+Version: 2.4.4
 Authors@R: c(
   person(
     given = "Priit", 

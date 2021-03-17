@@ -8,7 +8,7 @@
 #' @importFrom magrittr %>%
 #' @param reference A data frame holding reference set
 #' @param use_pca Is PCA-normalization switched on?
-check_reference <- function(reference, use_pca) {
+check_reference <- function(reference, use_pca, nComp) {
   ref_expected_cols <-
     c("chr", "start", "end", "focus", "reads", "sample")
   

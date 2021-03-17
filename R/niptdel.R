@@ -49,7 +49,7 @@ infer_normality <- function(bam_location,
     dplyr::mutate(sample = as.character(dplyr::cur_group_id())) %>%
     dplyr::ungroup()
   
-  check_reference(reference, use_pca)
+  check_reference(reference, use_pca, nComp)
   
   message("Reading and binning: ", bam_location)
   binned_reads <- bin_bam(
