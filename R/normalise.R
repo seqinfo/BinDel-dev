@@ -55,8 +55,9 @@ normalize_reads <- function(samples) {
 #'
 #' @importFrom magrittr %>%
 #' @param samples \code{\link{normalize_reads}} output.
+#' @param nComp How many PCA components to use in the normalization.
 #' @return A normalized data frame.
-pca_correct <- function(samples) {
+pca_correct <- function(samples, nComp) {
   message("Applying PCA normalization with ", nComp, " components.")
   # For PCA sort ()
   samples <- samples %>%

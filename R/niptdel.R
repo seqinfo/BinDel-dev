@@ -77,7 +77,7 @@ infer_normality <- function(bam_location,
     dplyr::select(chr, focus, start, sample, reference, gc_corrected)
   
   if (use_pca) {
-    samples <- pca_correct(samples)
+    samples <- pca_correct(samples, nComp)
   }
   
   

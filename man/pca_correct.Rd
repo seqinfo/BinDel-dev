@@ -4,10 +4,12 @@
 \alias{pca_correct}
 \title{PCA-normalize.}
 \usage{
-pca_correct(samples)
+pca_correct(samples, nComp)
 }
 \arguments{
 \item{samples}{\code{\link{normalize_reads}} output.}
+
+\item{nComp}{How many PCA components to use in the normalization.}
 }
 \value{
 A normalized data frame.

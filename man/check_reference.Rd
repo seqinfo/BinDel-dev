@@ -4,12 +4,14 @@
 \alias{check_reference}
 \title{Sanity check for the reference data frame (after initial read in).}
 \usage{
-check_reference(reference, use_pca)
+check_reference(reference, use_pca, nComp)
 }
 \arguments{
 \item{reference}{A data frame holding reference set}
 
 \item{use_pca}{Is PCA-normalization switched on?}
+
+\item{nComp}{How many PCA components are used?}
 }
 \description{
 Checks if:
