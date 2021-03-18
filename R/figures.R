@@ -39,7 +39,7 @@ save_bin_plot <- function(samples, sample_name) {
       ggplot2::ylab("Normalized Z-score") +
       ggplot2::labs(
         title = paste(
-          basename(bam_path),
+          sample_name,
           "scientific",
           utils::packageName(),
           "bin report"
@@ -113,7 +113,7 @@ save_result_plot <- function(samples, sample_name) {
       ggplot2::theme_bw() +
       ggplot2::labs(
         title = paste(
-          basename(bam_path),
+          sample_name,
           "scientific",
           utils::packageName(),
           "report"
