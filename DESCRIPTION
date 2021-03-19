@@ -1,6 +1,6 @@
-Package: niptdel
-Title: NiptDel
-Version: 2.4.5
+Package: bin
+Title: BIN
+Version: 2.4.6
 Authors@R: c(
   person(
     given = "Priit", 
@@ -20,6 +20,8 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Depends:
+    R (>= 4.0.3)
 biocViews:
 Imports:
   Biostrings (>= 2.58.0),
