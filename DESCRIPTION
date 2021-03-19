@@ -1,6 +1,6 @@
-Package: bin
-Title: BIN
-Version: 2.4.6
+Package: bindel
+Title: BINDEL
+Version: 2.4.7
 Authors@R: c(
   person(
     given = "Priit", 
