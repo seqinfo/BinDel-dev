@@ -18,7 +18,7 @@ BINDEL requires a `.bed` file with predefined coordinates. Coordinate file descr
 
 **Note:** Columns `chr`, `start` and `end` must uniquely define each region, e.g `.bed` file must not contain duplicates. Column `focus` is the name of the region of interest, which means that this column is used for grouping bins. **Having duplicates in .bed leads to anomalies in final high-risk probabilites**.
 
-**Note 2:"** GC% correct depends on the number of regions of interest. E.g if only, for example chromosome 2 is in the analysis, it can affect the risk scoring compared to the having all chromosomes in the analysis.
+**Note 2:** GC% correct depends on the number of regions of interest. E.g if only, for example chromosome 2 is in the analysis, it can affect the risk scoring compared to the having all chromosomes in the analysis.
 
 Example of the `.bed`:
 
