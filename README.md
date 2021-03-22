@@ -5,8 +5,6 @@ However, the software is not limited to microdeletion detection and is developed
 
 For examples and usage, please consult with the Cromwell workflow in the corresponding GitHub [repository](https://github.com/seqinfo/PPDxWorkflow).
 
-Software is developed for GRCh38 genomic version.
-
 # Manual
 
 ## Alignment
