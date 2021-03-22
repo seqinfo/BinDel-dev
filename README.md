@@ -117,3 +117,5 @@ bindel::infer_normality("path/bam.bam", "reference_location.tsv")
 1. `.png` illustrating high risk probability per each region and reference info for same regions.
 2. `.png` containing normalised Z-scores per bins.
 3. `.tsv` summary file for each subregion.
+## Algorithm
+The algorithm applies for each bin GC% correct, normalises bins by bin length and sample read count, applies PCA-based normalisation, calculates Z-scores based on the reference, applies Z-score normalisation based on the region mean read count, calculates Mahalanobis distance from the reference and converts them via Chi-Square distribution to high-risk probabilites.
