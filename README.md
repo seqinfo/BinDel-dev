@@ -38,7 +38,7 @@ Example of the `.bed`:
 | chr22  | 50600001  | 50700000 | chr22 |
 | chr22  | 50700001  | 50800000 | chr22 |
 
-### Automated creation of the `.bed`:
+#### Automated creation of the `.bed`:
 
 Given a file `locations.info.tsv`:
 ```TSV
