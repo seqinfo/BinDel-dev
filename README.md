@@ -98,8 +98,7 @@ with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("coor
             out.write(f"{chromosome}\t{start}\t{(min(start + bin_width - 1, end))}\t{focus}\n")
             start = start + bin_width
 ```
-The script creates the file `coordinates.bed`, which can be used in the reference file creation.
-
+The script creates the file `coordinates.bed`, which can be used in the reference file creation. Note that this example excludes chromosome X and Y. However, there is no software side limitation of including chromosomes X and Y in the analysis. Allosomes are processed in the same way as autosomes, and therefore if 45,X is the subject of interest, only female fetus reference group should be used, and in the analysable sample, only a female fetus sample should be used. 
 ## Installation
 ```R
 # In R:
