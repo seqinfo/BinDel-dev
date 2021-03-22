@@ -1,6 +1,6 @@
 # BINDEL
 
-The software focuses on detecting rare (occurring in five or fewer people in 10,000) clinically relevant pathogenic microdeletions from low-coverage NIPT WGS data. 
+The scientific software focuses on detecting rare (occurring in five or fewer people in 10,000) clinically relevant pathogenic microdeletions from low-coverage NIPT WGS data. 
 However, the software is not limited to microdeletion detection and is developed with the idea of detecting any difference from the reference set. Detection possibility includes the detection of full chromosome aneuploidies or monosomies. When a female fetus reference set is used, then the software supports 45,X detection.
 
 For examples and usage, please consult with the Cromwell workflow in the corresponding GitHub [repository](https://github.com/seqinfo/PPDxWorkflow).
@@ -107,3 +107,13 @@ devtools::install_github("seqinfo/BINDEL")
 # In R:
 bindel::create_reference("path/folder/bams", "path/coordinate_bed.bed", "name_of_the_output")
 ```
+## Usage
+```R
+# In R:
+bindel::infer_normality("path/bam.bam", "reference_location.tsv")
+```
+## Output
+`bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs three scientific files:
+1. `.png` illustrating high risk probability per each region and reference info for same regions.
+2. `.png` containing normalised Z-scores per bins.
+3. `.tsv` summary file for each subregion.
