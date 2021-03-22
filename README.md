@@ -11,14 +11,14 @@ For examples and usage, please consult with the Cromwell workflow in the corresp
 BINDEL requires `.bam` **GRCh38** alignment files which are **sorted** and **duplicate marked**.
 
 ## Coordinates
-BINDEL requires a `.bed` file with predefined coordinates. Coordinate file describes:
+BINDEL requires a `.bed` file with predefined coordinates. The coordinate file describes:
 * Chromosomes (column `chr`)
-* *bins* and bin lengths (bins can have varying length) which are defined by columns `start` and `end`.
-* Names of the subregions of interest to analyse (column `focus`). Can be a whole chromosome or a subregion.
+* *bins* and bin lengths (bins can have varying length) are defined by columns `start` and `end`.
+* Names of the subregions of interest to analyse (column `focus`). It can be a whole chromosome or a subregion.
 
-**Note:** Columns `chr`, `start` and `end` must uniquely define each region, e.g `.bed` file must not contain duplicates. Column `focus` is the name of the region of interest, which means that this column is used for grouping bins. **Having duplicates in .bed leads to anomalies in final high-risk probabilites**.
+**Note 1:** Columns `chr`, `start` and `end` must uniquely define each region, e.g. `.bed` file must not contain duplicates. Column `focus` is the name of the region of interest, which means that this column is used for grouping bins. **Having duplicates in .bed leads to anomalies in final high-risk probabilities**.
 
-**Note 2:** GC% correct depends on the number of regions of interest. E.g if only, for example chromosome 2 is in the analysis, it can affect the risk scoring compared to the having all chromosomes in the analysis.
+**Note 2:** GC% correct depends on the number of regions of interest. E.g. if only, for example, chromosome 2 is in the analysis, it can affect the risk scoring compared to having all chromosomes in the analysis.
 
 Example of the `.bed`:
 
@@ -114,8 +114,8 @@ bindel::infer_normality("path/bam.bam", "path/reference.tsv")
 ```
 ## Output
 `bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs three scientific files:
-1. `.png` illustrating high risk probability per each region and reference info for same regions.
+1. `.png` illustrating high-risk probability per each region and reference info for same regions.
 2. `.png` containing normalised Z-scores per bins.
 3. `.tsv` summary file for each subregion.
 ## Algorithm
-The algorithm applies for each bin GC% correct, normalises bins by bin length and sample read count, applies PCA-based normalisation, calculates Z-scores based on the reference, applies Z-score normalisation based on the region mean read count, calculates Mahalanobis distance from the reference and converts them via Chi-Square distribution to high-risk probabilites.
+The algorithm applies for each bin GC% correct, normalises bins by bin length and a sample read count. Next, the software applies PCA-based normalisation, calculates Z-scores based on the reference, applies Z-score normalisation based on the region mean read count, calculates Mahalanobis distance from the reference and converts them via Chi-Square distribution to high-risk probabilities.
