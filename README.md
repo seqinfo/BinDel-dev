@@ -118,6 +118,12 @@ Note, if the reference file has fewer samples than the default number of PCA com
 bindel::infer_normality("path/bam.bam", "path/reference.tsv", nComp = less_than_n_samples_in_reference)
 ```
 
+For more information about possible parameters, please consult the function documentation:
+```R
+# In R:
+?bindel::infer_normality
+```
+
 ## Output
 `bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs by default three scientific files:
 1. `.png` illustrating high-risk probability per each region and reference sample set info for the same regions. The direction of the triangle hints if the findings are duplications or deletions. Each finding should be double-checked with the region bin figure.
