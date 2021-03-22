@@ -120,8 +120,8 @@ bindel::infer_normality("path/bam.bam", "path/reference.tsv", nComp = less_than_
 
 ## Output
 `bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs three scientific files:
-1. `.png` illustrating high-risk probability per each region and reference info for same regions.
-2. `.png` containing normalised Z-scores per bins.
+1. `.png` illustrating high-risk probability per each region and reference sample set info for the same regions. The direction of the triangle hints if the findings are duplications or deletions. Each finding should be double-checked with the region bin figure.
+2. `.png` containing normalised Z-score for each bin in each subregion. These Z-scores are the basis of the high-risk probability calculation. These figures also illustrate the reference group Z-scores.
 3. `.tsv` summary file for each subregion.
 ## Algorithm
 The algorithm applies for each bin bin-based [GC% correct](https://dx.doi.org/10.1038%2Fs41598-017-02031-5), normalises bins by bin length and a sample total read count. Next, the software applies [PCA-based normalisation](https://doi.org/10.1038/gim.2018.32), calculates Z-scores based on the reference bins, applies Z-score normalisation based on the sample region mean read count, calculates Mahalanobis distance from the reference and converts them via Chi-Square distribution to high-risk probabilities.
