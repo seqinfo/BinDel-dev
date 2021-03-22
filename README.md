@@ -10,7 +10,7 @@ Software is developed for GRCh38 genomic version.
 # Manual
 
 ## Alignment
-BINDEL requires `.bam` alignment files which are **sorted** and **duplicate marked**.
+BINDEL requires `.bam` **GRCh38** alignment files which are **sorted** and **duplicate marked**.
 
 ## Coordinates
 BINDEL requires a `.bed` file with predefined coordinates. Coordinate file describes:
