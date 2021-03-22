@@ -100,7 +100,7 @@ with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("all_
 ```R
 # In R:
 install.packages("devtools")
-devtools::install_github("seqinfo/BINDEL/")
+devtools::install_github("seqinfo/BINDEL")
 ```
 ## Reference creation
 ```R
