@@ -105,12 +105,12 @@ devtools::install_github("seqinfo/BINDEL")
 ## Reference creation
 ```R
 # In R:
-bindel::create_reference("path/folder/bams", "path/coordinate_bed.bed", "name_of_the_output")
+bindel::create_reference("path/folder/bams", "path/coordinates.bed", "name_of_the_output")
 ```
 ## Usage
 ```R
 # In R:
-bindel::infer_normality("path/bam.bam", "reference_location.tsv")
+bindel::infer_normality("path/bam.bam", "path/reference.tsv")
 ```
 ## Output
 `bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs three scientific files:
