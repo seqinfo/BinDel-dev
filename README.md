@@ -38,6 +38,64 @@ Example of the `.bed`:
 | chr22  | 50600001  | 50700000 | chr22 |
 | chr22  | 50700001  | 50800000 | chr22 |
 
+### Automated creation of the `.bed`:
+
+Given a file `locations.info.tsv`:
+```TSV
+chr	start	end	focus
+chr1	1	27600000	1p36
+chr1	27600001	248956422	chr1
+chr2	1	242193529	chr2
+chr3	1	198295559	chr3
+chr4	1	4500000	Wolf-Hirschhorn
+chr4	4500001	190214555	chr4
+chr5	1	48800000	Cri-du-chat
+chr5	48800001	181538259	chr5
+chr6	1	170805979	chr6
+chr7	1	72700000	chr7
+chr7	72700001	77900000	Williams-Beuren
+chr7	77900001	159345973	chr7
+chr8	1	116700000	chr8
+chr8	116700001	126300000	Langer-Giedion
+chr8	126300001	145138636	chr8
+chr9	1	138394717	chr9
+chr10	1	133797422	chr10
+chr11	1	114600000	chr11
+chr11	114600001	135086622	Jacobsen
+chr12	1	33275309	chr12
+chr13	1	114364328	chr13
+chr14	1	107043718	chr14
+chr15	1	20500000	chr15
+chr15	24500001	27800000	PWS/AS
+chr15	27800001	101991189	chr15
+chr16	1	17000000	chr16
+chr16	17000001	90338345	chr16
+chr17	1	83257441	chr17
+chr18	1	80373285	chr18
+chr19	1	58617616	chr19
+chr20	1	64444167	chr20
+chr21	1	46709983	chr21
+chr22	1	17400000	chr22
+chr22	19100001	21000000	DiGeorge
+chr22	21700001	50818468	chr22
+
+```
+Run the following Python script:
+```python
+bin_width = 100000
+
+with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("all_regions.bed",  encoding = "UTF-8", mode = "w") as out:
+    header = f.readline()
+    out.write(header.strip() + "\n")
+    for line in f:
+        line = line.strip().split("\t")
+        chromosome, start, end, focus = line[0], int(line[1]), int(line[2]), line[3]        
+    
+        while start + bin_width < end:
+            out.write(f"{chromosome}\t{start}\t{(min(start + bin_width - 1, end))}\t{focus}\n")
+            start = start + bin_width
+```
+
 ## Installation
 ```R
 # In R:
