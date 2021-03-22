@@ -95,6 +95,7 @@ with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("coor
             out.write(f"{chromosome}\t{start}\t{(min(start + bin_width - 1, end))}\t{focus}\n")
             start = start + bin_width
 ```
+The script creates the file `coordinates.bed`, which can be used in the reference file creation.
 
 ## Installation
 ```R
