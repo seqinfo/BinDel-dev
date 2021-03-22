@@ -125,4 +125,4 @@ bindel::infer_normality("path/bam.bam", "path/reference.tsv", nComp = less_than_
 2. `.png` containing normalised Z-scores per bins.
 3. `.tsv` summary file for each subregion.
 ## Algorithm
-The algorithm applies for each bin GC% correct, normalises bins by bin length and a sample read count. Next, the software applies PCA-based normalisation, calculates Z-scores based on the reference, applies Z-score normalisation based on the region mean read count, calculates Mahalanobis distance from the reference and converts them via Chi-Square distribution to high-risk probabilities.
+The algorithm applies for each bin [GC% correct](https://dx.doi.org/10.1038%2Fs41598-017-02031-5), normalises bins by bin length and a sample read count. Next, the software applies PCA-based normalisation, calculates Z-scores based on the reference, applies Z-score normalisation based on the region mean read count, calculates Mahalanobis distance from the reference and converts them via Chi-Square distribution to high-risk probabilities.
