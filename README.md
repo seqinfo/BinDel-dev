@@ -112,6 +112,13 @@ bindel::create_reference("path/folder/bams", "path/coordinates.bed", "name_of_th
 # In R:
 bindel::infer_normality("path/bam.bam", "path/reference.tsv")
 ```
+Note, if the reference file has fewer samples than the default number of PCA components to be used in the normalisation, set the parameter `nComp <= number of reference samples` or turn off PCA normalisation.
+
+```R
+# In R:
+bindel::infer_normality("path/bam.bam", "path/reference.tsv", nComp = less_than_n_samples_in_reference)
+```
+
 ## Output
 `bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs three scientific files:
 1. `.png` illustrating high-risk probability per each region and reference info for same regions.
