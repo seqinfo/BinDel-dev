@@ -102,6 +102,7 @@ install.packages("devtools")
 devtools::install_github("seqinfo/BINDEL")
 ```
 ## Reference creation
+BINDEL requires the creation of a reference set file. A reference set file is a file that contains known euploid NIPT samples. The read counts of these samples are used to compare the sample of interest with the healthy reference group. The creation of the reference file requires the existence of `coordinates.bed` file, which defines the subregions in the genome to analyse.
 ```R
 # In R:
 bindel::create_reference("path/folder/bams", "path/coordinates.bed", "name_of_the_output")
