@@ -84,7 +84,7 @@ Run the following Python script:
 ```python
 bin_width = 100000
 
-with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("all_regions.bed",  encoding = "UTF-8", mode = "w") as out:
+with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("coordinates.bed",  encoding = "UTF-8", mode = "w") as out:
     header = f.readline()
     out.write(header.strip() + "\n")
     for line in f:
