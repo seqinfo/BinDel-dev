@@ -1,9 +1,12 @@
 # BINDEL
+#### Abstract
 
 The scientific software focuses on detecting rare (occurring in five or fewer people in 10,000) clinically relevant pathogenic microdeletions from low-coverage NIPT WGS data. 
-However, the software is not limited to microdeletion detection and is developed with the idea of detecting any difference from the reference set. Detection possibility includes the detection of full chromosome aneuploidies or monosomies. When a female fetus reference set is used, then the software supports 45,X detection.
+However, the software is not limited to microdeletion detection and is developed with the idea of detecting any difference from the reference set. Detection possibility includes the detection of full chromosome aneuploidies or monosomies. When a female fetus reference set is used, then the software supports 45,X detection. Moreover, BINDEL can focus on any predefined subregion in the chromosome with varying bin lengths predefined in the `coordinates.bed` file.
 
-For examples and usage, please consult with the Cromwell workflow in the corresponding GitHub [repository](https://github.com/seqinfo/PPDxWorkflow).
+#### Algorithm
+The algorithm applies for each bin bin-based [GC% correct](https://dx.doi.org/10.1038%2Fs41598-017-02031-5), normalises bins by bin length and a sample total read count. Next, the software applies [PCA-based normalisation](https://doi.org/10.1038/gim.2018.32), calculates Z-scores based on the reference bins, applies Z-score normalisation based on the sample region mean read count, calculates Mahalanobis distance from the reference and converts them via Chi-Square distribution to high-risk probabilities.
+
 
 # Manual
 
@@ -11,14 +14,14 @@ For examples and usage, please consult with the Cromwell workflow in the corresp
 BINDEL requires `.bam` **GRCh38** alignment files which are **sorted** and **duplicate marked**.
 
 ## Coordinates
-BINDEL requires a `.bed` file with predefined coordinates. Coordinate file describes:
+BINDEL requires a `.bed` file with predefined coordinates. The coordinate file describes:
 * Chromosomes (column `chr`)
-* *bins* and bin lengths (bins can have varying length) which are defined by columns `start` and `end`.
-* Names of the subregions of interest to analyse (column `focus`). Can be a whole chromosome or a subregion.
+* *bins* and bin lengths (bins can have varying length) are defined by columns `start` and `end`.
+* Names of the subregions of interest to analyse (column `focus`). It can be a whole chromosome or a subregion.
 
-**Note:** Columns `chr`, `start` and `end` must uniquely define each region, e.g `.bed` file must not contain duplicates. Column `focus` is the name of the region of interest, which means that this column is used for grouping bins. **Having duplicates in .bed leads to anomalies in final high-risk probabilities**.
+**Note 1:** Columns `chr`, `start` and `end` must uniquely define each region, e.g. `.bed` file must not contain duplicates. Column `focus` is the name of the region of interest, which means that this column is used for grouping bins. **Having duplicates in .bed leads to anomalies in final high-risk probabilities**.
 
-**Note 2:** GC% correct depends on the number of regions of interest. E.g if only, for example chromosome 2 is in the analysis, it can affect the risk scoring compared to the having all chromosomes in the analysis.
+**Note 2:** GC% correct depends on the number of regions of interest. E.g. if only, for example, chromosome 2 is in the analysis, it can affect the risk scoring compared to having all chromosomes in the analysis.
 
 **Note 3:** **For the detection of microdeletions it is important to prefilter regions with high variance.** For example, we observed that Prader-Willi (PWS) and Angelman syndrome (AS) related region has high variance in the beginning of the region. In the development of the tool, only coordinates `24500001 - 27800000` were used for AS/PWS detection.
 
@@ -86,7 +89,7 @@ Run the following Python script:
 ```python
 bin_width = 100000
 
-with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("all_regions.bed",  encoding = "UTF-8", mode = "w") as out:
+with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("coordinates.bed",  encoding = "UTF-8", mode = "w") as out:
     header = f.readline()
     out.write(header.strip() + "\n")
     for line in f:
@@ -97,7 +100,7 @@ with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("all_
             out.write(f"{chromosome}\t{start}\t{(min(start + bin_width - 1, end))}\t{focus}\n")
             start = start + bin_width
 ```
-
+The script creates the file `coordinates.bed`, which can be used in the reference file creation. Note that this example excludes chromosome X and Y. However, there is no software side limitation of including chromosomes X and Y in the analysis. Allosomes are processed in the same way as autosomes, and therefore if 45,X is the subject of interest, only female fetus reference group should be used, and in the analysable sample, only a female fetus sample should be used. 
 ## Installation
 ```R
 # In R:
@@ -105,19 +108,31 @@ install.packages("devtools")
 devtools::install_github("seqinfo/BINDEL")
 ```
 ## Reference creation
+BINDEL requires the creation of a reference set file. A reference set file is a file that contains known euploid NIPT samples. The read counts of these samples are used to compare the sample of interest with the healthy reference group. The creation of the reference file requires the existence of `coordinates.bed` file, which defines the subregions in the genome to analyse.
 ```R
 # In R:
-bindel::create_reference("path/folder/bams", "path/coordinate_bed.bed", "name_of_the_output")
+bindel::create_reference("path/folder/bams", "path/coordinates.bed", "name_of_the_output")
 ```
 ## Usage
 ```R
 # In R:
-bindel::infer_normality("path/bam.bam", "reference_location.tsv")
+bindel::infer_normality("path/bam.bam", "path/reference.tsv")
 ```
+Note, if the reference file has fewer samples than the default number of PCA components to be used in the normalisation, set the parameter `nComp <= number of reference samples` or turn off PCA normalisation.
+
+```R
+# In R:
+bindel::infer_normality("path/bam.bam", "path/reference.tsv", nComp = less_than_n_samples_in_reference)
+```
+
+For more information about possible parameters, please consult the function documentation:
+```R
+# In R:
+?bindel::infer_normality
+```
+
 ## Output
-`bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs three scientific files:
-1. `.png` illustrating high risk probability per each region and reference info for same regions.
-2. `.png` containing normalised Z-scores per bins.
+`bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs by default three scientific files:
+1. `.png` illustrating high-risk probability per each region and reference sample set info for the same regions. The direction of the triangle hints if the findings are duplications or deletions. Each finding should be double-checked with the region bin figure.
+2. `.png` containing normalised Z-score for each bin in each subregion. These Z-scores are the basis of the high-risk probability calculation. These figures also illustrate the reference group Z-scores.
 3. `.tsv` summary file for each subregion.
-## Algorithm
-The algorithm applies for each bin GC% correct, normalises bins by bin length and sample read count, applies PCA-based normalisation, calculates Z-scores based on the reference, applies Z-score normalisation based on the region mean read count, calculates Mahalanobis distance from the reference and converts them via Chi-Square distribution to high-risk probabilites.
