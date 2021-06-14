@@ -44,7 +44,7 @@ calculate_bin_stat <- function(samples) {
       PPDX_norm = ((z_score / sqrt(dplyr::n(
         
       ))) + 1 / dplyr::n()) / (sum(over_mean) + 2 / dplyr::n())
-    ) %>% 
+    ) %>%
     dplyr::ungroup()
   
   return(samples)
@@ -64,8 +64,9 @@ calculate_bin_stat <- function(samples) {
 #' to -log10 probability.
 #'}
 #' @param samples A binned statistics data frame.
+#' @param amplify_sensitivity used both the \emph{PPDX} and \emph{PPDX_norm}?
 #' @return A data frame with probabilities
-calculate_summary <- function(samples) {
+calculate_summary <- function(samples, amplify_sensitivity) {
   samples <- samples %>%
     dplyr::group_by(sample, chr, focus, reference) %>%
     dplyr::summarise(
@@ -83,20 +84,39 @@ calculate_summary <- function(samples) {
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
     purrr::map_dfr( ~ {
-      cov <-
-        stats::cov(.x %>%
-                     dplyr::filter(reference) %>%
-                     dplyr::select(PPDX_norm, PPDX))
+      if (amplify_sensitivity) {
+        cov <-
+          stats::cov(.x %>%
+                       dplyr::filter(reference) %>%
+                       dplyr::select(PPDX_norm, PPDX))
+        
+        center <- .x %>%
+          dplyr::filter(reference) %>%
+          dplyr::select(mean_x, mean_y) %>%
+          dplyr::distinct()
+        
+        distances <-
+          stats::mahalanobis(.x %>% dplyr::select(PPDX_norm, PPDX),
+                             c(center$mean_x, center$mean_y),
+                             cov)
+        
+      } else{
+        cov <-
+          stats::cov(.x %>%
+                       dplyr::filter(reference) %>%
+                       dplyr::select(PPDX_norm))
+        
+        center <- .x %>%
+          dplyr::filter(reference) %>%
+          dplyr::select(mean_x) %>%
+          dplyr::distinct()
+        
+        distances <-
+          stats::mahalanobis(.x %>% dplyr::select(PPDX_norm),
+                             c(center$mean_x),
+                             cov)
+      }
       
-      center <- .x %>%
-        dplyr::filter(reference) %>%
-        dplyr::select(mean_x, mean_y) %>%
-        dplyr::distinct()
-      
-      distances <-
-        stats::mahalanobis(.x %>% dplyr::select(PPDX_norm, PPDX),
-                           c(center$mean_x, center$mean_y),
-                           cov)
       
       dplyr::bind_cols(
         sample = .x$sample,
@@ -106,9 +126,14 @@ calculate_summary <- function(samples) {
         PPDX_norm = .x$PPDX_norm,
         PPDX = .x$PPDX,
         affected_over = .x$affected_over,
-        p = -log10(stats::pchisq(
-          distances, df = 2, lower.tail = FALSE
-        ) + 1e-100)
+        p = -log10(
+          stats::pchisq(distances,
+                        df = if (amplify_sensitivity)
+                          2
+                        else
+                          1,
+                        lower.tail = FALSE) + 1e-100
+        )
       )
     })
 }

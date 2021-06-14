@@ -14,10 +14,11 @@
 #' Outputs results to different files.
 #'
 #' @importFrom magrittr %>%
-#' @param bam_location Path to the input file
-#' @param reference_location Path to the reference file
-#' @param use_pca Use PCA based normalization?
-#' @param nComp How many components to use in PCA-based normalization?
+#' @param bam_location Path to the input file.
+#' @param reference_location Path to the reference file.
+#' @param amplify_sensitivity Include a non-normalized Z-score in the calculations? The high number of PCA components can lead to an increased number of false positives if a non-normalized Z-score is also considered. However, when set to false, the tool is less sensitive on lower fetal fraction and read count. 
+#' @param use_pca Use PCA based normalization? Increases sensitivity by reducing variation between samples.
+#' @param nComp How many components to use in PCA-based normalization? Cannot be higher than the number of samples in the reference set. It affects the minimum read count and the fetal fraction that the tool can reliably operate on.
 #' @param bin_plot Create and save detailed bin plots?
 #' @param result_plot Create and save detailed result?
 #' @param save_bins Save bins?
@@ -31,6 +32,7 @@
 #' head("sample.bam.tsv")
 infer_normality <- function(bam_location,
                             reference_location,
+                            amplify_sensitivity = TRUE,
                             use_pca = TRUE,
                             nComp = 80,
                             bin_plot = TRUE,
@@ -105,7 +107,7 @@ infer_normality <- function(bam_location,
   }
   
   
-  samples <- calculate_summary(samples)
+  samples <- calculate_summary(samples, amplify_sensitivity)
   
   if (result_plot) {
     message("Creating and saving sample specific plot.")

@@ -1,6 +1,6 @@
 Package: bindel
 Title: BINDEL
-Version: 2.4.8
+Version: 2.4.9
 Authors@R: c(
   person(
     given = "Priit", 

@@ -16,9 +16,11 @@ BINDEL requires a `.bed` file with predefined coordinates. Coordinate file descr
 * *bins* and bin lengths (bins can have varying length) which are defined by columns `start` and `end`.
 * Names of the subregions of interest to analyse (column `focus`). Can be a whole chromosome or a subregion.
 
-**Note:** Columns `chr`, `start` and `end` must uniquely define each region, e.g `.bed` file must not contain duplicates. Column `focus` is the name of the region of interest, which means that this column is used for grouping bins. **Having duplicates in .bed leads to anomalies in final high-risk probabilites**.
+**Note:** Columns `chr`, `start` and `end` must uniquely define each region, e.g `.bed` file must not contain duplicates. Column `focus` is the name of the region of interest, which means that this column is used for grouping bins. **Having duplicates in .bed leads to anomalies in final high-risk probabilities**.
 
 **Note 2:** GC% correct depends on the number of regions of interest. E.g if only, for example chromosome 2 is in the analysis, it can affect the risk scoring compared to the having all chromosomes in the analysis.
+
+**Note 3:** **For the detection of microdeletions it is important to prefilter regions with high variance.** For example, we observed that Prader-Willi (PWS) and Angelman syndrome (AS) related region has high variance in the beginning of the region. In the development of the tool, only coordinates `24500001 - 27800000` were used for AS/PWS detection.
 
 Example of the `.bed`:
 

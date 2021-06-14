@@ -7,6 +7,7 @@
 infer_normality(
   bam_location,
   reference_location,
+  amplify_sensitivity = TRUE,
   use_pca = TRUE,
   nComp = 80,
   bin_plot = TRUE,
@@ -16,13 +17,15 @@ infer_normality(
 )
 }
 \arguments{
-\item{bam_location}{Path to the input file}
+\item{bam_location}{Path to the input file.}
 
-\item{reference_location}{Path to the reference file}
+\item{reference_location}{Path to the reference file.}
 
-\item{use_pca}{Use PCA based normalization?}
+\item{amplify_sensitivity}{Include a non-normalized Z-score in the calculations? The high number of PCA components can lead to an increased number of false positives if a non-normalized Z-score is also considered. However, when set to false, the tool is less sensitive on lower fetal fraction and read count.}
 
-\item{nComp}{How many components to use in PCA-based normalization?}
+\item{use_pca}{Use PCA based normalization? Increases sensitivity by reducing variation between samples.}
+
+\item{nComp}{How many components to use in PCA-based normalization? Cannot be higher than the number of samples in the reference set. It affects the minimum read count and the fetal fraction that the tool can reliably operate on.}
 
 \item{bin_plot}{Create and save detailed bin plots?}
 
