@@ -134,7 +134,6 @@ For more information about possible parameters, please consult the function docu
 ```
 
 ## Output
-`bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs by default three scientific files:
-1. `.png` illustrating high-risk probability per each region and reference sample set info for the same regions. The direction of the triangle hints if the findings are duplications or deletions. Each finding should be double-checked with the region bin figure.
-2. `.png` containing normalised Z-score for each bin in each subregion. These Z-scores are the basis of the high-risk probability calculation. These figures also illustrate the reference group Z-scores.
-3. `.tsv` summary file for each subregion.
+`bindel::infer_normality("path/bam.bam", "reference_location.tsv")` outputs by default two scientific files:
+1. `.png` containing normalised Z-score for each bin in each subregion. These Z-scores are the basis of the high-risk probability calculation. These figures also illustrate the reference group Z-scores.
+2. `.tsv` summary file for each subregion.

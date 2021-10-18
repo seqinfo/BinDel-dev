@@ -16,13 +16,10 @@
 #' @importFrom magrittr %>%
 #' @param bam_location Path to the input file.
 #' @param reference_location Path to the reference file.
-#' @param amplify_sensitivity Include a non-normalized Z-score in the calculations? The high number of PCA components can lead to an increased number of false positives if a non-normalized Z-score is also considered. However, when set to false, the tool is less sensitive on lower fetal fraction and read count. 
 #' @param use_pca Use PCA based normalization? Increases sensitivity by reducing variation between samples.
 #' @param nComp How many components to use in PCA-based normalization? Cannot be higher than the number of samples in the reference set. It affects the minimum read count and the fetal fraction that the tool can reliably operate on.
 #' @param bin_plot Create and save detailed bin plots?
-#' @param result_plot Create and save detailed result?
 #' @param save_bins Save bins?
-#' @param pretty_output_columns Output 'nice' human readable column names?
 #' @export
 #' @examples
 #'
@@ -32,13 +29,10 @@
 #' head("sample.bam.tsv")
 infer_normality <- function(bam_location,
                             reference_location,
-                            amplify_sensitivity = TRUE,
                             use_pca = TRUE,
                             nComp = 80,
                             bin_plot = TRUE,
-                            result_plot = TRUE,
-                            save_bins = FALSE,
-                            pretty_output_columns = TRUE)  {
+                            save_bins = FALSE)  {
   message_package_version()
   
   
@@ -107,38 +101,16 @@ infer_normality <- function(bam_location,
   }
   
   
-  samples <- calculate_summary(samples, amplify_sensitivity)
-  
-  if (result_plot) {
-    message("Creating and saving sample specific plot.")
-    save_result_plot(samples, sample_name)
-  }
+  samples <- calculate_summary(samples)
   
   
   message("Saving metrics.")
-  if (pretty_output_columns) {
-    samples %>%
-      dplyr::filter(!reference) %>%
-      dplyr::select(-reference) %>%
-      dplyr::rename(Sample = sample) %>%
-      dplyr::rename(Chromosome = chr) %>%
-      dplyr::rename(Subregion = focus) %>%
-      dplyr::rename(`% of bins over reference bin mean median` = affected_over) %>%
-      dplyr::rename(`High risk probability` = p) %>%
-      dplyr::rename(`Z-Score` = PPDX) %>%
-      dplyr::rename(`Normalized Z-Score` = PPDX_norm) %>%
-      dplyr::mutate_if(is.numeric, round, 3) %>%
-      readr::write_tsv(paste0(sample_name, ".tsv"))
-  } else{
-    samples %>%
-      dplyr::filter(!reference) %>%
-      dplyr::select(-reference) %>%
-      dplyr::rename(subregion = focus) %>%
-      dplyr::rename(`percentage_bins_over_ref_bin_mean_median` = affected_over) %>%
-      dplyr::rename(`high_risk_probability` = p) %>%
-      dplyr::rename(`z_score` = PPDX) %>%
-      dplyr::rename(`normalized_z_score` = PPDX_norm) %>%
-      dplyr::mutate_if(is.numeric, round, 3) %>%
-      readr::write_tsv(paste0(sample_name, ".tsv"))
-  }
+  samples %>%
+    dplyr::filter(!reference) %>%
+    dplyr::select(-reference) %>%
+    dplyr::rename(subregion = focus) %>%
+    dplyr::rename(`z_score` = PPDX) %>%
+    dplyr::rename(`normalized_z_score` = PPDX_norm) %>%
+    dplyr::mutate_if(is.numeric, round, 3) %>%
+    readr::write_tsv(paste0(sample_name, ".tsv"))
 }

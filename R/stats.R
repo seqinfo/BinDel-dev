@@ -64,15 +64,13 @@ calculate_bin_stat <- function(samples) {
 #' to -log10 probability.
 #'}
 #' @param samples A binned statistics data frame.
-#' @param amplify_sensitivity used both the \emph{PPDX} and \emph{PPDX_norm}?
 #' @return A data frame with probabilities
-calculate_summary <- function(samples, amplify_sensitivity) {
+calculate_summary <- function(samples) {
   samples <- samples %>%
     dplyr::group_by(sample, chr, focus, reference) %>%
     dplyr::summarise(
       PPDX = sum(PPDX),
-      PPDX_norm = sum(PPDX_norm),
-      affected_over = sum(over_mean) / dplyr::n() * 100
+      PPDX_norm = sum(PPDX_norm)
     ) %>%
     dplyr::group_by(reference, chr, focus) %>%
     dplyr::mutate(mean_x = mean(PPDX_norm),
@@ -83,39 +81,38 @@ calculate_summary <- function(samples, amplify_sensitivity) {
   samples <- samples %>%
     dplyr::group_by(chr, focus) %>%
     dplyr::group_split() %>%
-    purrr::map_dfr( ~ {
-      if (amplify_sensitivity) {
-        cov <-
-          stats::cov(.x %>%
-                       dplyr::filter(reference) %>%
-                       dplyr::select(PPDX_norm, PPDX))
-        
-        center <- .x %>%
-          dplyr::filter(reference) %>%
-          dplyr::select(mean_x, mean_y) %>%
-          dplyr::distinct()
-        
-        distances <-
-          stats::mahalanobis(.x %>% dplyr::select(PPDX_norm, PPDX),
-                             c(center$mean_x, center$mean_y),
-                             cov)
-        
-      } else{
-        cov <-
-          stats::cov(.x %>%
-                       dplyr::filter(reference) %>%
-                       dplyr::select(PPDX_norm))
-        
-        center <- .x %>%
-          dplyr::filter(reference) %>%
-          dplyr::select(mean_x) %>%
-          dplyr::distinct()
-        
-        distances <-
-          stats::mahalanobis(.x %>% dplyr::select(PPDX_norm),
-                             c(center$mean_x),
-                             cov)
-      }
+    purrr::map_dfr(~ {
+      # Greedy
+      cov <- stats::cov(.x %>%
+                          dplyr::filter(reference) %>%
+                          dplyr::select(PPDX_norm, PPDX))
+      
+      center <- .x %>%
+        dplyr::filter(reference) %>%
+        dplyr::select(mean_x, mean_y) %>%
+        dplyr::distinct()
+      
+      dist_greedy <-
+        stats::mahalanobis(.x %>% dplyr::select(PPDX_norm, PPDX),
+                           c(center$mean_x, center$mean_y),
+                           cov)
+      
+      
+      # Conservative
+      cov <- stats::cov(.x %>%
+                          dplyr::filter(reference) %>%
+                          dplyr::select(PPDX_norm))
+      
+      center <- .x %>%
+        dplyr::filter(reference) %>%
+        dplyr::select(mean_x) %>%
+        dplyr::distinct()
+      
+      dist_conservative <-
+        stats::mahalanobis(.x %>%
+                             dplyr::select(PPDX_norm), c(center$mean_x),
+                           cov)
+      
       
       
       dplyr::bind_cols(
@@ -125,14 +122,11 @@ calculate_summary <- function(samples, amplify_sensitivity) {
         reference = .x$reference,
         PPDX_norm = .x$PPDX_norm,
         PPDX = .x$PPDX,
-        affected_over = .x$affected_over,
-        p = -log10(
-          stats::pchisq(distances,
-                        df = if (amplify_sensitivity)
-                          2
-                        else
-                          1,
-                        lower.tail = FALSE) + 1e-100
+        greedy_prob = -log10(stats::pchisq(
+          dist_greedy, df = 2, lower.tail = F
+        ) + 1e-100),
+        conservative_prob = -log10(
+          stats::pchisq(dist_conservative, df = 1, lower.tail = F) + 1e-100
         )
       )
     })

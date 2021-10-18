@@ -4,12 +4,10 @@
 \alias{calculate_summary}
 \title{Calculate summary statistics (probabilities)}
 \usage{
-calculate_summary(samples, amplify_sensitivity)
+calculate_summary(samples)
 }
 \arguments{
 \item{samples}{A binned statistics data frame.}
-
-\item{amplify_sensitivity}{used both the \emph{PPDX} and \emph{PPDX_norm}?}
 }
 \value{
 A data frame with probabilities
