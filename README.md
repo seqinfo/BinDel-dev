@@ -47,58 +47,60 @@ Example of the `.bed`:
 
 Given a file `locations.info.tsv`:
 ```TSV
-chr	start	end	focus
-chr1	1	27600000	1p36
-chr1	27600001	248956422	chr1
-chr2	1	242193529	chr2
-chr3	1	198295559	chr3
-chr4	1	4500000	Wolf-Hirschhorn
-chr4	4500001	190214555	chr4
-chr5	1	48800000	Cri-du-chat
-chr5	48800001	181538259	chr5
-chr6	1	170805979	chr6
-chr7	1	72700000	chr7
-chr7	72700001	77900000	Williams-Beuren
-chr7	77900001	159345973	chr7
-chr8	1	116700000	chr8
-chr8	116700001	126300000	Langer-Giedion
-chr8	126300001	145138636	chr8
-chr9	1	138394717	chr9
-chr10	1	133797422	chr10
-chr11	1	114600000	chr11
-chr11	114600001	135086622	Jacobsen
-chr12	1	33275309	chr12
-chr13	1	114364328	chr13
-chr14	1	107043718	chr14
-chr15	1	20500000	chr15
-chr15	24500001	27800000	PWS/AS
-chr15	27800001	101991189	chr15
-chr16	1	17000000	chr16
-chr16	17000001	90338345	chr16
-chr17	1	83257441	chr17
-chr18	1	80373285	chr18
-chr19	1	58617616	chr19
-chr20	1	64444167	chr20
-chr21	1	46709983	chr21
-chr22	1	17400000	chr22
-chr22	19100001	21000000	DiGeorge
-chr22	21700001	50818468	chr22
+chr	start	end	focus	length
+chr1	10001	12780116	1p36 (1/3)	100000
+chr1	12780117	23600000	1p36 (2/3)	100000
+chr1	23600001	27600000	1p36 (3/3)	100000
+chr1	27600001	248956422	chr1	100000
+chr2	1	196060396	chr2	100000
+chr2	196060397	204342216	2q33.1	100000
+chr2	204342217	242193529	chr2	100000
+chr3	1	192600000	chr3	100000
+chr3	192600001	198295559	3q29	100000
+chr4	1	4500000	Wolf-Hirschhorn	100000
+chr4	4500001	190214555	chr4	100000
+chr5	1	48800000	Cri-du-chat	100000
+chr5	48800001	181538259	chr5	100000
+chr6	1	170805979	chr6	100000
+chr7	1	72700000	chr7	100000
+chr7	72700001	77900000	Williams-Beuren	100000
+chr7	77900001	159345973	chr7	100000
+chr8	1	116700000	chr8	100000
+chr8	116700001	126300000	Langer-Giedion	100000
+chr8	126300001	145138636	chr8	100000
+chr9	1	138394717	chr9	100000
+chr10	1	133797422	chr10	100000
+chr11	1	43400000	chr11	100000
+chr11	43400001	48800000	Potocki-Shaffer	100000
+chr11	48800001	114600000	chr11	100000
+chr11	114600001	135086622	Jacobsen	100000
+chr12	1	33275309	chr12	100000
+chr13	1	114364328	chr13	100000
+chr14	1	107043718	chr14	100000
+chr15	1	20500000	chr15	100000
+chr15	24500001	28193120	Angelman/Prader-Willi	100000
+chr15	28193121	101991189	chr15	100000
+chr16	1	17000000	chr16	100000
+chr16	17000001	90338345	chr16	100000
+chr17	1	3400000	Miller-Dieker	100000
+chr17	3400001	16869758	chr17	100000
+chr17	16869759	20318836	Smith-Magenis	100000
+chr17	20318837	27400000	chr17	100000
+chr17	27400001	33500000	NF1-microdeletion	100000
+chr17	33500001	83257441	chr17	100000
+chr18	1	80373285	chr18	100000
+chr19	1	58617616	chr19	100000
+chr20	1	64444167	chr20	100000
+chr21	1	46709983	chr21	100000
+chr22	1	17400000	chr22	100000
+chr22	19022279	21098156	DiGeorge	100000
+chr22	21098157	50818468	chr22	100000
+
 
 ```
 Run the following Python script:
-```python
-bin_width = 100000
-
-with open("locations.info.tsv", encoding = "UTF-8", mode = "r") as f, open("coordinates.bed",  encoding = "UTF-8", mode = "w") as out:
-    header = f.readline()
-    out.write(header.strip() + "\n")
-    for line in f:
-        line = line.strip().split("\t")
-        chromosome, start, end, focus = line[0], int(line[1]), int(line[2]), line[3]        
-    
-        while start + bin_width < end:
-            out.write(f"{chromosome}\t{start}\t{(min(start + bin_width - 1, end))}\t{focus}\n")
-            start = start + bin_width
+```
+python3 dividebins.py --infile locations.info.tsv --outfile coordinates.bed
 ```
 The script creates the file `coordinates.bed`, which can be used in the reference file creation. Note that this example excludes chromosome X and Y. However, there is no software side limitation of including chromosomes X and Y in the analysis. Allosomes are processed in the same way as autosomes, and therefore if 45,X is the subject of interest, only female fetus reference group should be used, and in the analysable sample, only a female fetus sample should be used. 
 ## Installation
