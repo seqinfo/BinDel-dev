@@ -45,7 +45,7 @@ Example of the `.bed`:
 
 #### Automated creation of the `.bed`:
 
-Given a file `locations.info.tsv`:
+Given a file `locations.info.tsv` (column `length` sets bin size, e.g in here bin size is 100k):
 ```TSV
 chr	start	end	focus	length
 ...
