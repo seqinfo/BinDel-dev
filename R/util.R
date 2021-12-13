@@ -21,8 +21,7 @@ bin_bam <- function(bam_location, bed) {
   
   binned_counts <- bed %>%
     dplyr::mutate(reads = SummarizedExperiment::assay(
-      GenomicAlignments::summarizeOverlaps(GenomicRanges::makeGRangesFromDataFrame(.), bam, mode = "IntersectionStrict")
-    )) %>%
+      GenomicAlignments::summarizeOverlaps(GenomicRanges::makeGRangesFromDataFrame(.), bam, mode = "IntersectionStrict"))[,1]) %>%
     dplyr::mutate(sample = basename(bam_location))
   
   return(binned_counts)
