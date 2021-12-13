@@ -15,7 +15,10 @@ parser.add_argument('--outfile',
 
 args = parser.parse_args()
 
-header = args.infile.readline()
+# Skip header
+args.infile.readline()
+header = "\t".join(['chr', 'start', 'end', 'focus'])
+
 args.outfile.write(header.strip() + "\n")
 for line in args.infile:
     line = line.strip().split("\t")
