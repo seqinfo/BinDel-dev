@@ -1,4 +1,9 @@
 # BINDEL
+
+Copyright: Priit Paluoja and Priit Palta; University of Tartu and University of Helsinki.
+All rights reserved, unauthorised usage and distribution are prohibited.
+Contact: priit.palta@gmail.com
+
 #### Abstract
 
 The scientific software focuses on detecting rare (occurring in five or fewer people in 10,000) clinically relevant pathogenic microdeletions from low-coverage NIPT WGS data. 

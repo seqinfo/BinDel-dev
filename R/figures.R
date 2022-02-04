@@ -1,3 +1,8 @@
+# Copyright: Priit Paluoja and Priit Palta; University of Tartu and University of Helsinki.
+# All rights reserved, unauthorised usage and distribution are prohibited.
+# Contact: priit.palta@gmail.com
+
+
 #' Creates and saves binned normalized Z-Score figure per region.
 #'
 #' @importFrom magrittr %>%

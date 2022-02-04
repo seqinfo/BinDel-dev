@@ -1,3 +1,8 @@
+# Copyright: Priit Paluoja and Priit Palta; University of Tartu and University of Helsinki.
+# All rights reserved, unauthorised usage and distribution are prohibited.
+# Contact: priit.palta@gmail.com
+
+
 #' GC% bin-correct
 #'
 #' Sample wise, based on PMID: 28500333 and PMID: 20454671. Expects columns

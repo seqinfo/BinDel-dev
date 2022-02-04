@@ -1,3 +1,7 @@
+# Copyright: Priit Paluoja and Priit Palta; University of Tartu and University of Helsinki.
+# All rights reserved, unauthorised usage and distribution are prohibited.
+# Contact: priit.palta@gmail.com
+
 #' Infer sample high-risk probability.
 #'
 #' This function does the following:

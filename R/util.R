@@ -1,5 +1,6 @@
-
-
+# Copyright: Priit Paluoja and Priit Palta; University of Tartu and University of Helsinki.
+# All rights reserved, unauthorised usage and distribution are prohibited.
+# Contact: priit.palta@gmail.com
 
 
 #' Bin aligned sequences (from \emph{.bam}) into genomic bins based on the \emph{.bed} file.

@@ -1,3 +1,8 @@
+# Copyright: Priit Paluoja and Priit Palta; University of Tartu and University of Helsinki.
+# All rights reserved, unauthorised usage and distribution are prohibited.
+# Contact: priit.palta@gmail.com
+
+
 #' Sanity check for the reference data frame (after initial read in).
 #'
 #' Checks if:

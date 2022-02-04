@@ -1,3 +1,8 @@
+# Copyright: Priit Paluoja and Priit Palta; University of Tartu and University of Helsinki.
+# All rights reserved, unauthorised usage and distribution are prohibited.
+# Contact: priit.palta@gmail.com
+
+
 #' Create a reference file.
 #'
 #' Takes a location to the folder with .bam files and .bed file and bins the
