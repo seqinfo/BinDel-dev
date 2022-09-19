@@ -7,7 +7,7 @@ Contact: priit.palta@gmail.com
 #### Abstract
 
 The scientific software focuses on detecting rare (occurring in five or fewer people in 10,000) clinically relevant pathogenic microdeletions from low-coverage NIPT WGS data. 
-However, the software is not limited to microdeletion detection and is developed with the idea of detecting any difference from the reference set. Detection possibility includes the detection of full chromosome aneuploidies or monosomies. When a female fetus reference set is used, then the software supports 45,X detection. Moreover, BINDEL can focus on any predefined subregion in the chromosome with varying bin lengths predefined in the `coordinates.bed` file.
+However, the software is not limited to microdeletion detection and is developed with the idea of detecting any difference from the reference set. Detection possibility includes the detection of full chromosome aneuploidies or monosomies. When a female fetus reference set is used, then the software supports 45,X detection. Moreover, BinDel can focus on any predefined subregion in the chromosome with varying bin lengths predefined in the `coordinates.bed` file.
 
 #### Algorithm
 The algorithm applies for each bin bin-based [GC% correct](https://dx.doi.org/10.1038%2Fs41598-017-02031-5), normalises bins by bin length and a sample total read count. Next, the software applies [PCA-based normalisation](https://doi.org/10.1038/gim.2018.32), calculates Z-scores based on the reference bins, applies Z-score normalisation based on the sample region mean read count, calculates Mahalanobis distance from the reference and converts them via Chi-Square distribution to high-risk probabilities.
@@ -16,10 +16,10 @@ The algorithm applies for each bin bin-based [GC% correct](https://dx.doi.org/10
 # Manual
 
 ## Alignment
-BINDEL requires `.bam` **GRCh38** alignment files which are **sorted** and **duplicate marked**.
+BinDel requires `.bam` **GRCh38** alignment files which are **sorted** and **duplicate marked**.
 
 ## Coordinates
-BINDEL requires a `.bed` file with predefined coordinates. The coordinate file describes:
+BinDel requires a `.bed` file with predefined coordinates. The coordinate file describes:
 * Chromosomes (column `chr`)
 * *bins* and bin lengths (bins can have varying length) are defined by columns `start` and `end`.
 * Names of the subregions of interest to analyse (column `focus`). It can be a whole chromosome or a subregion.
@@ -69,10 +69,10 @@ The script creates the file `coordinates.bed`, which can be used in the referenc
 ```R
 # In R:
 install.packages("devtools")
-devtools::install_github("seqinfo/BINDEL")
+devtools::install_github("seqinfo/BinDel")
 ```
 ## Reference creation
-BINDEL requires the creation of a reference set file. A reference set file is a file that contains known euploid NIPT samples. The read counts of these samples are used to compare the sample of interest with the healthy reference group. The creation of the reference file requires the existence of `coordinates.bed` file, which defines the subregions in the genome to analyse.
+BinDel requires the creation of a reference set file. A reference set file is a file that contains known euploid NIPT samples. The read counts of these samples are used to compare the sample of interest with the healthy reference group. The creation of the reference file requires the existence of `coordinates.bed` file, which defines the subregions in the genome to analyse.
 ```R
 # In R:
 bindel::create_reference("path/folder/bams", "path/coordinates.bed", "name_of_the_output")
