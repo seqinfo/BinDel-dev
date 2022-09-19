@@ -1,4 +1,4 @@
-# BINDEL
+# BinDel
 
 Copyright: Priit Paluoja and Priit Palta; University of Tartu and University of Helsinki.
 All rights reserved, unauthorised usage and distribution are prohibited.
