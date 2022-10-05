@@ -27,7 +27,7 @@ a [file](example/bins.bed) defining each genomic bin to use in the analysis.
 
 ```R
 # In R:
-bindel::create_reference("path/folder/bams", "example/bins.bed", "name_of_the_output_reference_file")
+bindel::create_reference("path/folder/bams", "example/bins.bed", "name_of_the_reference_file")
 ```
 
 <details><summary> Click here to see how to define genomic bins.</summary>
@@ -56,7 +56,7 @@ The script creates the file [`example/bins.bed`](example/bins.bed), which can be
 ### Running BinDel
 ```R
 # In R:
-bindel::infer_normality("path/bam.bam", "path/reference.tsv")
+bindel::infer_normality("sample.bam", "name_of_the_reference_file")
 ```
 
 <details><summary>Note</summary>
