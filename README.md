@@ -9,8 +9,6 @@ Here we present the BinDel, a novel region-aware microdeletion detection softwar
 Our [paper](https://doi.org/10.1101/2022.09.20.22280152) describes the BinDel algorithm and how it was tested. We quantified the impact of sequencing coverage, fetal DNA fraction, and region length on microdeletion risk detection accuracy. We also estimated BinDel accuracy on known microdeletion samples and clinically validated aneuploidy samples. 
 
 
-# Manual
-
 ## Installation
 
 ```R
