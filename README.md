@@ -79,7 +79,6 @@ chr22	21098157	50818468	chr22	300000
 ```
 Run the following Python script:
 ```
-# In Python 3.x:
 python dividebins.py --infile locations.info.tsv --outfile bins.bed
 ```
 The script creates the file `bins.bed`, which can be used in the reference file creation.
