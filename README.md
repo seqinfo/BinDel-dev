@@ -27,61 +27,18 @@ a file defining genomic bins to use in the analysis.
 
 ```R
 # In R:
-bindel::create_reference("path/folder/bams", "path/bins.bed", "name_of_the_output_reference_file")
+bindel::create_reference("path/folder/bams", "example/bins.bed", "name_of_the_output_reference_file")
 ```
 
 <details><summary> Click here to see how to create a file that defines genomic bins.</summary>
 <p>
 
-Given a file `locations.info.tsv` (column `length` sets bin size, e.g in here bin size is 300k):
-```TSV
-chr	start	end	focus	length
-chr1	1	23599999	chr1	300000
-chr1	23600000	27600000	1p36	300000
-chr1	27600001	248956422	chr1	300000
-chr2	1	242193529	chr2	300000
-chr3	1	192599999	chr3	300000
-chr3	192600000	198295559	3q29	300000
-chr4	1	4500000	Wolf-Hirschhorn	300000
-chr4	4500001	190214555	chr4	300000
-chr5	1	10000	chr5	300000
-chr5	10001	12533192	Cri-du-chat	300000
-chr5	12533193	181538259	chr5	300000
-chr6	1	170805979	chr6	300000
-chr7	1	72699999	chr7	300000
-chr7	72700000	77900000	Williams-Beuren	300000
-chr7	77900001	159345973	chr7	300000
-chr8	1	116699999	chr8	300000
-chr8	116700000	126300000	Langer-Giedion	300000
-chr8	126300001	145138636	chr8	300000
-chr9	1	138394717	chr9	300000
-chr10	1	133797422	chr10	300000
-chr11	1	114599999	chr11	300000
-chr11	114600000	135086622	Jacobsen	300000
-chr12	1	133275309	chr12	300000
-chr13	1	114364328	chr13	300000
-chr14	1	107043718	chr14	300000
-chr15	1	22677344	chr15	300000
-chr15	22677345	28193120	Angelman/Prader-Willi	300000
-chr15	28193121	101991189	chr15	300000
-chr16	1	90338345	chr16	300000
-chr17	1	83257441	chr17	300000
-chr18	1	80373285	chr18	300000
-chr19	1	58617616	chr19	300000
-chr20	1	80105	chr20	300000
-chr20	80106	1311812	20p13del	300000
-chr20	1311813	64444167	chr20	300000
-chr21	1	46709983	chr21	300000
-chr22	1	17400000	chr22	300000
-chr22	19022279	21098156	DiGeorge	300000
-chr22	21098157	50818468	chr22	300000
-
+Given a file [`example/locations.info.tsv`](example/locations.info.tsv) (column `length` sets bin size for each region), run the following Python script:
+ 
 ```
-Run the following Python script:
+python3 dividebins.py --infile example/locations.info.tsv --outfile example/bins.bed
 ```
-python dividebins.py --infile locations.info.tsv --outfile bins.bed
-```
-The script creates the file `bins.bed`, which can be used in the reference file creation.
+The script creates the file [`example/bins.bed`](example/bins.bed), which can be used in the reference file creation.
 
 <details><summary>Notes</summary>
 <p>
