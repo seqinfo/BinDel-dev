@@ -33,7 +33,7 @@ bindel::create_reference("path/folder/bams", "example/bins.bed", "name_of_the_re
 <details><summary> Click here to see how to define genomic bins.</summary>
 <p>
 
-Given a file [`example/locations.info.tsv`](example/locations.info.tsv) describing bin lengths (column `length`) for each region of interest, the following Python script bins the input file to [`example/bins.bed`](example/bins.bed):
+Given a file [`example/locations.info.tsv`](example/locations.info.tsv) describing bin lengths (column `length`) for each region of interest, the following Python [script](dividebins.py) bins the input file to [`example/bins.bed`](example/bins.bed):
  
 ```
 python3 dividebins.py --infile example/locations.info.tsv --outfile example/bins.bed
