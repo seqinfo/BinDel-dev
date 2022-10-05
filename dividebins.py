@@ -1,6 +1,10 @@
 import argparse
 import sys
 
+# Copyright: Priit Paluoja and Priit Palta; University of Tartu and University of Helsinki.
+# All rights reserved, unauthorised usage and distribution are prohibited.
+# Contact: priit.palta@gmail.com
+
 parser = argparse.ArgumentParser(description='Generate bins.')
 
 parser.add_argument('--infile',
