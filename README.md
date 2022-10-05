@@ -23,17 +23,17 @@ BinDel requires `.bam` **GRCh38** alignment files which are **sorted** and **dup
 ## Usage
 ### Reference creation
 BinDel requires the creation of a reference set file. A reference set file is a file that contains known euploid NIPT samples. The read counts of these samples are used to compare the sample of interest with the healthy reference group. The creation of the reference file requires known euploid NIPT samples in `.bam` format and
-a file defining genomic bins to use in the analysis.
+a [file](example/bins.bed) defining each genomic bin to use in the analysis.
 
 ```R
 # In R:
 bindel::create_reference("path/folder/bams", "example/bins.bed", "name_of_the_output_reference_file")
 ```
 
-<details><summary> Click here to see how to create a file that defines genomic bins.</summary>
+<details><summary> Click here to see how to define genomic bins.</summary>
 <p>
 
-Given a file [`example/locations.info.tsv`](example/locations.info.tsv) (column `length` sets bin size for each region), run the following Python script:
+Given a file [`example/locations.info.tsv`](example/locations.info.tsv) describing bin lengths (column `length`) for each region of interest, the following Python script bins the input file to [`example/bins.bed`](example/bins.bed):
  
 ```
 python3 dividebins.py --infile example/locations.info.tsv --outfile example/bins.bed
