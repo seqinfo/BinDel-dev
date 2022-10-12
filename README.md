@@ -34,7 +34,7 @@ sudo apt -y install r-cran-devtools r-bioc-biostrings r-cran-dplyr r-bioc-genomi
 ```R
 sudo -i R
 BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
-devtools::install("/home/user/BinDel/")
+devtools::install_github("seqinfo/BinDel")
 ```
 </p>
 </details>
