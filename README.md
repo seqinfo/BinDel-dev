@@ -14,44 +14,43 @@ Our [paper](https://doi.org/10.1101/2022.09.20.22280152) describes the BinDel al
 
 ## Installation
 
-```R
-# In R:
-install.packages("devtools") # Skip this line if devtools is already installed
-devtools::install_github("seqinfo/BinDel")
+<details><summary>Installation on Ubuntu 22.04</summary>
+<p>
+ 
+The following is tested with [ubuntu-22.04.1-live-server-amd64](https://releases.ubuntu.com/22.04/).
+
+#### Install R as shown in [DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-22-04). [From DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-22-04):
+```bash
+wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo gpg --dearmor -o /usr/share/keyrings/r-project.gpg
+echo "deb [signed-by=/usr/share/keyrings/r-project.gpg] https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/" | sudo tee -a /etc/apt/sources.list.d/r-project.list
+sudo apt update
+sudo apt install --no-install-recommends r-base
 ```
-<details><summary>Note in case of XML dependency mismatch</summary>
+#### Install BinDel dependencies and [devtools](https://www.r-project.org/nosvn/pandoc/devtools.html)
+```bash
+sudo apt -y install r-cran-devtools r-bioc-biostrings r-cran-dplyr r-bioc-genomicalignments r-bioc-genomicranges r-cran-ggplot2  r-bioc-iranges r-cran-magrittr r-cran-purrr r-cran-readr r-bioc-rsamtools r-cran-stringr  r-cran-tidyr r-cran-biocmanager git
+```
+#### Install BSgenome.Hsapiens.UCSC.hg38 and BinDel
+```R
+sudo -i R
+BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
+devtools::install("/home/user/BinDel/")
+```
+</p>
+</details>
+
+
+<details><summary>Installation on Windows 10</summary>
 <p>
 
- We encountered an error of unable to install R package due to XML dependency mismatch on one of the test computers. We solved it by installing `r-xml` with `conda install r-xml`). Our solution was based on [this](https://stackoverflow.com/questions/37035088/unable-to-install-r-package-due-to-xml-dependency-mismatch).
-
+1. Install [R](https://cran.r-project.org/bin/windows/base/).
+2. Install [Rtools](https://cran.r-project.org/bin/windows/Rtools/).
+3. Install devtools and BinDel in R:
+```R
+# In R:
+install.packages("devtools") 
+devtools::install_github("seqinfo/BinDel")
 ```
-Using libxml2.*
-checking for gzopen in -lz... yes
-checking for xmlParseFile in -lxml2... no
-checking for xmlParseFile in -lxml... no
-configure: error: "libxml not found"
-ERROR: configuration failed for package 'XML'
- ```
- ```
- Error in `(function (command = NULL, args = character(), error_on_status = TRUE, ...`:
-! System command 'R' failed
----
-Exit status: 1
-stdout & stderr: <printed>
----
-Type .Last.error to see the more details.
-Warning messages:
-1: In i.p(...) : installation of package 'XML' had non-zero exit status
-2: In i.p(...) :
-  installation of package 'restfulr' had non-zero exit status
-3: In i.p(...) :
-  installation of package 'rtracklayer' had non-zero exit status
-4: In i.p(...) :
-  installation of package 'BSgenome' had non-zero exit status
-5: In i.p(...) :
-  installation of package 'BSgenome.Hsapiens.UCSC.hg38' had non-zero exit status
-```
- 
 </p>
 </details>
 
