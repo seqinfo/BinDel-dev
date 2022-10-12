@@ -36,7 +36,7 @@ sudo -i R
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
-devtools::install_github("seqinfo/BinDel")
+devtools::install_github("seqinfo/BinDel", upgrade = "never")
 ```
 </p>
 </details>
