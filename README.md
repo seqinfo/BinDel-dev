@@ -13,7 +13,7 @@ Our [paper](https://doi.org/10.1101/2022.09.20.22280152) describes the BinDel al
 
 
 ## Installation
-
+#### Docker: [![Docker Repository on Quay](https://quay.io/repository/priitpaluoja/bindel/status "Docker Repository on Quay")](https://quay.io/repository/priitpaluoja/bindel)
 <details><summary>Installation on Ubuntu 22.04</summary>
 <p>
  
@@ -28,7 +28,7 @@ sudo apt install --no-install-recommends r-base
 ```
 #### Install BinDel dependencies and [devtools](https://www.r-project.org/nosvn/pandoc/devtools.html)
 ```bash
-sudo apt -y install r-cran-devtools r-bioc-biostrings r-cran-dplyr r-bioc-genomicalignments r-bioc-genomicranges r-cran-ggplot2  r-bioc-iranges r-cran-magrittr r-cran-purrr r-cran-readr r-bioc-rsamtools r-cran-stringr  r-cran-tidyr git r-bioc-bsgenome 
+sudo apt -y install r-cran-devtools r-bioc-biostrings r-cran-dplyr r-bioc-genomicalignments r-bioc-genomicranges r-cran-ggplot2  r-bioc-iranges r-cran-magrittr r-cran-purrr r-cran-readr r-bioc-rsamtools r-cran-stringr  r-cran-tidyr git r-bioc-bsgenome  libcairo2-dev libxt-dev
 ```
 #### Install BSgenome.Hsapiens.UCSC.hg38 and BinDel
 ```R
