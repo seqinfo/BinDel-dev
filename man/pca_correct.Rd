@@ -4,12 +4,14 @@
 \alias{pca_correct}
 \title{PCA-normalize.}
 \usage{
-pca_correct(samples, nComp)
+pca_correct(samples, nComp, cumulative_variance)
 }
 \arguments{
 \item{samples}{\code{\link{normalize_reads}} output.}
 
 \item{nComp}{How many PCA components to use in the normalization.}
+
+\item{cumulative_variance}{Choose number of PCA components such that they explain \% of cumulative variance.}
 }
 \value{
 A normalized data frame.

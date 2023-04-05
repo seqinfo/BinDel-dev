@@ -39,8 +39,10 @@ check_reference <- function(reference, use_pca, nComp) {
   }
   
   
-  if (use_pca & (ref_size < nComp)) {
-    stop("nComp (", nComp, ") > reference sample size (", ref_size, ").")
+  if (use_pca & (!is.null(nComp))) {
+    if(ref_size < nComp){
+      stop("nComp (", nComp, ") > reference sample size (", ref_size, ").")  
+    }
   }
 }
 

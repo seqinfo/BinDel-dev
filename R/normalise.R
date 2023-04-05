@@ -61,9 +61,18 @@ normalize_reads <- function(samples) {
 #' @importFrom magrittr %>%
 #' @param samples \code{\link{normalize_reads}} output.
 #' @param nComp How many PCA components to use in the normalization.
+#' @param cumulative_variance Choose number of PCA components such that they explain % of cumulative variance.
 #' @return A normalized data frame.
-pca_correct <- function(samples, nComp) {
-  message("Applying PCA normalization with ", nComp, " components.")
+pca_correct <- function(samples, nComp, cumulative_variance) {
+  
+  if (!is.null(nComp) & is.null(cumulative_variance)) {
+    message("Applying PCA normalization with ", nComp, " components.")
+  } else if (is.null(nComp) & !is.null(cumulative_variance)) {
+    message("Applying PCA normalization with cumulative variance of ", cumulative_variance)
+  } else{
+    stop("nComp and cumulative_variance cannot be both NULL or non-NULL at the same time")
+  }
+  
   # For PCA sort ()
   samples <- samples %>%
     dplyr::arrange(reference)
@@ -86,6 +95,14 @@ pca_correct <- function(samples, nComp) {
   mu <- colMeans(ref, na.rm = T)
   refPca <- stats::prcomp(ref)
   
+  if(is.null(nComp)){
+    nComp <- (factoextra::get_eig(refPca) %>% 
+                dplyr::mutate(PCA = dplyr::row_number()) %>% 
+                dplyr::filter(cumulative.variance.percent >= cumulative_variance) %>% 
+                dplyr::select(PCA))[1,1]
+    
+    message("Setting PCA automatically to ", nComp, " based on the target ", cumulative_variance, "% of cumulative variance calculated from the reference set.")
+  }
   
   Xhat <- refPca$x[, 1:nComp] %*% t(refPca$rotation[, 1:nComp])
   Xhat <- scale(Xhat, center = -mu, scale = FALSE)

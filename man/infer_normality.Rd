@@ -8,7 +8,8 @@ infer_normality(
   bam_location,
   reference_location,
   use_pca = TRUE,
-  nComp = 80,
+  cumulative_variance = 95,
+  n_comp = NULL,
   bin_plot = FALSE,
   save_bins = FALSE
 )
@@ -20,7 +21,9 @@ infer_normality(
 
 \item{use_pca}{Use PCA based normalization? Increases sensitivity by reducing variation between samples.}
 
-\item{nComp}{How many components to use in PCA-based normalization? Cannot be higher than the number of samples in the reference set. It affects the minimum read count and the fetal fraction that the tool can reliably operate on.}
+\item{cumulative_variance}{Choose number of PCA components based on the reference files such that number of PCA components explain x \% of cumulative variance.}
+
+\item{n_comp}{instead of automatically setting cumulative variance, set number of PCA components manually.  Cannot be higher than the number of samples or number of bins in the reference set.}
 
 \item{bin_plot}{Create and save detailed bin plots?}
 

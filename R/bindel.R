@@ -21,7 +21,8 @@
 #' @param bam_location Path to the input file.
 #' @param reference_location Path to the reference file.
 #' @param use_pca Use PCA based normalization? Increases sensitivity by reducing variation between samples.
-#' @param nComp How many components to use in PCA-based normalization? Cannot be higher than the number of samples in the reference set. It affects the minimum read count and the fetal fraction that the tool can reliably operate on.
+#' @param cumulative_variance Choose number of PCA components based on the reference files such that number of PCA components explain x % of cumulative variance.
+#' @param n_comp instead of automatically setting cumulative variance, set number of PCA components manually.  Cannot be higher than the number of samples or number of bins in the reference set. 
 #' @param bin_plot Create and save detailed bin plots?
 #' @param save_bins Save bins?
 #' @export
@@ -34,7 +35,8 @@
 infer_normality <- function(bam_location,
                             reference_location,
                             use_pca = TRUE,
-                            nComp = 80,
+                            cumulative_variance = 95.0,
+                            n_comp = NULL,
                             bin_plot = FALSE,
                             save_bins = FALSE)  {
   message_package_version()
@@ -49,7 +51,7 @@ infer_normality <- function(bam_location,
     dplyr::mutate(sample = as.character(dplyr::cur_group_id())) %>%
     dplyr::ungroup()
   
-  check_reference(reference, use_pca, nComp)
+  check_reference(reference, use_pca, n_comp)
   
   message("Reading and binning: ", bam_location)
   binned_reads <- bin_bam(
@@ -77,7 +79,7 @@ infer_normality <- function(bam_location,
     dplyr::select(chr, focus, start, sample, reference, gc_corrected)
   
   if (use_pca) {
-    samples <- pca_correct(samples, nComp)
+    samples <- pca_correct(samples, n_comp, cumulative_variance)
   }
   
   

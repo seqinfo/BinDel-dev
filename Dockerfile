@@ -13,6 +13,7 @@ RUN  apt-get update \
     r-cran-devtools \
     r-bioc-biostrings \
     r-cran-dplyr \
+    r-cran-factoextra \
     r-bioc-genomicalignments \
     r-bioc-genomicranges \
     r-cran-ggplot2 \
