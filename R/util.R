@@ -58,3 +58,42 @@ message_package_version <- function() {
     utils::packageVersion(utils::packageName())
   ))
 }
+
+
+#' Create based on the location file.
+#'
+#' @importFrom magrittr %>%
+#' @param locations_file A tab separated text file describing how to create bins with columns: \emph{chr}, \emph{start}, \emph{end}, \emph{focus}, \emph{length}.
+#' @return A data frame containing bins.
+#' @export
+divide_bins <- function(locations_file) {
+  message("Dividing '", locations_file, "' to bins.")
+  
+  df <- readr::read_tsv(locations_file)
+  df <- df[-1, ]
+  
+  header <- c('chr', 'start', 'end', 'focus') 
+  
+  df_out <- data.frame(matrix(ncol = length(header), nrow = 0))
+  names(df_out) <- header
+  
+  for (i in 1:nrow(df)) {
+    line <- df[i, ]
+    
+    chromosome <- line[["chr"]]
+    start <- as.integer(line[["start"]])
+    end <- as.integer(line[["end"]])
+    focus <- line[["focus"]]
+    bin_width <- as.integer(line[["length"]])
+    
+    while (start + bin_width < end) {
+      output <- c(chromosome, as.integer(start), as.integer(min(start + bin_width - 1, end)), focus)
+      output <- data.frame(t(output))
+      names(output) <- header
+      df_out <- rbind(df_out, output)
+      
+      start <- start + bin_width
+    }
+  }
+  return(df_out)
+}

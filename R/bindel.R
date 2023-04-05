@@ -35,7 +35,7 @@ infer_normality <- function(bam_location,
                             reference_location,
                             use_pca = TRUE,
                             nComp = 80,
-                            bin_plot = TRUE,
+                            bin_plot = FALSE,
                             save_bins = FALSE)  {
   message_package_version()
   
