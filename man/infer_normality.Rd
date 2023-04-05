@@ -23,7 +23,7 @@ infer_normality(
 
 \item{cumulative_variance}{Choose number of PCA components based on the reference files such that number of PCA components explain x \% of cumulative variance.}
 
-\item{n_comp}{instead of automatically setting cumulative variance, set number of PCA components manually.  Cannot be higher than the number of samples or number of bins in the reference set.}
+\item{n_comp}{Instead of automatically setting cumulative variance, set number of PCA components manually.  Cannot be higher than the number of samples or number of bins in the reference set.}
 
 \item{bin_plot}{Create and save detailed bin plots?}
 

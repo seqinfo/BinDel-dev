@@ -22,7 +22,7 @@
 #' @param reference_location Path to the reference file.
 #' @param use_pca Use PCA based normalization? Increases sensitivity by reducing variation between samples.
 #' @param cumulative_variance Choose number of PCA components based on the reference files such that number of PCA components explain x % of cumulative variance.
-#' @param n_comp instead of automatically setting cumulative variance, set number of PCA components manually.  Cannot be higher than the number of samples or number of bins in the reference set. 
+#' @param n_comp Instead of automatically setting cumulative variance, set number of PCA components manually.  Cannot be higher than the number of samples or number of bins in the reference set. 
 #' @param bin_plot Create and save detailed bin plots?
 #' @param save_bins Save bins?
 #' @export
