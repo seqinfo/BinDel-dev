@@ -17,14 +17,3 @@ create_reference(bam_locations, bed_location, reference_name)
 Takes a location to the folder with .bam files and .bed file and bins the
 .bam files with GRCh38.
 }
-\details{
-Outputs .tsv reference file with columns:
-\enumerate{
-\item \emph{chr}
-\item \emph{start}
-\item \emph{end}
-\item \emph{focus}
-\item \emph{reads}
-\item \emph{sample}
-}
-}

@@ -2,6 +2,8 @@
 
 export(bin_bam)
 export(create_reference)
+export(divide_bins)
 export(infer_normality)
 export(message_package_version)
+export(write_reference)
 importFrom(magrittr,"%>%")

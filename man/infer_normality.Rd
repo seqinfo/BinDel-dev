@@ -9,7 +9,7 @@ infer_normality(
   reference_location,
   use_pca = TRUE,
   nComp = 80,
-  bin_plot = TRUE,
+  bin_plot = FALSE,
   save_bins = FALSE
 )
 }
