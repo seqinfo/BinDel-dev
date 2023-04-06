@@ -22,7 +22,7 @@ bin_bam <- function(bam_location, bed) {
   
   binned_counts <- bed %>%
     dplyr::mutate(reads = SummarizedExperiment::assay(
-      GenomicAlignments::summarizeOverlaps(GenomicRanges::makeGRangesFromDataFrame(.), bam, mode = "IntersectionStrict"))[,1]) %>%
+      GenomicAlignments::summarizeOverlaps(GenomicRanges::makeGRangesFromDataFrame(.), bam, inter.feature=FALSE, mode = "IntersectionStrict"))[,1]) %>%
     dplyr::mutate(sample = basename(bam_location))
   
   return(binned_counts)
@@ -70,7 +70,6 @@ divide_bins <- function(locations_file) {
   message("Dividing '", locations_file, "' to bins.")
   
   df <- readr::read_tsv(locations_file)
-  df <- df[-1, ]
   
   header <- c('chr', 'start', 'end', 'focus') 
   

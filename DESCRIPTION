@@ -38,4 +38,5 @@ Imports:
   stats (>= 4.1.1),
   stringr (>= 1.4.0),
   tidyr (>= 1.1.4),
-  utils (>= 4.1.1)
+  utils (>= 4.1.1),
+  factoextra (>= 1.0.7)
