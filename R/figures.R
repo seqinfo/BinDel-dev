@@ -5,7 +5,6 @@
 
 #' Creates and saves binned normalized Z-Score figure per region.
 #'
-#' @importFrom magrittr %>%
 #' @param data A binned Z-scored data frame with columns \emph{focus}, \emph{start},
 #'  \emph{PPDX_norm}, \emph{sample} and \emph{reference}.
 #' @param sample_name sample name of interest
