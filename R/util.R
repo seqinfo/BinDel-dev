@@ -5,7 +5,7 @@
 
 #' Bin aligned sequences (from \emph{.bam}) into genomic bins based on the \emph{.bed} file.
 #'
-#'
+#' @importFrom magrittr %>%
 #' @param bam_location A location to the BAM-file to bin.
 #' @param bed A data frame in .bed format with columns: \emph{chr}, \emph{start}, \emph{end}, \emph{focus}.
 #' @return A data frame in bed format with GC%.
@@ -19,9 +19,9 @@ bin_bam <- function(bam_location, bed) {
                                          what = c("pos")
                                        ))
   
-  binned_counts <- bed |>
+  binned_counts <- bed %>% 
     dplyr::mutate(reads = SummarizedExperiment::assay(
-      GenomicAlignments::summarizeOverlaps(GenomicRanges::makeGRangesFromDataFrame(.), bam, inter.feature=FALSE, mode = "IntersectionStrict"))[,1]) |>
+      GenomicAlignments::summarizeOverlaps(GenomicRanges::makeGRangesFromDataFrame(.), bam, inter.feature=FALSE, mode = "IntersectionStrict"))[,1]) %>% 
     dplyr::mutate(sample = basename(bam_location))
   
   return(binned_counts)

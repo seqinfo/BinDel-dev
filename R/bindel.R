@@ -16,7 +16,6 @@
 #' \item Calculate sample Mahalanobis distance from the reference group.
 #' \item Calculate \code{-log10} chi-squared distribution probabilities.
 #' }
-#'
 #' @param bam_file_path A character string specifying the path to the BAM file containing the samples to be analyzed.
 #' @param ref_file_path A character string specifying the path to the reference file.
 #' @param use_pca A logical value indicating whether to use PCA-based normalization. If \code{TRUE}, PCA-based normalization will be used, otherwise not.
@@ -125,15 +124,18 @@ infer_normality <- function(bam_file_path,
   
   
   if (!output_reference_scores) {
-    samples <- dplyr::filter(!reference) |>
+    samples <- samples |>
+      dplyr::filter(!reference) |>
       dplyr::select(-reference)
   }
   
   message("Saving metrics.")
-  output <- samples |>
+  output <- samples  |>
     dplyr::rename(subregion = focus) |>
     dplyr::rename(`z_score` = PPDX) |>
-    dplyr::rename(`normalized_z_score` = PPDX_norm)
+    dplyr::rename(`normalized_z_score` = PPDX_norm) |>
+    dplyr::mutate_if(is.numeric, function(x) format(x, scientific = FALSE))
+    
   
   
   if(!output_intermediate_scores){

@@ -8,24 +8,25 @@
 #' Sample wise, based on PMID: 28500333 and PMID: 20454671. Expects columns
 #' \emph{chr}, \emph{start}, \emph{end}, \emph{focus}, \emph{reads},
 #' \emph{samples}. Creates column \emph{gc_correct}.
-#'
+#' 
+#' @importFrom magrittr %>%
 #' @param samples A data frame to GC% correct.
 #' @return A GC% corrected data frame.
 gc_correct <- function(samples) {
   message("Applying GC% correct.")
   return(
-    samples |>
+    samples %>% 
       dplyr::left_join(find_gc(
-        dplyr::select(.data = ., chr, start, end, focus) |>
+        dplyr::select(.data = ., chr, start, end, focus) %>% 
           dplyr::distinct(chr, start, end, focus)
-      )) |>
+      )) %>% 
       # Do GC correct
-      dplyr::group_by(sample, gc) |>
-      dplyr::mutate(reads_gc_interval = mean(reads)) |>
-      dplyr::ungroup() |>
-      dplyr::group_by(sample) |>
-      dplyr::mutate(gc_corrected = reads * mean(reads) / reads_gc_interval) |>
-      dplyr::filter(!is.na(gc_corrected)) |>
+      dplyr::group_by(sample, gc) %>% 
+      dplyr::mutate(reads_gc_interval = mean(reads))%>% 
+      dplyr::ungroup() %>% 
+      dplyr::group_by(sample) %>% 
+      dplyr::mutate(gc_corrected = reads * mean(reads) / reads_gc_interval) %>% 
+      dplyr::filter(!is.na(gc_corrected)) %>% 
       dplyr::ungroup()
   )
 }

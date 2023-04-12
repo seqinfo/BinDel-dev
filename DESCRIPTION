@@ -24,6 +24,7 @@ Depends:
     R (>= 4.1.1)
 biocViews:
 Imports:
+  magrittr (>= 2.0.1),
   Biostrings (>= 2.62.0),
   BSgenome.Hsapiens.UCSC.hg38 (>= 1.4.4),
   dplyr (>= 1.0.7),
