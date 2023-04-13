@@ -71,7 +71,7 @@ pca_correct <- function(samples, num_comp, cumulative_variance) {
   if (!is.null(num_comp) & is.null(cumulative_variance)) {
     message("Applying PCA normalization with ", num_comp, " components.")
   } else if (is.null(num_comp) & !is.null(cumulative_variance)) {
-    message("Applying PCA normalization with cumulative variance of ", cumulative_variance)
+    message("Applying PCA normalization with cumulative variance of ", cumulative_variance,".")
   } else if (!is.null(num_comp) & !is.null(cumulative_variance)) {
     stop("num_comp and cumulative_variance cannot both be specified. Please choose one or the other.")
   } else {

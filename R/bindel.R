@@ -26,8 +26,10 @@
 #' @param output_file_path Set file name (path) for output.
 #' @param internally_deidentify_reference  A logical value indicating whether to rename the reference samples to avoid naming conflicts with the analyzable samples during computations. If \code{TRUE}, reference samples will be internally renamed, otherwise not. The default value is \code{TRUE}
 #' @param output_reference_scores A logical value indicating whether to output the high-risk probabilities for the reference set during computations. If \code{TRUE}, the high-risk probabilities for the reference set will be outputted, otherwise not. The default value is \code{FALSE}
-#' @param return_probabilities_dataframe A logical value indicating whether to return the high-risk probabilities as a data frame instead of writing them to a file. If \code{TRUE}, the high-risk probabilities will be returned as a data frame, otherwise not. The default value is \code{FALSE}
+#' @param write_probabilities_dataframe A logical value indicating whether to also write the high-risk probabilities to a file. If \code{TRUE}, the high-risk probabilities will be written to file. The default value is \code{TRUE}
 #' @param output_intermediate_scores A logical value indicating whether to output all intermediate scores used for calculating probabilities. If \code{TRUE}, all intermediate scores will be outputted, otherwise not. The default value is \code{FALSE}
+#' @param score_file_extension Specify the desired file extension for the output score file.
+#' @param bin_file_extension Specify the desired file extension for the output bin file.
 #' @export
 #' @examples
 #'
@@ -45,8 +47,10 @@ infer_normality <- function(bam_file_path,
                             output_file_path = NULL,
                             internally_deidentify_reference = TRUE,
                             output_reference_scores = FALSE,
-                            return_probabilities_dataframe = FALSE,
-                            output_intermediate_scores = FALSE)  {
+                            write_probabilities_dataframe = TRUE,
+                            output_intermediate_scores = FALSE,
+                            score_file_extension = ".scores",
+                            bin_file_extension = ".bins")  {
   message_package_version()
   
   
@@ -100,23 +104,38 @@ infer_normality <- function(bam_file_path,
   
   sample_name <- basename(bam_file_path)
   
+  if (is.null(output_file_path)) {
+    output_file_path = sample_name
+  }
   
   if (create_bin_plot) {
     message("Creating and saving region plots.")
-    save_bin_plot(samples, sample_name)
+    save_bin_plot(samples, sample_name, output_file_path)
   }
   
   
   if (save_bins) {
     message("Writing bins to file.")
+    
+    if (!output_reference_scores) {
+      bins <- samples |>
+        dplyr::filter(!reference) |>
+        dplyr::select(-reference)
+    }else{
+      bins <- samples
+    }
+    
     readr::write_tsv(
-      samples |>
+      bins |>
+        dplyr::select(sample, chr, focus, start, PPDX_norm, PPDX) |>
         dplyr::ungroup() |>
-        dplyr::filter(sample == sample_name) |>
-        dplyr::select(chr, focus, start, PPDX_norm) |>
-        dplyr::rename(`Normalized Z-Score` = PPDX_norm),
-      paste0(sample_name, ".bins", ".tsv")
+        dplyr::rename(`z_score` = PPDX) |>
+        dplyr::rename(`Normalized Z-Score` = PPDX_norm) |>
+        dplyr::mutate_if(is.numeric, function(x) format(x, scientific = FALSE)),
+      paste0(output_file_path, bin_file_extension)
     )
+    
+    rm(bins)
   }
   
   
@@ -125,8 +144,7 @@ infer_normality <- function(bam_file_path,
   
   if (!output_reference_scores) {
     samples <- samples |>
-      dplyr::filter(!reference) |>
-      dplyr::select(-reference)
+      dplyr::filter(!reference)
   }
   
   message("Saving metrics.")
@@ -144,13 +162,9 @@ infer_normality <- function(bam_file_path,
   }
   
   
-  if (is.null(output_file_path)) {
-    output_file_path = paste0(sample_name, ".tsv")
-  }
-  
-  if (return_probabilities_dataframe) {
-    return(output)
+  if (write_probabilities_dataframe) {
+    readr::write_tsv(output, paste0(output_file_path, score_file_extension))
   } else{
-    readr::write_tsv(output, output_file_path)
+    output
   }
 }

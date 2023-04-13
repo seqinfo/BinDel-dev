@@ -15,8 +15,10 @@ infer_normality(
   output_file_path = NULL,
   internally_deidentify_reference = TRUE,
   output_reference_scores = FALSE,
-  return_probabilities_dataframe = FALSE,
-  output_intermediate_scores = FALSE
+  write_probabilities_dataframe = TRUE,
+  output_intermediate_scores = FALSE,
+  score_file_extension = ".scores",
+  bin_file_extension = ".bins"
 )
 }
 \arguments{
@@ -40,9 +42,13 @@ infer_normality(
 
 \item{output_reference_scores}{A logical value indicating whether to output the high-risk probabilities for the reference set during computations. If \code{TRUE}, the high-risk probabilities for the reference set will be outputted, otherwise not. The default value is \code{FALSE}}
 
-\item{return_probabilities_dataframe}{A logical value indicating whether to return the high-risk probabilities as a data frame instead of writing them to a file. If \code{TRUE}, the high-risk probabilities will be returned as a data frame, otherwise not. The default value is \code{FALSE}}
+\item{write_probabilities_dataframe}{A logical value indicating whether to also write the high-risk probabilities to a file. If \code{TRUE}, the high-risk probabilities will be written to file. The default value is \code{TRUE}}
 
 \item{output_intermediate_scores}{A logical value indicating whether to output all intermediate scores used for calculating probabilities. If \code{TRUE}, all intermediate scores will be outputted, otherwise not. The default value is \code{FALSE}}
+
+\item{score_file_extension}{Specify the desired file extension for the output score file.}
+
+\item{bin_file_extension}{Specify the desired file extension for the output bin file.}
 }
 \description{
 Note: The function assumes that the reference set has already been processed and is available for use in the calculations.
