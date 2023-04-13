@@ -66,9 +66,6 @@ This function does the following:
 }
 }
 \examples{
+infer_normality("sample.bam", "reference.gz")
 
-bam <- "sample.bam"
-reference <- "reference.tsv"
-infer_normality(bam, reference)
-head("sample.bam.tsv")
 }

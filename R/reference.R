@@ -18,7 +18,8 @@
 #'
 #' @export
 #' @examples
-#' write_reference(c("sample.bam"), "coordinates.tsv", "reference.gz")
+#' write_reference(c("sample1.bam", "sample2.bam", "sample3.bam"), "locations.info.tsv", "reference.gz")
+#' write_reference(c("sample.bam"), "locations.info.tsv", "reference.tsv", col_names = FALSE)
 write_reference <-
   function(bam_locations,
            coordinates_file,

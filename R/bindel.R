@@ -32,11 +32,8 @@
 #' @param bin_file_extension Specify the desired file extension for the output bin file.
 #' @export
 #' @examples
-#'
-#' bam <- "sample.bam"
-#' reference <- "reference.tsv"
-#' infer_normality(bam, reference)
-#' head("sample.bam.tsv")
+#' infer_normality("sample.bam", "reference.gz")
+#' 
 infer_normality <- function(bam_file_path,
                             ref_file_path,
                             use_pca = TRUE,
