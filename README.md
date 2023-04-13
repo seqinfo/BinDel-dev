@@ -67,7 +67,7 @@ a [coordinates file](example/locations.info.tsv) describing bin lengths and regi
 
 ```R
 # In R:
-BinDel::create_reference(c("sample1.bam", "sample2.bam"), "example/locations.info.tsv", "reference.gz")
+BinDel::write_reference(c("sample1.bam", "sample2.bam"), "coordinates.tsv", "reference.gz")
 ```
 
 ### Running BinDel
