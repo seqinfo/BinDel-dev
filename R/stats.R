@@ -98,7 +98,8 @@ calculate_summary <- function(samples) {
       dist_greedy <-
         stats::mahalanobis(.x |> dplyr::select(PPDX_norm, PPDX),
                            c(center$mean_x, center$mean_y),
-                           cov)
+                           cov,
+                           tol=1e-20)
       
       
       # Conservative
@@ -114,7 +115,8 @@ calculate_summary <- function(samples) {
       dist_conservative <-
         stats::mahalanobis(.x |>
                              dplyr::select(PPDX_norm), c(center$mean_x),
-                           cov)
+                           cov,
+                           tol=1e-20)
       
       
       

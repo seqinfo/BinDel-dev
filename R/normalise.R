@@ -98,6 +98,7 @@ pca_correct <- function(samples, num_comp, cumulative_variance) {
     dplyr::select(-reference,-sample)
   
   mu <- colMeans(ref, na.rm = T)
+  
   refPca <- stats::prcomp(ref)
   
   if(is.null(num_comp)){
@@ -137,5 +138,8 @@ pca_correct <- function(samples, num_comp, cumulative_variance) {
   normalized$sample <- samples$sample
   normalized$reference <- samples$reference
   normalized$chr <- samples$chr
+  
+  # Replace NAs with 0.
+  normalized$gc_corrected[is.na(normalized$gc_corrected)] <- 0
   return(normalized)
 }

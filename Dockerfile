@@ -26,7 +26,7 @@ RUN  apt-get update \
     r-cran-tidyr \
     git \
     r-bioc-bsgenome \
-  && R -e 'options(timeout = 5000);if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager");BiocManager::install("BSgenome.Hsapiens.UCSC.hg38", update=F);devtools::install_github("seqinfo/BinDel", upgrade = "never")' \
+  && R -e 'options(timeout = 5000);if (!require("BiocManager", quietly = TRUE)) install.packages("BiocManager");BiocManager::install("BSgenome.Hsapiens.UCSC.hg38", update=F);devtools::install_github("seqinfo/BinDel-dev", upgrade = "never")' \
   && apt remove -y wget gpg software-properties-common r-cran-devtools git \
   && apt-get autoremove -y \
   && apt-get clean -y
