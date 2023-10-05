@@ -95,11 +95,14 @@ calculate_summary <- function(samples) {
         dplyr::select(mean_x, mean_y) |>
         dplyr::distinct()
       
-      dist_greedy <-
+      dist_greedy <- tryCatch({
         stats::mahalanobis(.x |> dplyr::select(PPDX_norm, PPDX),
                            c(center$mean_x, center$mean_y),
                            cov,
-                           tol=1e-20)
+                           tol = 1e-20)
+      }, error = function(e) {
+        NA
+      })
       
       
       # Conservative
@@ -112,12 +115,14 @@ calculate_summary <- function(samples) {
         dplyr::select(mean_x) |>
         dplyr::distinct()
       
-      dist_conservative <-
+      dist_conservative <- tryCatch({
         stats::mahalanobis(.x |>
                              dplyr::select(PPDX_norm), c(center$mean_x),
                            cov,
-                           tol=1e-20)
-      
+                           tol = 1e-20)
+      }, error = function(e) {
+        NA
+      })
       
       
       dplyr::bind_cols(

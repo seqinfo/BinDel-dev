@@ -8,9 +8,9 @@ infer_normality(
   bam_file_path,
   ref_file_path,
   use_pca = TRUE,
-  use_pca_per_region = TRUE,
+  use_pca_per_region = FALSE,
   cumulative_variance = 95,
-  cumulative_variance_per_region = 70,
+  cumulative_variance_per_region = 50,
   num_comp = NULL,
   num_comp_per_region = NULL,
   create_bin_plot = FALSE,
@@ -35,7 +35,7 @@ infer_normality(
 
 \item{cumulative_variance}{A numeric value specifying the cumulative percentage of variance to be retained by the number of PCA components in the normalization (based on the reference set). The default value is \code{95.0}.}
 
-\item{cumulative_variance_per_region}{A numeric value specifying the cumulative percentage of variance to be retained by the number of PCA components in the per region normalization. The default value is \code{70.0}.}
+\item{cumulative_variance_per_region}{A numeric value specifying the cumulative percentage of variance to be retained by the number of PCA components in the per region normalization. The default value is \code{50.0}.}
 
 \item{num_comp}{An integer specifying the number of PCA components to use for normalization. If \code{cumulative_variance} is not specified, this value will be used instead. The default value is \code{NULL}.}
 
