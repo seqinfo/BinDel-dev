@@ -49,8 +49,7 @@ infer_normality <- function(bam_file_path,
   
   samples <- samples |>
     gc_correct() |>
-    normalize_reads() |>
-    chi_correct()
+    normalize_reads() 
   
 
   if (!is.null(cumulative_variance) ) {
@@ -109,9 +108,12 @@ infer_normality <- function(bam_file_path,
   }
   
   message("Calculating risk scores")
-  samples <- calculate_summary(samples) |> 
+  samples <- samples |>
+    chi_correct() |>
+    calculate_summary() |> 
     dplyr::filter(!reference) |>
-    dplyr::select(-reference)
+    dplyr::select(-reference) 
+
   
 
   end.time <- Sys.time()
