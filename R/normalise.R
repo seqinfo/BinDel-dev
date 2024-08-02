@@ -43,8 +43,8 @@ chi_correct <- function(samples, chi_cutoff = 3.5) {
   # Step 1: Calculate Chi-Squared Scores for each focus in control group
   control_group <- samples |>
     dplyr::filter(reference) |>
-    dplyr::group_by(focus, start) |>
-    dplyr::summarize(chi_squared_score = sum(gc_corrected^2), .groups = 'drop') |>
+    dplyr::group_by(chr, focus, pcar) |>
+    dplyr::summarize(chi_squared_score = sum(md_score^2), .groups = 'drop') |>
     dplyr::mutate(degrees_of_freedom = dplyr::n() - 1,
                   chi_normalized = sqrt(2 * chi_squared_score) - sqrt(2 * degrees_of_freedom - 1))
   
@@ -52,20 +52,18 @@ chi_correct <- function(samples, chi_cutoff = 3.5) {
   # Step 2: Identify Overdispersed Bins
   overdispersed_bins <- control_group |>
     dplyr::filter(chi_normalized > chi_cutoff) |>
-    dplyr::select(focus, start)|>
+    dplyr::select(focus, chr, pcar)|>
     dplyr::mutate(is_overdispersed = TRUE)
   
  
   # Step 3: Correct Overdispersed Bins in both sample and control groups
   samples_corrected <- samples |>
-    dplyr::left_join(overdispersed_bins, by = c("focus", "start")) |>
-    dplyr::left_join(control_group |> dplyr::select(focus, start, chi_squared_score, degrees_of_freedom), by = c("focus", "start")) |>
+    dplyr::left_join(overdispersed_bins, by = c("chr", "focus", "pcar")) |>
+    dplyr::left_join(control_group |> dplyr::select(chr, focus, pcar, chi_squared_score, degrees_of_freedom), by = c("chr", "focus", "pcar")) |>
     dplyr::mutate(chi_corrected = ifelse(is_overdispersed,
-                                        gc_corrected / (chi_squared_score / degrees_of_freedom),
-                                        gc_corrected)) |>
-    dplyr::mutate(gc_corrected = ifelse(is.na(chi_corrected),
-                                         gc_corrected,
-                                        chi_corrected)) |>
+                                         md_score / (chi_squared_score / degrees_of_freedom),
+                                         md_score)) |>
+    dplyr::mutate(md_score = ifelse(is.na(chi_corrected), md_score, chi_corrected)) |>
     dplyr::select(-chi_squared_score, -degrees_of_freedom, -is_overdispersed)
   
   return(samples_corrected)
