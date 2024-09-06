@@ -109,7 +109,6 @@ infer_normality <- function(bam_file_path,
   
   message("Calculating risk scores")
   samples <- samples |>
-    chi_correct() |>
     calculate_summary() |> 
     dplyr::filter(!reference) |>
     dplyr::select(-reference) 
