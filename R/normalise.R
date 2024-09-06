@@ -35,40 +35,6 @@ gc_correct <- function(samples) {
 }
 
 
-
-#' Chi-Squared Based Variation Reduction
-#'
-#' This function performs chi-squared based variation reduction to identify and correct overdispersed bins
-chi_correct <- function(samples, chi_cutoff = 3.5) {
-  # Step 1: Calculate Chi-Squared Scores for each focus in control group
-  control_group <- samples |>
-    dplyr::filter(reference) |>
-    dplyr::group_by(chr, focus, pcar) |>
-    dplyr::summarize(chi_squared_score = sum(md_score^2), .groups = 'drop') |>
-    dplyr::mutate(degrees_of_freedom = dplyr::n() - 1,
-                  chi_normalized = sqrt(2 * chi_squared_score) - sqrt(2 * degrees_of_freedom - 1))
-  
- 
-  # Step 2: Identify Overdispersed Bins
-  overdispersed_bins <- control_group |>
-    dplyr::filter(chi_normalized > chi_cutoff) |>
-    dplyr::select(focus, chr, pcar)|>
-    dplyr::mutate(is_overdispersed = TRUE)
-  
- 
-  # Step 3: Correct Overdispersed Bins in both sample and control groups
-  samples_corrected <- samples |>
-    dplyr::left_join(overdispersed_bins, by = c("chr", "focus", "pcar")) |>
-    dplyr::left_join(control_group |> dplyr::select(chr, focus, pcar, chi_squared_score, degrees_of_freedom), by = c("chr", "focus", "pcar")) |>
-    dplyr::mutate(chi_corrected = ifelse(is_overdispersed,
-                                         md_score / (chi_squared_score / degrees_of_freedom),
-                                         md_score)) |>
-    dplyr::mutate(md_score = ifelse(is.na(chi_corrected), md_score, chi_corrected)) |>
-    dplyr::select(-chi_squared_score, -degrees_of_freedom, -is_overdispersed)
-  
-  return(samples_corrected)
-}
-
 # Example usage:
 # df <- your_dataframe_with_columns_sample_focus_start_reference
 # corrected_df <- chi_correct(df)
